@@ -20,8 +20,8 @@ One-click Windows pull:
 ```
 
 That pulls both Play Limitless online events and main Limitless major events,
-pulls online match pairings, combines decklists, extracts cards, and rebuilds
-the deck summary.
+pulls match pairings, combines decklists, extracts cards, and rebuilds the deck
+summary.
 
 Manual pipeline:
 
@@ -73,6 +73,7 @@ These commands write CSV files under `outputs/`:
 - `outputs/major_players.csv`
 - `outputs/matches.csv`
 - `outputs/online_matches.csv`
+- `outputs/major_matches.csv`
 - `outputs/players.csv`
 - `outputs/cards.csv`
 - `outputs/deck_summary.csv`

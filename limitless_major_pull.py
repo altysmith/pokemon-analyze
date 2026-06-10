@@ -24,6 +24,7 @@ BASE_URL = "https://www.limitlesstcg.com"
 OUTPUTS_DIR = Path("outputs")
 MAJOR_TOURNAMENTS_CSV = OUTPUTS_DIR / "major_tournaments.csv"
 MAJOR_PLAYERS_CSV = OUTPUTS_DIR / "major_players.csv"
+MAJOR_MATCHES_CSV = OUTPUTS_DIR / "major_matches.csv"
 
 
 def main() -> None:
@@ -47,12 +48,15 @@ def main() -> None:
         max_events=args.max_events,
     )
     players = fetch_major_players(tournaments, delay=args.delay)
+    matches = fetch_major_matches(tournaments, delay=args.delay)
 
     pd.DataFrame(tournaments).to_csv(MAJOR_TOURNAMENTS_CSV, index=False)
     pd.DataFrame(players).to_csv(MAJOR_PLAYERS_CSV, index=False)
+    pd.DataFrame(matches).to_csv(MAJOR_MATCHES_CSV, index=False)
 
     print(f"Wrote {MAJOR_TOURNAMENTS_CSV} with {len(tournaments)} major events.")
     print(f"Wrote {MAJOR_PLAYERS_CSV} with {len(players)} major decklists.")
+    print(f"Wrote {MAJOR_MATCHES_CSV} with {len(matches)} major match rows.")
 
 
 def fetch_major_tournaments(
@@ -78,6 +82,7 @@ def fetch_major_tournaments(
         tournament = {
             "source": "major",
             "id": href_match.group(1).rsplit("/", 1)[-1],
+            "labs_id": _labs_id_from_event_row(match.group(0)),
             "name": attrs.get("data-name", ""),
             "date": attrs.get("data-date", ""),
             "country": attrs.get("data-country", ""),
@@ -143,6 +148,48 @@ def fetch_major_players(tournaments: list[dict[str, Any]], delay: float = 0.5) -
     return rows
 
 
+def fetch_major_matches(tournaments: list[dict[str, Any]], delay: float = 0.5) -> list[dict[str, Any]]:
+    """Fetch Limitless Labs pairings for major events."""
+
+    rows: list[dict[str, Any]] = []
+    for tournament in tournaments:
+        labs_id = tournament.get("labs_id") or _labs_id_from_event_page(tournament)
+        if not labs_id:
+            print(f"  No Labs id found for {tournament['name']}; skipping major matchups.")
+            continue
+
+        round_number = 1
+        while True:
+            url = f"https://labs.limitlesstcg.com/{labs_id}/pairings?round={round_number}"
+            print(f"Fetching major pairings: {tournament['name']} round {round_number}")
+            html = _get_html(url)
+            pairings = _pairings_from_labs_html(html)
+            if not pairings:
+                break
+
+            for pairing in pairings:
+                row = {
+                    "source": "major",
+                    "round": round_number,
+                    "table": pairing.get("table"),
+                    "winner": _major_winner_name(pairing),
+                    "player1": pairing.get("p1_name", ""),
+                    "player2": pairing.get("p2_name", ""),
+                    "player1_deck": pairing.get("p1_deck_name", ""),
+                    "player2_deck": pairing.get("p2_deck_name", ""),
+                    "tournament_id": f"major-{tournament['id']}",
+                    "tournament_name": tournament["name"],
+                    "date": tournament["date"],
+                }
+                rows.append(row)
+
+            round_number += 1
+            if delay > 0:
+                time.sleep(delay)
+
+    return rows
+
+
 def parse_major_decklists(html: str) -> list[dict[str, Any]]:
     """Parse decklist blocks from a Limitless major-event decklists page."""
 
@@ -197,6 +244,46 @@ def _parse_cards(block: str) -> list[dict[str, Any]]:
             }
         )
     return cards
+
+
+def _pairings_from_labs_html(html: str) -> list[dict[str, Any]]:
+    pairings: list[dict[str, Any]] = []
+    pattern = re.compile(
+        r'<script type="application/json" data-sveltekit-fetched[^>]*>'
+        r'(?P<payload>.*?)</script>',
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    for match in pattern.finditer(html):
+        payload = unescape(match.group("payload"))
+        try:
+            outer = json.loads(payload)
+            body = json.loads(outer.get("body", "{}"))
+        except (TypeError, json.JSONDecodeError):
+            continue
+        message = body.get("message", [])
+        if isinstance(message, list) and message and isinstance(message[0], dict) and "player1" in message[0]:
+            pairings.extend(message)
+    return pairings
+
+
+def _major_winner_name(pairing: dict[str, Any]) -> str:
+    winner = pairing.get("winner")
+    if winner == pairing.get("player1"):
+        return str(pairing.get("p1_name", ""))
+    if winner == pairing.get("player2"):
+        return str(pairing.get("p2_name", ""))
+    return "0"
+
+
+def _labs_id_from_event_row(row_html: str) -> str:
+    match = re.search(r"https://labs\.limitlesstcg\.com/([^/\"<>]+)/standings", row_html)
+    return match.group(1) if match else ""
+
+
+def _labs_id_from_event_page(tournament: dict[str, Any]) -> str:
+    url = tournament.get("url") or f"{BASE_URL}/tournaments/{tournament['id']}"
+    html = _get_html(str(url))
+    return _labs_id_from_event_row(html)
 
 
 def _parse_placing_and_player(text: str) -> tuple[int, str]:

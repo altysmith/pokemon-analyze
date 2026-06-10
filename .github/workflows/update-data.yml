@@ -48,6 +48,7 @@ jobs:
       - name: Build dashboard CSVs
         run: |
           python combine_players.py
+          python combine_matches.py
           python extract_cards.py
           python analyze_players.py
 

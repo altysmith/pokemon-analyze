@@ -14,6 +14,10 @@ echo Combining online and major rows...
 python combine_players.py
 if errorlevel 1 goto failed
 
+echo Combining online and major matchups...
+python combine_matches.py
+if errorlevel 1 goto failed
+
 echo Extracting cards...
 python extract_cards.py
 if errorlevel 1 goto failed

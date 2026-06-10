@@ -442,10 +442,14 @@ def _deck_map_from_cards(cards: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=["tournament_id", "player_id", "deck", "list_key"])
 
     deck_map = cards[["tournament_id", "player_id", "deck"]].drop_duplicates().copy()
+    if "player" in cards.columns:
+        names = cards[["tournament_id", "player", "deck"]].drop_duplicates().rename(columns={"player": "player_id"})
+        deck_map = pd.concat([deck_map, names], ignore_index=True, sort=False)
+
     deck_map["tournament_id"] = deck_map["tournament_id"].astype(str)
     deck_map["player_id"] = deck_map["player_id"].astype(str)
     deck_map["list_key"] = deck_map["tournament_id"] + "::" + deck_map["player_id"]
-    return deck_map
+    return deck_map.drop_duplicates()
 
 
 def _list_id(cards: pd.DataFrame) -> pd.Series:
