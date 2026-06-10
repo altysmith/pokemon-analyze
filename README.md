@@ -112,3 +112,16 @@ The dashboard reads `outputs/cards.csv` and includes:
 - best average placement tech and flex cards, with a minimum deck count filter
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
+
+## Daily Data Updates
+
+The GitHub Actions workflow in `.github/workflows/update-data.yml` refreshes the
+CSV files every day and can also be run manually from GitHub:
+
+1. Open the GitHub repository.
+2. Go to **Actions**.
+3. Select **Update Pokemon Analyze Data**.
+4. Click **Run workflow**.
+
+The workflow pulls online events, major events, match pairings, rebuilds the CSV
+files in `outputs/`, and commits changes back to the repository.
