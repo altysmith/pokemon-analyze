@@ -105,6 +105,7 @@ streamlit run dashboard.py
 The dashboard reads `outputs/cards.csv` and includes:
 
 - a deck dropdown
+- an All, Online, or Majors source filter
 - matchup percentages against the top 20 overall decks
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups

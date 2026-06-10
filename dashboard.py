@@ -62,15 +62,29 @@ except (FileNotFoundError, ValueError) as error:
 
 matches = read_matches()
 
-deck_counts = cards.groupby("deck")["list_id"].nunique().sort_values(ascending=False)
-if deck_counts.empty:
-    st.warning("No decks found in outputs/cards.csv.")
-    st.stop()
-
 today = pd.Timestamp.today().normalize()
 default_start = today - pd.Timedelta(days=31)
 
-deck_col, bucket_col, start_col, end_col = st.columns([2, 1, 1, 1])
+source_options = ["All", "Online", "Majors"]
+
+source_col, deck_col, bucket_col, start_col, end_col = st.columns([1, 2, 1, 1, 1])
+with source_col:
+    selected_source = st.selectbox("Source", source_options)
+
+source_cards = cards.copy()
+source_matches = matches.copy()
+if selected_source == "Online":
+    source_cards = cards[cards["source"] == "online"].copy()
+    source_matches = matches[matches["source"] == "online"].copy()
+elif selected_source == "Majors":
+    source_cards = cards[cards["source"] == "major"].copy()
+    source_matches = matches[matches["source"] == "major"].copy()
+
+deck_counts = source_cards.groupby("deck")["list_id"].nunique().sort_values(ascending=False)
+if deck_counts.empty:
+    st.warning("No decks found for the selected source.")
+    st.stop()
+
 with deck_col:
     selected_deck = st.selectbox(
         "Deck",
@@ -84,8 +98,8 @@ with start_col:
 with end_col:
     end_date = st.date_input("End date", value=today.date())
 
-filtered_cards = _filter_cards_by_date(cards, start_date=start_date, end_date=end_date)
-filtered_matches = _filter_cards_by_date(matches, start_date=start_date, end_date=end_date)
+filtered_cards = _filter_cards_by_date(source_cards, start_date=start_date, end_date=end_date)
+filtered_matches = _filter_cards_by_date(source_matches, start_date=start_date, end_date=end_date)
 filtered_deck_counts = filtered_cards.groupby("deck")["list_id"].nunique().sort_values(ascending=False)
 if selected_deck not in filtered_deck_counts:
     st.warning("This deck has no lists in the selected date window.")
@@ -127,7 +141,10 @@ elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
 st.subheader("Matchups Against Top 20 Decks")
 matchups = matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)
 if matchups.empty:
-    st.info("No matchup rows yet. Run pull_all.bat again to fetch online match pairings.")
+    if selected_source == "Majors":
+        st.info("Major-event matchup rows are not available yet. Switch to All or Online for online pairings.")
+    else:
+        st.info("No matchup rows yet. Run pull_all.bat again to fetch online match pairings.")
 else:
     _show_table(matchups, percent_columns=["win_rate", "loss_rate", "tie_rate"])
 

@@ -58,6 +58,9 @@ def read_matches(path: str | Path = MATCHES_CSV) -> pd.DataFrame:
     matches["player1"] = matches["player1"].fillna("").astype(str)
     matches["player2"] = matches["player2"].fillna("").astype(str)
     matches["winner"] = matches["winner"].fillna("").astype(str)
+    if "source" not in matches.columns:
+        matches["source"] = "online"
+    matches["source"] = matches["source"].fillna("online").replace("", "online").astype(str)
     return matches
 
 
@@ -95,6 +98,9 @@ def read_cards(path: str | Path = CARDS_CSV) -> pd.DataFrame:
     cards["deck"] = cards["deck"].fillna("Unknown").astype(str)
     cards["card"] = cards["card"].fillna("Unknown").astype(str)
     cards["count"] = pd.to_numeric(cards["count"], errors="coerce").fillna(1)
+    if "source" not in cards.columns:
+        cards["source"] = "online"
+    cards["source"] = cards["source"].fillna("online").replace("", "online").astype(str)
     if "player" in cards.columns:
         cards["player_id"] = cards["player_id"].fillna(cards["player"])
     fallback_player_ids = pd.Series(cards.index.astype(str), index=cards.index)
