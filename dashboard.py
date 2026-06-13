@@ -59,6 +59,16 @@ def _show_table(table: pd.DataFrame, percent_columns: list[str] | None = None) -
     st.dataframe(display, column_config=column_config, width="stretch", hide_index=True)
 
 
+def _ensure_columns(table: pd.DataFrame, columns: list[str], default: int = 0) -> pd.DataFrame:
+    """Add missing display columns so older generated reports still render."""
+
+    display = table.copy()
+    for column in columns:
+        if column not in display.columns:
+            display[column] = default
+    return display
+
+
 def _format_percent(value: float) -> str:
     return f"{value * 100:.1f}%"
 
@@ -199,7 +209,8 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         "meta_opponents_faced",
     ]
     st.subheader("Full Top-25 Meta Performance Table")
-    _show_table(best[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
+    best_display = _ensure_columns(best, full_columns)
+    _show_table(best_display[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
     st.subheader("Current Limitless Top 25 Meta List")
     _show_table(meta_decks[["rank", "deck", "points", "share"]], percent_columns=["share"])
