@@ -431,7 +431,7 @@ def best_decks_against_meta(
         .agg(favorable_matchups=("meta_opponent_deck", "nunique"))
     )
     very_favorable_counts = (
-        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] >= 0.60]
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] > 0.60]
         .groupby("deck", as_index=False)
         .agg(very_favorable_matchups=("meta_opponent_deck", "nunique"))
     )
@@ -489,8 +489,15 @@ def best_decks_against_meta(
         ]
     ]
     return summary.sort_values(
-        ["favorable_matchups", "very_favorable_matchups", "tie_adjusted_win_rate", "matches"],
-        ascending=[False, False, False, False],
+        [
+            "favorable_matchups",
+            "very_favorable_matchups",
+            "unfavorable_matchups",
+            "very_unfavorable_matchups",
+            "tie_adjusted_win_rate",
+            "matches",
+        ],
+        ascending=[False, False, True, True, False, False],
     )
 
 
@@ -636,10 +643,12 @@ def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int
 
 
 def _matchup_label(tie_adjusted_win_rate: float) -> str:
-    if tie_adjusted_win_rate >= 0.60:
+    if tie_adjusted_win_rate > 0.60:
         return "very favorable"
     if tie_adjusted_win_rate >= 0.55:
         return "favorable"
+    if tie_adjusted_win_rate < 0.40:
+        return "very unfavorable"
     if tie_adjusted_win_rate < 0.45:
         return "unfavorable"
     return "even"

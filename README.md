@@ -133,8 +133,10 @@ The "Best Decks Against Top Meta Decks" overview uses
 ranking page with deck variants split and the "Past month" time filter.
 Candidates and targets both come from the selected top meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
-very favorable matchup is 60% or higher. The overview sorts by favorable
-matchups, then very favorable matchups, then aggregate tie-adjusted win rate.
+very favorable matchup is over 60%. An unfavorable matchup is under 45%, and a
+very unfavorable matchup is under 40%. The overview sorts by favorable
+matchups, then very favorable matchups, then fewer unfavorable matchups, then
+fewer very unfavorable matchups, then aggregate tie-adjusted win rate.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and

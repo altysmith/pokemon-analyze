@@ -239,7 +239,8 @@ def _meta_overview(
 
     st.caption(
         "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
-        "Very favorable means 60%+. "
+        "Very favorable means over 60%. "
+        "Unfavorable means under 45%, and very unfavorable means under 40%. "
         f"Candidates and targets both come from the current Limitless top-{meta_count} split-variant meta list."
     )
 
@@ -248,20 +249,26 @@ def _meta_overview(
         favorable = details[details["matchup_label"].isin(["favorable", "very favorable"])].sort_values(
             ["tie_adjusted_win_rate", "matches"], ascending=[False, False]
         )
-        unfavorable = details[details["matchup_label"] == "unfavorable"].sort_values(
+        unfavorable = details[details["matchup_label"].isin(["unfavorable", "very unfavorable"])].sort_values(
+            ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
+        )
+        very_unfavorable = details[details["matchup_label"] == "very unfavorable"].sort_values(
             ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
         )
 
         st.markdown(f"### {rank}. {row.deck}")
-        cols = st.columns(6)
+        cols = st.columns(8)
         cols[0].metric("Meta Rank", int(row.meta_rank) if pd.notna(row.meta_rank) else "-")
         cols[1].metric("W-L-T", f"{int(row.wins)}-{int(row.losses)}-{int(row.ties)}")
         cols[2].metric("Win %", _format_percent(row.win_rate))
         cols[3].metric("Adj. Win %", _format_percent(row.tie_adjusted_win_rate))
         cols[4].metric("Favorable", int(row.favorable_matchups))
         cols[5].metric("Very Fav.", int(row.very_favorable_matchups))
+        cols[6].metric("Unfav.", int(row.unfavorable_matchups))
+        cols[7].metric("Very Unfav.", int(row.very_unfavorable_matchups))
         st.write(f"**Favorable matchups:** {_format_matchup_list(favorable)}")
         st.write(f"**Unfavorable matchups:** {_format_matchup_list(unfavorable)}")
+        st.write(f"**Very unfavorable matchups:** {_format_matchup_list(very_unfavorable)}")
         st.divider()
 
     st.subheader("Best Decks To Beat One Target")
