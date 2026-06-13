@@ -120,7 +120,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a Meta Overview opening page
 - a Deck Detail page with a deck dropdown
 - an All, Online, or Majors source filter
-- a top-5 best decks list against the top 20 split-variant Limitless meta decks
+- a top-5 best decks list against the top 25 split-variant Limitless meta decks
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
 - favorable and unfavorable matchup lines for each top performer
 - daily or monthly trend buckets
@@ -128,10 +128,10 @@ The dashboard reads `outputs/cards.csv` and includes:
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top 20 Meta Decks" overview uses
+The "Best Decks Against Top 25 Meta Decks" overview uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
 ranking page with deck variants split and the "Past month" time filter.
-Candidates and targets both come from that same top-20 meta list. A favorable
+Candidates and targets both come from that same top-25 meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
 very favorable matchup is 60% or higher. The overview sorts by favorable
 matchups, then very favorable matchups, then aggregate tie-adjusted win rate.

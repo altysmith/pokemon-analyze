@@ -11,7 +11,7 @@ import streamlit as st
 import pokemon_analyze.deck_analysis as deck_analysis
 
 
-TOP_META_COUNT = 20
+TOP_META_COUNT = 25
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -108,7 +108,8 @@ def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, me
         resolved_meta.rename(columns={"local_deck": "deck", "rank": "meta_rank"})
         .merge(meta_values, on="limitless_deck", how="left")
         [["deck", "meta_rank", "meta_points", "meta_share"]]
-        .drop_duplicates()
+        .sort_values(["deck", "meta_rank"], ascending=[True, True])
+        .drop_duplicates("deck", keep="first")
     )
     return report.merge(meta_details, on="deck", how="left")
 
@@ -158,7 +159,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
 
     st.caption(
         "Favorable means 55%+ tie-adjusted win rate. Very favorable means 60%+. "
-        "Candidates and targets both come from the current Limitless top-20 split-variant meta list."
+        "Candidates and targets both come from the current Limitless top-25 split-variant meta list."
     )
 
     for rank, row in enumerate(best.head(5).itertuples(index=False), start=1):
@@ -195,10 +196,10 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         "very_favorable_matchups",
         "meta_opponents_faced",
     ]
-    st.subheader("Full Top-20 Meta Performance Table")
+    st.subheader("Full Top-25 Meta Performance Table")
     _show_table(best[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
-    st.subheader("Current Limitless Top 20 Meta List")
+    st.subheader("Current Limitless Top 25 Meta List")
     _show_table(meta_decks[["rank", "deck", "points", "share"]], percent_columns=["share"])
 
 
@@ -271,8 +272,8 @@ def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame) -> None:
     elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
         st.info("Daily trends need data from at least two different days.")
 
-    st.subheader("Matchups Against Top 20 Decks")
-    matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)
+    st.subheader("Matchups Against Top 25 Decks")
+    matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=TOP_META_COUNT)
     if matchups.empty:
         st.info("No matchup rows are available for this deck and filter set.")
     else:

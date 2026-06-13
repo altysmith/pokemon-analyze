@@ -551,7 +551,17 @@ def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int
                     "local_deck": local_deck,
                 }
             )
-    return pd.DataFrame(rows).drop_duplicates()
+    if not rows:
+        return pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
+
+    resolved = pd.DataFrame(rows).drop_duplicates()
+    resolved["rank_sort"] = pd.to_numeric(resolved["rank"], errors="coerce").fillna(9999)
+
+    # A loose name match can sometimes connect one local deck to multiple
+    # Limitless variants. Keep the highest-ranked Limitless row so matchup
+    # totals are not duplicated in the dashboard.
+    resolved = resolved.sort_values(["local_deck", "rank_sort"]).drop_duplicates("local_deck", keep="first")
+    return resolved.drop(columns=["rank_sort"])
 
 
 def _matchup_label(tie_adjusted_win_rate: float) -> str:
