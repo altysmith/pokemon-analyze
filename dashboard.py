@@ -7,7 +7,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from reports.deck_analysis import (
+from pokemon_analyze.deck_analysis import (
     analyze_deck,
     best_decks_against_meta,
     major_top_finish_decks,

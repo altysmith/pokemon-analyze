@@ -1,0 +1,1 @@
+"""Pokemon Analyze application package."""
