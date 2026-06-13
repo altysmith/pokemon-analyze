@@ -54,7 +54,7 @@ def _show_table(table: pd.DataFrame, percent_columns: list[str] | None = None) -
     for column in display.columns:
         if column in column_config or not pd.api.types.is_numeric_dtype(display[column]):
             continue
-        column_config[column] = st.column_config.NumberColumn(format="%.3f")
+        column_config[column] = st.column_config.NumberColumn(format="%.0f")
 
     st.dataframe(display, column_config=column_config, width="stretch", hide_index=True)
 
