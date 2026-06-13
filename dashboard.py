@@ -88,6 +88,68 @@ def _format_matchup_list(rows: pd.DataFrame, limit: int = 6) -> str:
     return "; ".join(pieces)
 
 
+def _source_decklist_url(row: pd.Series) -> str:
+    """Build the best source link we can from saved tournament data."""
+
+    tournament_id = str(row.get("tournament_id", ""))
+    source = str(row.get("source", ""))
+    if source == "major" and tournament_id.startswith("major-"):
+        event_id = tournament_id.replace("major-", "", 1)
+        return f"https://limitlesstcg.com/tournaments/{event_id}/decklists"
+    if source == "online" and tournament_id:
+        return f"https://play.limitlesstcg.com/tournament/{tournament_id}/standings"
+    return ""
+
+
+def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataFrame:
+    """Pick one strong saved list for each deck and format it for display."""
+
+    rows: list[dict[str, object]] = []
+    for deck in decks:
+        deck_cards = cards[cards["deck"] == deck].copy()
+        if deck_cards.empty:
+            continue
+
+        list_columns = [
+            "list_id",
+            "deck",
+            "player",
+            "placement",
+            "tournament_name",
+            "tournament_id",
+            "source",
+            "date",
+        ]
+        available_columns = [column for column in list_columns if column in deck_cards.columns]
+        lists = deck_cards[available_columns].drop_duplicates("list_id").copy()
+        if "placement" in lists.columns:
+            lists["placement_sort"] = pd.to_numeric(lists["placement"], errors="coerce").fillna(9999)
+        else:
+            lists["placement_sort"] = 9999
+        if "date" in lists.columns:
+            lists["date_sort"] = lists["date"].fillna(pd.Timestamp.min)
+        else:
+            lists["date_sort"] = pd.Timestamp.min
+        best_list = lists.sort_values(["placement_sort", "date_sort"], ascending=[True, False]).iloc[0]
+
+        card_lines = (
+            deck_cards[deck_cards["list_id"] == best_list["list_id"]]
+            .sort_values(["card"])
+            .assign(card_line=lambda data: data["count"].astype(int).astype(str) + " " + data["card"])
+        )
+        rows.append(
+            {
+                "deck": deck,
+                "player": best_list.get("player", ""),
+                "placement": best_list.get("placement", ""),
+                "tournament": best_list.get("tournament_name", ""),
+                "source_link": _source_decklist_url(best_list),
+                "decklist": "\n".join(card_lines["card_line"].tolist()),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _best_meta_kwargs(
     meta_count: int,
     eligible_decks: set[str],
@@ -209,7 +271,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
             format_func=lambda deck: target_labels.get(deck, deck),
         )
     with sample_col:
-        min_target_matches = st.number_input("Minimum matches", min_value=1, max_value=100, value=10, step=1)
+        min_target_matches = st.number_input("Minimum matches", min_value=1, max_value=100, value=30, step=1)
 
     target_report = deck_analysis.best_decks_against_target(
         target_deck,
@@ -220,10 +282,22 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     if target_report.empty:
         st.info("No decks meet the current minimum match count into that target.")
     else:
+        top_target_decks = target_report.head(5).copy()
         _show_table(
-            target_report.head(5),
+            top_target_decks,
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
         )
+        representatives = _representative_decklists(filtered_cards, top_target_decks["deck"].tolist())
+        if not representatives.empty:
+            st.markdown("Representative decklists")
+            for row in representatives.itertuples(index=False):
+                placement_number = pd.to_numeric(row.placement, errors="coerce")
+                placement = "" if pd.isna(placement_number) else f" - {int(placement_number)}"
+                label = f"{row.deck}: {row.player}{placement} at {row.tournament}"
+                with st.expander(label):
+                    if row.source_link:
+                        st.link_button("Open source event", row.source_link)
+                    st.code(row.decklist, language="text")
 
     full_columns = [
         "meta_rank",
