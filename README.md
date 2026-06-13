@@ -117,24 +117,26 @@ streamlit run dashboard.py
 
 The dashboard reads `outputs/cards.csv` and includes:
 
-- a deck dropdown
+- a Meta Overview opening page
+- a Deck Detail page with a deck dropdown
 - an All, Online, or Majors source filter
-- matchup percentages against the top 20 overall decks
-- a best-decks table against the top 10, 20, or 25 split-variant Limitless meta decks
+- a top-5 best decks list against the top 20 split-variant Limitless meta decks
+- matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
+- favorable and unfavorable matchup lines for each top performer
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top Meta Decks" table uses
+The "Best Decks Against Top 20 Meta Decks" overview uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
-ranking page with deck variants split and the "Past month" time filter. It can
-compare against the top 10, 20, or 25 Limitless meta decks. This table
-intentionally limits candidate decks to the same top-25 Limitless meta list. It
-does not apply a Major finish requirement or a minimum-match filter. A favorable
+ranking page with deck variants split and the "Past month" time filter.
+Candidates and targets both come from that same top-20 meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
-very favorable matchup is 60% or higher. The table sorts by favorable matchups,
-then very favorable matchups, then aggregate tie-adjusted win rate.
+very favorable matchup is 60% or higher. The overview sorts by favorable
+matchups, then very favorable matchups, then aggregate tie-adjusted win rate.
+The Deck Detail page keeps the card trends, individual matchup table, and
+tech/flex placement analysis for one selected deck.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 

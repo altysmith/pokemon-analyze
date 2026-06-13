@@ -475,6 +475,64 @@ def best_decks_against_meta(
     )
 
 
+def deck_matchups_against_meta(
+    deck: str,
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    meta_deck_map: pd.DataFrame,
+) -> pd.DataFrame:
+    """Return one row per top-meta opponent for a selected deck."""
+
+    empty = pd.DataFrame(
+        columns=[
+            "opponent_deck",
+            "matches",
+            "wins",
+            "losses",
+            "ties",
+            "win_rate",
+            "tie_adjusted_win_rate",
+            "matchup_label",
+        ]
+    )
+    if cards.empty or matches.empty or meta_deck_map.empty:
+        return empty
+
+    deck_map = _deck_map_from_cards(cards)
+    match_rows = _matches_with_decks(matches, deck_map)
+    if match_rows.empty:
+        return empty
+
+    meta_targets = meta_deck_map[["limitless_deck", "local_deck"]].dropna().drop_duplicates()
+    selected = match_rows[
+        (match_rows["deck"] == deck)
+        & (match_rows["opponent_deck"].isin(meta_targets["local_deck"]))
+        & (match_rows["opponent_deck"] != deck)
+    ].copy()
+    if selected.empty:
+        return empty
+
+    selected = selected.merge(
+        meta_targets.rename(columns={"local_deck": "opponent_deck", "limitless_deck": "meta_opponent_deck"}),
+        on="opponent_deck",
+        how="inner",
+    )
+    summary = (
+        selected.groupby("meta_opponent_deck", as_index=False)
+        .agg(
+            matches=("result", "size"),
+            wins=("result", lambda values: (values == "win").sum()),
+            losses=("result", lambda values: (values == "loss").sum()),
+            ties=("result", lambda values: (values == "tie").sum()),
+        )
+        .rename(columns={"meta_opponent_deck": "opponent_deck"})
+    )
+    summary["win_rate"] = summary["wins"] / summary["matches"]
+    summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
+    summary["matchup_label"] = summary["tie_adjusted_win_rate"].apply(_matchup_label)
+    return summary.sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
+
+
 def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int = 20) -> pd.DataFrame:
     """Map Limitless meta deck names to local deck names found in cards.csv."""
 
@@ -494,6 +552,16 @@ def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int
                 }
             )
     return pd.DataFrame(rows).drop_duplicates()
+
+
+def _matchup_label(tie_adjusted_win_rate: float) -> str:
+    if tie_adjusted_win_rate >= 0.60:
+        return "very favorable"
+    if tie_adjusted_win_rate >= 0.55:
+        return "favorable"
+    if tie_adjusted_win_rate < 0.45:
+        return "unfavorable"
+    return "even"
 
 
 def major_top_finish_decks(cards: pd.DataFrame, placement_cutoff: int = 100) -> set[str]:
