@@ -194,6 +194,8 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         "tie_adjusted_win_rate",
         "favorable_matchups",
         "very_favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
         "meta_opponents_faced",
     ]
     st.subheader("Full Top-25 Meta Performance Table")

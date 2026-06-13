@@ -360,6 +360,8 @@ def best_decks_against_meta(
             "deck",
             "favorable_matchups",
             "very_favorable_matchups",
+            "unfavorable_matchups",
+            "very_unfavorable_matchups",
             "meta_opponents_faced",
             "matches",
             "wins",
@@ -432,6 +434,16 @@ def best_decks_against_meta(
         .groupby("deck", as_index=False)
         .agg(very_favorable_matchups=("meta_opponent_deck", "nunique"))
     )
+    unfavorable_counts = (
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] < 0.45]
+        .groupby("deck", as_index=False)
+        .agg(unfavorable_matchups=("meta_opponent_deck", "nunique"))
+    )
+    very_unfavorable_counts = (
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] < 0.40]
+        .groupby("deck", as_index=False)
+        .agg(very_unfavorable_matchups=("meta_opponent_deck", "nunique"))
+    )
 
     summary = (
         meta_matches.groupby("deck", as_index=False)
@@ -445,8 +457,12 @@ def best_decks_against_meta(
     )
     summary = summary.merge(favorable_counts, on="deck", how="left")
     summary = summary.merge(very_favorable_counts, on="deck", how="left")
+    summary = summary.merge(unfavorable_counts, on="deck", how="left")
+    summary = summary.merge(very_unfavorable_counts, on="deck", how="left")
     summary["favorable_matchups"] = summary["favorable_matchups"].fillna(0).astype(int)
     summary["very_favorable_matchups"] = summary["very_favorable_matchups"].fillna(0).astype(int)
+    summary["unfavorable_matchups"] = summary["unfavorable_matchups"].fillna(0).astype(int)
+    summary["very_unfavorable_matchups"] = summary["very_unfavorable_matchups"].fillna(0).astype(int)
     if eligible_decks is not None:
         summary = summary[summary["deck"].isin(eligible_decks)].copy()
     summary = summary[summary["matches"] >= min_matches].copy()
@@ -460,6 +476,8 @@ def best_decks_against_meta(
             "deck",
             "favorable_matchups",
             "very_favorable_matchups",
+            "unfavorable_matchups",
+            "very_unfavorable_matchups",
             "meta_opponents_faced",
             "matches",
             "wins",

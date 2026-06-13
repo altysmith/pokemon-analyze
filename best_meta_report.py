@@ -66,7 +66,8 @@ def _add_limitless_meta_columns(
         resolved_meta.rename(columns={"local_deck": "deck", "rank": "meta_rank"})
         .merge(meta_values, on="limitless_deck", how="left")
         [["deck", "meta_rank", "meta_points", "meta_share"]]
-        .drop_duplicates()
+        .sort_values(["deck", "meta_rank"], ascending=[True, True])
+        .drop_duplicates("deck", keep="first")
     )
 
     with_meta = report.merge(meta_details, on="deck", how="left")
@@ -77,6 +78,8 @@ def _add_limitless_meta_columns(
         "meta_share",
         "favorable_matchups",
         "very_favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
         "meta_opponents_faced",
         "matches",
         "wins",
