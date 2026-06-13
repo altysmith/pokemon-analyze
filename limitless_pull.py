@@ -11,6 +11,7 @@ top-level fields it finds and keeps nested values as JSON text.
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import time
 from pathlib import Path
@@ -37,7 +38,16 @@ def main() -> None:
     parser.add_argument("--since", help="Skip tournaments before this date. Example: 2026-05-01")
     parser.add_argument("--days", type=int, help="Skip tournaments older than this many days. Example: 31")
     parser.add_argument("--has-decklists", action="store_true", help="Only keep player rows that include a decklist.")
+    parser.add_argument(
+        "--top-percent",
+        type=float,
+        default=100,
+        help="Only keep this top percent of online standings. Example: 50 keeps the top half.",
+    )
     args = parser.parse_args()
+
+    if args.top_percent <= 0 or args.top_percent > 100:
+        raise ValueError("--top-percent must be greater than 0 and no more than 100.")
 
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     tournaments = fetch_tournaments(
@@ -54,6 +64,7 @@ def main() -> None:
         tournaments,
         delay=args.delay,
         require_decklists=args.has_decklists,
+        top_percent=args.top_percent,
     )
     matches = fetch_matches_for_tournaments(tournaments, delay=args.pairings_delay)
 
@@ -132,6 +143,7 @@ def fetch_players_for_tournaments(
     tournaments: list[dict[str, Any]],
     delay: float = 0.2,
     require_decklists: bool = False,
+    top_percent: float = 100,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     total = len(tournaments)
@@ -150,12 +162,14 @@ def fetch_players_for_tournaments(
         # The /details endpoint has a numeric "players" count. The /standings
         # endpoint has the actual player rows and decklists we need.
         players = standings_data if isinstance(standings_data, list) else standings_data.get("standings", [])
+        players = _top_percent_players(players, top_percent)
         for player in players:
             if not isinstance(player, dict):
                 continue
             if require_decklists and not player.get("decklist"):
                 continue
             row = _flatten_record(player)
+            row["source"] = "online"
             row["tournament_id"] = tournament_id
             row["tournament_name"] = tournament.get("name", "")
             row["date"] = tournament.get("date") or tournament.get("start_date") or ""
@@ -164,6 +178,34 @@ def fetch_players_for_tournaments(
         if delay > 0:
             time.sleep(delay)
     return rows
+
+
+def _top_percent_players(players: Any, top_percent: float) -> list[dict[str, Any]]:
+    """Return only the top placement slice from standings rows.
+
+    Play Limitless standings are normally already sorted by finish, but we sort
+    by placement/rank fields when they are present. This keeps the "top 50%"
+    rule tied to tournament performance instead of CSV row order.
+    """
+
+    player_rows = [player for player in players if isinstance(player, dict)]
+    if top_percent >= 100 or not player_rows:
+        return player_rows
+
+    keep_count = max(1, math.ceil(len(player_rows) * (top_percent / 100)))
+    return sorted(player_rows, key=_player_placement_value)[:keep_count]
+
+
+def _player_placement_value(player: dict[str, Any]) -> float:
+    """Find the best available placement number for a standings row."""
+
+    for key in ("placing", "placement", "place", "rank", "standing"):
+        value = player.get(key)
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            continue
+    return float("inf")
 
 
 def fetch_matches_for_tournaments(tournaments: list[dict[str, Any]], delay: float = 1.0) -> list[dict[str, Any]]:

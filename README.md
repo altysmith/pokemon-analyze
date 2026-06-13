@@ -54,6 +54,7 @@ For cleaner, narrower data, filter the tournaments before standings are pulled:
 python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5
 python limitless_pull.py --format STANDARD --min-players 64 --since 2026-05-01 --pages 5
 python limitless_pull.py --format STANDARD --min-players 64 --has-decklists --pages 5
+python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5 --has-decklists --top-percent 50
 ```
 
 Useful options:
@@ -63,7 +64,12 @@ Useful options:
 - `--days 31` pulls roughly the previous month of tournaments.
 - `--since 2026-05-01` skips older events.
 - `--has-decklists` keeps only standing rows that include a submitted decklist.
+- `--top-percent 50` keeps only the top half of each online tournament's standings.
 - `--pairings-delay 1.5` slows match-pairing requests to avoid rate limits.
+
+`pull_all.bat` and the daily GitHub Action use `--top-percent 50` for online
+events. Major events are not filtered by top 50%; the app keeps the published
+Limitless major decklists, which are already a selective event cut.
 
 These commands write CSV files under `outputs/`:
 

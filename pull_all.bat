@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo Pulling Play Limitless online events...
-python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5 --has-decklists --delay 0.5 --pairings-delay 1.5
+python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5 --has-decklists --top-percent 50 --delay 0.5 --pairings-delay 1.5
 if errorlevel 1 goto failed
 
 echo Pulling Limitless major events...
