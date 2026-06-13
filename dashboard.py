@@ -7,7 +7,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from reports.deck_analysis import analyze_deck, matchup_summary, read_cards, read_matches
+from reports.deck_analysis import analyze_deck, best_decks_against_meta, matchup_summary, read_cards, read_matches
 
 
 def _filter_cards_by_date(cards: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -115,6 +115,12 @@ min_tech_decks = st.slider(
     max_value=max(deck_list_count, 1),
     value=min_default,
 )
+min_meta_matches = st.slider(
+    "Minimum matches vs top 10 meta",
+    min_value=1,
+    max_value=500,
+    value=30,
+)
 
 report = analyze_deck(
     selected_deck,
@@ -137,6 +143,18 @@ if bucket == "monthly" and _unique_period_count(deck_cards, "M") < 2:
     st.info("Monthly trends need data from at least two months. Pull from the first of last month onward, or widen the date range.")
 elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
     st.info("Daily trends need data from at least two different days. Widen the date range if the trend tables are empty.")
+
+st.subheader("Best Decks Against Top 10 Meta Decks")
+best_meta_decks = best_decks_against_meta(
+    filtered_cards,
+    filtered_matches,
+    meta_n=10,
+    min_matches=min_meta_matches,
+)
+if best_meta_decks.empty:
+    st.info("No decks meet the current minimum matchup sample against the top 10 meta decks.")
+else:
+    _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
 st.subheader("Matchups Against Top 20 Decks")
 matchups = matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)

@@ -321,6 +321,74 @@ def matchup_summary(
     return summary.sort_values(["matches", "win_rate"], ascending=[False, False])
 
 
+def best_decks_against_meta(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    meta_n: int = 10,
+    min_matches: int = 30,
+) -> pd.DataFrame:
+    """Rank decks by aggregate performance against the top meta decks."""
+
+    empty = pd.DataFrame(
+        columns=[
+            "deck",
+            "matches",
+            "wins",
+            "losses",
+            "ties",
+            "win_rate",
+            "tie_adjusted_win_rate",
+            "top10_opponents_faced",
+        ]
+    )
+    if cards.empty or matches.empty:
+        return empty
+
+    deck_map = _deck_map_from_cards(cards)
+    if deck_map.empty:
+        return empty
+
+    top_decks = (
+        deck_map.groupby("deck")["list_key"]
+        .nunique()
+        .sort_values(ascending=False)
+        .head(meta_n)
+        .index.tolist()
+    )
+
+    match_rows = _matches_with_decks(matches, deck_map)
+    if match_rows.empty:
+        return empty
+
+    meta_matches = match_rows[
+        (match_rows["opponent_deck"].isin(top_decks))
+        & (match_rows["deck"] != match_rows["opponent_deck"])
+    ].copy()
+    if meta_matches.empty:
+        return empty
+
+    summary = (
+        meta_matches.groupby("deck", as_index=False)
+        .agg(
+            matches=("result", "size"),
+            wins=("result", lambda values: (values == "win").sum()),
+            losses=("result", lambda values: (values == "loss").sum()),
+            ties=("result", lambda values: (values == "tie").sum()),
+            top10_opponents_faced=("opponent_deck", "nunique"),
+        )
+    )
+    summary = summary[summary["matches"] >= min_matches].copy()
+    if summary.empty:
+        return empty
+
+    summary["win_rate"] = summary["wins"] / summary["matches"]
+    summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
+    return summary.sort_values(
+        ["tie_adjusted_win_rate", "matches", "top10_opponents_faced"],
+        ascending=[False, False, False],
+    )
+
+
 def build_deck_summary(cards: pd.DataFrame | None = None, path: str | Path = CARDS_CSV) -> pd.DataFrame:
     """Create one summary row per deck for outputs/deck_summary.csv."""
 
