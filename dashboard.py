@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+import inspect
 
 import pandas as pd
 import streamlit as st
@@ -179,9 +180,14 @@ best_meta_kwargs = {
     "min_matches": min_meta_matches,
     "eligible_decks": major_eligible_decks,
     "meta_decks": meta_targets or None,
+    "meta_deck_map": resolved_meta_decks if not resolved_meta_decks.empty else None,
 }
-if "meta_deck_map" in deck_analysis.best_decks_against_meta.__code__.co_varnames:
-    best_meta_kwargs["meta_deck_map"] = resolved_meta_decks if not resolved_meta_decks.empty else None
+accepted_best_meta_args = inspect.signature(deck_analysis.best_decks_against_meta).parameters
+best_meta_kwargs = {
+    name: value
+    for name, value in best_meta_kwargs.items()
+    if name in accepted_best_meta_args
+}
 best_meta_decks = deck_analysis.best_decks_against_meta(
     filtered_cards,
     filtered_matches,
