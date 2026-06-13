@@ -11,7 +11,7 @@ import streamlit as st
 import pokemon_analyze.deck_analysis as deck_analysis
 
 
-TOP_META_COUNT = 25
+TOP_META_COUNT = 15
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -234,7 +234,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     st.caption(
         "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
         "Very favorable means 60%+. "
-        "Candidates and targets both come from the current Limitless top-25 split-variant meta list."
+        f"Candidates and targets both come from the current Limitless top-{TOP_META_COUNT} split-variant meta list."
     )
 
     for rank, row in enumerate(best.head(5).itertuples(index=False), start=1):
@@ -321,7 +321,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     best_display = _ensure_columns(best, full_columns)
     _show_table(best_display[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
-    st.subheader("Current Limitless Top 25 Meta List")
+    st.subheader(f"Current Limitless Top {TOP_META_COUNT} Meta List")
     _show_table(meta_decks[["rank", "deck", "points", "share"]], percent_columns=["share"])
 
 
@@ -394,7 +394,7 @@ def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame) -> None:
     elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
         st.info("Daily trends need data from at least two different days.")
 
-    st.subheader("Matchups Against Top 25 Decks")
+    st.subheader(f"Matchups Against Top {TOP_META_COUNT} Decks")
     matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=TOP_META_COUNT)
     if matchups.empty:
         st.info("No matchup rows are available for this deck and filter set.")
