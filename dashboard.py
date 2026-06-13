@@ -168,7 +168,8 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     metric_three.metric("Recorded Match Rows", total_matches)
 
     st.caption(
-        "Favorable means 55%+ tie-adjusted win rate. Very favorable means 60%+. "
+        "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
+        "Very favorable means 60%+. "
         "Candidates and targets both come from the current Limitless top-25 split-variant meta list."
     )
 
@@ -186,7 +187,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         cols[0].metric("Meta Rank", int(row.meta_rank) if pd.notna(row.meta_rank) else "-")
         cols[1].metric("W-L-T", f"{int(row.wins)}-{int(row.losses)}-{int(row.ties)}")
         cols[2].metric("Win %", _format_percent(row.win_rate))
-        cols[3].metric("Tie Adj.", _format_percent(row.tie_adjusted_win_rate))
+        cols[3].metric("Adj. Win %", _format_percent(row.tie_adjusted_win_rate))
         cols[4].metric("Favorable", int(row.favorable_matchups))
         cols[5].metric("Very Fav.", int(row.very_favorable_matchups))
         st.write(f"**Favorable matchups:** {_format_matchup_list(favorable)}")

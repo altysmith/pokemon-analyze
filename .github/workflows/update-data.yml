@@ -31,11 +31,10 @@ jobs:
         run: >
           python limitless_pull.py
           --format STANDARD
-          --min-players 100
+          --min-players 50
           --days 31
           --pages 5
           --has-decklists
-          --top-percent 50
           --delay 0.5
           --pairings-delay 1.5
 
@@ -46,7 +45,7 @@ jobs:
         run: >
           python limitless_major_pull.py
           --format standard
-          --min-players 64
+          --min-players 50
           --days 31
 
       - name: Build dashboard CSVs

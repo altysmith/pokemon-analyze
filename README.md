@@ -53,27 +53,26 @@ That can take a while because the script fetches standings for every tournament.
 For cleaner, narrower data, filter the tournaments before standings are pulled:
 
 ```powershell
-python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5
+python limitless_pull.py --format STANDARD --min-players 50 --days 31 --pages 5
 python limitless_pull.py --format STANDARD --min-players 64 --since 2026-05-01 --pages 5
 python limitless_pull.py --format STANDARD --min-players 64 --has-decklists --pages 5
-python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5 --has-decklists --top-percent 50
+python limitless_pull.py --format STANDARD --min-players 50 --days 31 --pages 5 --has-decklists
 ```
 
 Useful options:
 
 - `--format STANDARD` limits the Limitless tournament search to Standard.
-- `--min-players 100` skips smaller online events.
+- `--min-players 50` matches the TrainerHill-style minimum player filter.
 - `--days 31` pulls roughly the previous month of tournaments.
 - `--since 2026-05-01` skips older events.
 - `--has-decklists` keeps only standing rows that include a submitted decklist.
-- `--top-percent 50` keeps only the top half of each online tournament's standings.
 - `--pairings-delay 1.5` slows match-pairing requests to avoid rate limits.
 
-`pull_all.bat` and the daily GitHub Action use `--top-percent 50` for online
-events. Major events are not filtered by top 50%; the app keeps the published
-Limitless major decklists, which are already a selective event cut. The
-Limitless meta ranking is pulled with `--time 1months`, matching Limitless's
-"Past month" tournament filter.
+`pull_all.bat` and the daily GitHub Action use `--min-players 50` for online
+and major events. Major events still depend on the decklists published by
+Limitless Labs, which may be a selective event cut. The Limitless meta ranking
+is pulled with `--time 1months`, matching Limitless's "Past month" tournament
+filter.
 
 These commands write CSV files under `outputs/`:
 
@@ -135,6 +134,8 @@ Candidates and targets both come from that same top-25 meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
 very favorable matchup is 60% or higher. The overview sorts by favorable
 matchups, then very favorable matchups, then aggregate tie-adjusted win rate.
+For meta matchup percentages, ties count as one-third of a win, matching the
+TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and
 tech/flex placement analysis for one selected deck.
 

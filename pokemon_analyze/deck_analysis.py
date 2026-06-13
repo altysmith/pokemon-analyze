@@ -25,6 +25,7 @@ LIMITLESS_META_CSV = OUTPUTS_DIR / "limitless_meta_decks.csv"
 CORE_THRESHOLD = 0.65
 COMMON_THRESHOLD = 0.35
 FLEX_THRESHOLD = 0.12
+TIE_WIN_VALUE = 1 / 3
 
 
 @dataclass
@@ -54,7 +55,7 @@ def read_matches(path: str | Path = MATCHES_CSV) -> pd.DataFrame:
             matches[column] = ""
 
     if "date" in matches.columns:
-        matches["date"] = pd.to_datetime(matches["date"], errors="coerce", utc=True).dt.tz_localize(None)
+        matches["date"] = _parse_date_column(matches["date"])
 
     matches["tournament_id"] = matches["tournament_id"].astype(str)
     matches["player1"] = matches["player1"].fillna("").astype(str)
@@ -113,7 +114,7 @@ def read_cards(path: str | Path = CARDS_CSV) -> pd.DataFrame:
         cards["player_id"] = cards.index.astype(str)
 
     if "date" in cards.columns:
-        cards["date"] = pd.to_datetime(cards["date"], errors="coerce", utc=True).dt.tz_localize(None)
+        cards["date"] = _parse_date_column(cards["date"])
 
     if "placement" in cards.columns:
         cards["placement"] = pd.to_numeric(cards["placement"], errors="coerce")
@@ -422,7 +423,7 @@ def best_decks_against_meta(
         )
     )
     per_opponent["opponent_tie_adjusted_win_rate"] = (
-        per_opponent["opponent_wins"] + (0.5 * per_opponent["opponent_ties"])
+        per_opponent["opponent_wins"] + (TIE_WIN_VALUE * per_opponent["opponent_ties"])
     ) / per_opponent["opponent_matches"]
     favorable_counts = (
         per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] >= 0.55]
@@ -470,7 +471,7 @@ def best_decks_against_meta(
         return empty
 
     summary["win_rate"] = summary["wins"] / summary["matches"]
-    summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
+    summary["tie_adjusted_win_rate"] = (summary["wins"] + (TIE_WIN_VALUE * summary["ties"])) / summary["matches"]
     summary = summary[
         [
             "deck",
@@ -546,7 +547,7 @@ def deck_matchups_against_meta(
         .rename(columns={"meta_opponent_deck": "opponent_deck"})
     )
     summary["win_rate"] = summary["wins"] / summary["matches"]
-    summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
+    summary["tie_adjusted_win_rate"] = (summary["wins"] + (TIE_WIN_VALUE * summary["ties"])) / summary["matches"]
     summary["matchup_label"] = summary["tie_adjusted_win_rate"].apply(_matchup_label)
     return summary.sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
 
@@ -699,6 +700,12 @@ def _normalize_columns(data: pd.DataFrame) -> pd.DataFrame:
 
 def _clean_column_name(column: object) -> str:
     return str(column).strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def _parse_date_column(values: pd.Series) -> pd.Series:
+    """Parse mixed online timestamps and major-event date-only values."""
+
+    return pd.to_datetime(values, errors="coerce", utc=True, format="mixed").dt.tz_localize(None)
 
 
 def _card_category(adoption_rate: float) -> str:
