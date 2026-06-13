@@ -6,6 +6,10 @@ echo Pulling Play Limitless online events...
 python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5 --has-decklists --top-percent 50 --delay 0.5 --pairings-delay 1.5
 if errorlevel 1 goto failed
 
+echo Pulling Limitless metagame ranking...
+python pull_limitless_meta.py --format TEF-CRI --limit 50
+if errorlevel 1 goto failed
+
 echo Pulling Limitless major events...
 python limitless_major_pull.py --format standard --min-players 64 --days 31
 if errorlevel 1 goto failed

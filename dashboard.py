@@ -13,7 +13,9 @@ from pokemon_analyze.deck_analysis import (
     major_top_finish_decks,
     matchup_summary,
     read_cards,
+    read_limitless_meta_decks,
     read_matches,
+    resolve_meta_decks,
 )
 
 
@@ -68,6 +70,7 @@ except (FileNotFoundError, ValueError) as error:
     st.stop()
 
 matches = read_matches()
+limitless_meta_decks = read_limitless_meta_decks()
 
 today = pd.Timestamp.today().normalize()
 default_start = today - pd.Timedelta(days=31)
@@ -162,6 +165,9 @@ elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
     st.info("Daily trends need data from at least two different days. Widen the date range if the trend tables are empty.")
 
 st.subheader(f"Best Decks Against Top {meta_deck_count} Meta Decks")
+resolved_meta_decks = resolve_meta_decks(filtered_cards, limitless_meta_decks, limit=meta_deck_count)
+meta_targets = resolved_meta_decks["local_deck"].tolist()
+
 major_cutoff = None
 if candidate_filter == "Major top 100":
     major_cutoff = 100
@@ -177,15 +183,25 @@ best_meta_decks = best_decks_against_meta(
     meta_n=meta_deck_count,
     min_matches=min_meta_matches,
     eligible_decks=major_eligible_decks,
+    meta_decks=meta_targets or None,
+    meta_deck_map=resolved_meta_decks if not resolved_meta_decks.empty else None,
 )
 if best_meta_decks.empty:
     st.info("No decks meet the current matchup filters. Try lowering minimum matches or changing the candidate deck filter.")
 else:
+    if limitless_meta_decks.empty:
+        st.caption("Using the top decks from the pulled dashboard data. Run pull_limitless_meta.py to use Limitless's metagame ranking.")
+    else:
+        st.caption(f"Using Limitless's top {meta_deck_count} metagame decks as matchup targets.")
     if major_cutoff is None:
         st.caption("All decks with enough matchup data are considered.")
     else:
         st.caption(f"Only decks with at least one Major top-{major_cutoff} finish in the selected date window are considered.")
     _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
+
+if not resolved_meta_decks.empty:
+    with st.expander("Limitless meta decks matched in this data"):
+        _show_table(resolved_meta_decks)
 
 st.subheader("Matchups Against Top 20 Decks")
 matchups = matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)

@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+import re
 
 import pandas as pd
 
@@ -18,6 +19,7 @@ OUTPUTS_DIR = Path("outputs")
 CARDS_CSV = OUTPUTS_DIR / "cards.csv"
 MATCHES_CSV = OUTPUTS_DIR / "matches.csv"
 DECK_SUMMARY_CSV = OUTPUTS_DIR / "deck_summary.csv"
+LIMITLESS_META_CSV = OUTPUTS_DIR / "limitless_meta_decks.csv"
 
 
 CORE_THRESHOLD = 0.65
@@ -62,6 +64,27 @@ def read_matches(path: str | Path = MATCHES_CSV) -> pd.DataFrame:
         matches["source"] = "online"
     matches["source"] = matches["source"].fillna("online").replace("", "online").astype(str)
     return matches
+
+
+def read_limitless_meta_decks(path: str | Path = LIMITLESS_META_CSV) -> pd.DataFrame:
+    """Read the Limitless metagame ranking if it has been pulled."""
+
+    csv_path = Path(path)
+    if not csv_path.exists():
+        return pd.DataFrame(columns=["rank", "deck", "points", "share"])
+
+    meta_decks = pd.read_csv(csv_path)
+    meta_decks = _normalize_columns(meta_decks)
+    if "rank" not in meta_decks.columns and "placement" in meta_decks.columns:
+        meta_decks = meta_decks.rename(columns={"placement": "rank"})
+    for column in ["rank", "points"]:
+        if column in meta_decks.columns:
+            meta_decks[column] = pd.to_numeric(meta_decks[column], errors="coerce")
+    if "share" in meta_decks.columns:
+        meta_decks["share"] = pd.to_numeric(meta_decks["share"], errors="coerce")
+    if "deck" in meta_decks.columns:
+        meta_decks["deck"] = meta_decks["deck"].fillna("").astype(str)
+    return meta_decks
 
 
 def read_cards(path: str | Path = CARDS_CSV) -> pd.DataFrame:
@@ -327,19 +350,22 @@ def best_decks_against_meta(
     meta_n: int = 10,
     min_matches: int = 30,
     eligible_decks: set[str] | None = None,
+    meta_decks: Iterable[str] | None = None,
+    meta_deck_map: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
-    """Rank decks by aggregate performance against the top meta decks."""
+    """Rank decks by how many top meta decks they have winning records against."""
 
     empty = pd.DataFrame(
         columns=[
             "deck",
+            "winning_meta_matchups",
+            "meta_opponents_faced",
             "matches",
             "wins",
             "losses",
             "ties",
             "win_rate",
             "tie_adjusted_win_rate",
-            "meta_opponents_faced",
         ]
     )
     if cards.empty or matches.empty:
@@ -349,13 +375,20 @@ def best_decks_against_meta(
     if deck_map.empty:
         return empty
 
-    top_decks = (
-        deck_map.groupby("deck")["list_key"]
-        .nunique()
-        .sort_values(ascending=False)
-        .head(meta_n)
-        .index.tolist()
-    )
+    meta_targets = pd.DataFrame(columns=["limitless_deck", "local_deck"])
+    if meta_deck_map is not None and not meta_deck_map.empty:
+        meta_targets = meta_deck_map[["limitless_deck", "local_deck"]].dropna().drop_duplicates().copy()
+        top_decks = meta_targets["local_deck"].astype(str).tolist()
+    elif meta_decks is None:
+        top_decks = (
+            deck_map.groupby("deck")["list_key"]
+            .nunique()
+            .sort_values(ascending=False)
+            .head(meta_n)
+            .index.tolist()
+        )
+    else:
+        top_decks = list(meta_decks)
 
     match_rows = _matches_with_decks(matches, deck_map)
     if match_rows.empty:
@@ -368,6 +401,32 @@ def best_decks_against_meta(
     if meta_matches.empty:
         return empty
 
+    if not meta_targets.empty:
+        meta_matches = meta_matches.merge(
+            meta_targets.rename(columns={"local_deck": "opponent_deck", "limitless_deck": "meta_opponent_deck"}),
+            on="opponent_deck",
+            how="inner",
+        )
+    else:
+        meta_matches["meta_opponent_deck"] = meta_matches["opponent_deck"]
+
+    per_opponent = (
+        meta_matches.groupby(["deck", "meta_opponent_deck"], as_index=False)
+        .agg(
+            opponent_matches=("result", "size"),
+            opponent_wins=("result", lambda values: (values == "win").sum()),
+            opponent_ties=("result", lambda values: (values == "tie").sum()),
+        )
+    )
+    per_opponent["opponent_tie_adjusted_win_rate"] = (
+        per_opponent["opponent_wins"] + (0.5 * per_opponent["opponent_ties"])
+    ) / per_opponent["opponent_matches"]
+    winning_counts = (
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] > 0.5]
+        .groupby("deck", as_index=False)
+        .agg(winning_meta_matchups=("meta_opponent_deck", "nunique"))
+    )
+
     summary = (
         meta_matches.groupby("deck", as_index=False)
         .agg(
@@ -375,9 +434,11 @@ def best_decks_against_meta(
             wins=("result", lambda values: (values == "win").sum()),
             losses=("result", lambda values: (values == "loss").sum()),
             ties=("result", lambda values: (values == "tie").sum()),
-            meta_opponents_faced=("opponent_deck", "nunique"),
+            meta_opponents_faced=("meta_opponent_deck", "nunique"),
         )
     )
+    summary = summary.merge(winning_counts, on="deck", how="left")
+    summary["winning_meta_matchups"] = summary["winning_meta_matchups"].fillna(0).astype(int)
     if eligible_decks is not None:
         summary = summary[summary["deck"].isin(eligible_decks)].copy()
     summary = summary[summary["matches"] >= min_matches].copy()
@@ -386,10 +447,44 @@ def best_decks_against_meta(
 
     summary["win_rate"] = summary["wins"] / summary["matches"]
     summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
+    summary = summary[
+        [
+            "deck",
+            "winning_meta_matchups",
+            "meta_opponents_faced",
+            "matches",
+            "wins",
+            "losses",
+            "ties",
+            "win_rate",
+            "tie_adjusted_win_rate",
+        ]
+    ]
     return summary.sort_values(
-        ["tie_adjusted_win_rate", "matches", "meta_opponents_faced"],
+        ["winning_meta_matchups", "tie_adjusted_win_rate", "matches"],
         ascending=[False, False, False],
     )
+
+
+def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int = 20) -> pd.DataFrame:
+    """Map Limitless meta deck names to local deck names found in cards.csv."""
+
+    if cards.empty or meta_decks.empty or "deck" not in meta_decks.columns:
+        return pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
+
+    local_decks = sorted(cards["deck"].dropna().astype(str).unique())
+    rows: list[dict[str, object]] = []
+    for _, meta_row in meta_decks.head(limit).iterrows():
+        limitless_name = str(meta_row.get("deck", ""))
+        for local_deck in _matching_local_decks(limitless_name, local_decks):
+            rows.append(
+                {
+                    "rank": meta_row.get("rank"),
+                    "limitless_deck": limitless_name,
+                    "local_deck": local_deck,
+                }
+            )
+    return pd.DataFrame(rows).drop_duplicates()
 
 
 def major_top_finish_decks(cards: pd.DataFrame, placement_cutoff: int = 100) -> set[str]:
@@ -519,6 +614,55 @@ def _period_adoption(cards: pd.DataFrame) -> pd.DataFrame:
     )
     adoption["adoption_rate"] = adoption["decks_played"] / max(deck_count, 1)
     return adoption[["card", "adoption_rate", "average_count"]]
+
+
+def _matching_local_decks(limitless_name: str, local_decks: list[str]) -> list[str]:
+    """Find local deck names that look like a Limitless metagame deck name."""
+
+    meta_tokens = _deck_match_tokens(limitless_name)
+    if not meta_tokens:
+        return []
+
+    matches: list[str] = []
+    for local_deck in local_decks:
+        local_tokens = _deck_match_tokens(local_deck)
+        if meta_tokens.issubset(local_tokens):
+            matches.append(local_deck)
+
+    # Some Limitless names include an attack/ability subtitle, such as
+    # "Alakazam Powerful Hand". If the full token set does not match, try the
+    # lead card name as a beginner-readable fallback.
+    if not matches:
+        lead_token = next(iter(meta_tokens))
+        matches = [deck for deck in local_decks if lead_token in _deck_match_tokens(deck)]
+
+    return matches
+
+
+def _deck_match_tokens(deck_name: str) -> set[str]:
+    """Normalize deck names for loose Limitless-to-local matching."""
+
+    text = deck_name.lower().replace("’", "'")
+    text = text.replace("'s", " ")
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    ignored = {
+        "ex",
+        "v",
+        "vmax",
+        "vstar",
+        "gx",
+        "the",
+        "powerful",
+        "hand",
+        "seek",
+        "inspiration",
+        "mysterious",
+        "rock",
+        "inn",
+        "metal",
+        "maker",
+    }
+    return {token for token in text.split() if token and token not in ignored}
 
 
 def _deck_map_from_cards(cards: pd.DataFrame) -> pd.DataFrame:

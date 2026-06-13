@@ -20,13 +20,14 @@ One-click Windows pull:
 ```
 
 That pulls both Play Limitless online events and main Limitless major events,
-pulls match pairings, combines decklists, extracts cards, and rebuilds the deck
-summary.
+pulls the Limitless metagame ranking, pulls match pairings, combines decklists,
+extracts cards, and rebuilds the deck summary.
 
 Manual pipeline:
 
 ```powershell
 python limitless_pull.py
+python pull_limitless_meta.py
 python limitless_major_pull.py
 python combine_players.py
 python extract_cards.py
@@ -76,6 +77,7 @@ These commands write CSV files under `outputs/`:
 - `outputs/tournaments.csv`
 - `outputs/online_players.csv`
 - `outputs/major_tournaments.csv`
+- `outputs/limitless_meta_decks.csv`
 - `outputs/major_players.csv`
 - `outputs/matches.csv`
 - `outputs/online_matches.csv`
@@ -114,18 +116,21 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a deck dropdown
 - an All, Online, or Majors source filter
 - matchup percentages against the top 20 overall decks
-- a best-decks table for top 10 or top 20 meta matchups
+- a best-decks table for top 10 or top 20 Limitless meta matchups
 - candidate filters for Major top-100, Major top-200, or any deck
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top Meta Decks" table can compare against either the top
-10 or top 20 meta decks. By default, it considers decks with at least one Major
-top-100 finish in the selected date window, then applies the minimum-match
-filter shown in the dashboard. You can loosen that to Major top-200 or any deck
-from the dashboard filters.
+The "Best Decks Against Top Meta Decks" table uses
+`outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
+ranking page. It can compare against either the top 10 or top 20 Limitless meta
+decks. By default, it considers decks with at least one Major top-100 finish in
+the selected date window, then applies the minimum-match filter shown in the
+dashboard. You can loosen that to Major top-200 or any deck from the dashboard
+filters. The table ranks decks by how many top meta decks they have winning
+records against, then by aggregate tie-adjusted win rate.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 
