@@ -7,16 +7,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from pokemon_analyze.deck_analysis import (
-    analyze_deck,
-    best_decks_against_meta,
-    major_top_finish_decks,
-    matchup_summary,
-    read_cards,
-    read_limitless_meta_decks,
-    read_matches,
-    resolve_meta_decks,
-)
+import pokemon_analyze.deck_analysis as deck_analysis
 
 
 def _filter_cards_by_date(cards: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -64,13 +55,16 @@ st.set_page_config(page_title="Pokemon Analyze", layout="wide")
 st.title("Pokemon Analyze")
 
 try:
-    cards = read_cards()
+    cards = deck_analysis.read_cards()
 except (FileNotFoundError, ValueError) as error:
     st.error(str(error))
     st.stop()
 
-matches = read_matches()
-limitless_meta_decks = read_limitless_meta_decks()
+matches = deck_analysis.read_matches()
+if hasattr(deck_analysis, "read_limitless_meta_decks"):
+    limitless_meta_decks = deck_analysis.read_limitless_meta_decks()
+else:
+    limitless_meta_decks = pd.DataFrame(columns=["rank", "deck", "points", "share"])
 
 today = pd.Timestamp.today().normalize()
 default_start = today - pd.Timedelta(days=31)
@@ -142,7 +136,7 @@ with eligibility_col:
         ["Major top 100", "Major top 200", "Any deck"],
     )
 
-report = analyze_deck(
+report = deck_analysis.analyze_deck(
     selected_deck,
     cards=filtered_cards,
     bucket=bucket,
@@ -165,7 +159,10 @@ elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
     st.info("Daily trends need data from at least two different days. Widen the date range if the trend tables are empty.")
 
 st.subheader(f"Best Decks Against Top {meta_deck_count} Meta Decks")
-resolved_meta_decks = resolve_meta_decks(filtered_cards, limitless_meta_decks, limit=meta_deck_count)
+if hasattr(deck_analysis, "resolve_meta_decks"):
+    resolved_meta_decks = deck_analysis.resolve_meta_decks(filtered_cards, limitless_meta_decks, limit=meta_deck_count)
+else:
+    resolved_meta_decks = pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
 meta_targets = resolved_meta_decks["local_deck"].tolist()
 
 major_cutoff = None
@@ -176,15 +173,19 @@ elif candidate_filter == "Major top 200":
 
 major_eligible_decks = None
 if major_cutoff is not None:
-    major_eligible_decks = major_top_finish_decks(filtered_all_cards, placement_cutoff=major_cutoff)
-best_meta_decks = best_decks_against_meta(
+    major_eligible_decks = deck_analysis.major_top_finish_decks(filtered_all_cards, placement_cutoff=major_cutoff)
+best_meta_kwargs = {
+    "meta_n": meta_deck_count,
+    "min_matches": min_meta_matches,
+    "eligible_decks": major_eligible_decks,
+    "meta_decks": meta_targets or None,
+}
+if "meta_deck_map" in deck_analysis.best_decks_against_meta.__code__.co_varnames:
+    best_meta_kwargs["meta_deck_map"] = resolved_meta_decks if not resolved_meta_decks.empty else None
+best_meta_decks = deck_analysis.best_decks_against_meta(
     filtered_cards,
     filtered_matches,
-    meta_n=meta_deck_count,
-    min_matches=min_meta_matches,
-    eligible_decks=major_eligible_decks,
-    meta_decks=meta_targets or None,
-    meta_deck_map=resolved_meta_decks if not resolved_meta_decks.empty else None,
+    **best_meta_kwargs,
 )
 if best_meta_decks.empty:
     st.info("No decks meet the current matchup filters. Try lowering minimum matches or changing the candidate deck filter.")
@@ -204,7 +205,7 @@ if not resolved_meta_decks.empty:
         _show_table(resolved_meta_decks)
 
 st.subheader("Matchups Against Top 20 Decks")
-matchups = matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)
+matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=20)
 if matchups.empty:
     if selected_source == "Majors":
         st.info("Major-event matchup rows are not available yet. Switch to All or Online for online pairings.")
