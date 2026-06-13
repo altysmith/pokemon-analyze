@@ -552,6 +552,58 @@ def deck_matchups_against_meta(
     return summary.sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
 
 
+def best_decks_against_target(
+    target_deck: str,
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    min_matches: int = 5,
+) -> pd.DataFrame:
+    """Rank decks by their record into one selected target deck."""
+
+    empty = pd.DataFrame(
+        columns=[
+            "deck",
+            "matches",
+            "wins",
+            "losses",
+            "ties",
+            "win_rate",
+            "tie_adjusted_win_rate",
+        ]
+    )
+    if cards.empty or matches.empty or not target_deck:
+        return empty
+
+    deck_map = _deck_map_from_cards(cards)
+    match_rows = _matches_with_decks(matches, deck_map)
+    if match_rows.empty:
+        return empty
+
+    selected = match_rows[
+        (match_rows["opponent_deck"] == target_deck)
+        & (match_rows["deck"] != target_deck)
+    ].copy()
+    if selected.empty:
+        return empty
+
+    summary = (
+        selected.groupby("deck", as_index=False)
+        .agg(
+            matches=("result", "size"),
+            wins=("result", lambda values: (values == "win").sum()),
+            losses=("result", lambda values: (values == "loss").sum()),
+            ties=("result", lambda values: (values == "tie").sum()),
+        )
+    )
+    summary = summary[summary["matches"] >= min_matches].copy()
+    if summary.empty:
+        return empty
+
+    summary["win_rate"] = summary["wins"] / summary["matches"]
+    summary["tie_adjusted_win_rate"] = (summary["wins"] + (TIE_WIN_VALUE * summary["ties"])) / summary["matches"]
+    return summary.sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
+
+
 def resolve_meta_decks(cards: pd.DataFrame, meta_decks: pd.DataFrame, limit: int = 20) -> pd.DataFrame:
     """Map Limitless meta deck names to local deck names found in cards.csv."""
 

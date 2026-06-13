@@ -120,6 +120,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a Deck Detail page with a deck dropdown
 - an All, Online, or Majors source filter
 - a top-5 best decks list against the top 25 split-variant Limitless meta decks
+- a target-deck dropdown that shows the top 5 decks into one selected meta deck
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
 - favorable and unfavorable matchup lines for each top performer
 - daily or monthly trend buckets

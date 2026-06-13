@@ -194,6 +194,37 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         st.write(f"**Unfavorable matchups:** {_format_matchup_list(unfavorable)}")
         st.divider()
 
+    st.subheader("Best Decks To Beat One Target")
+    target_options = resolved_meta.sort_values("rank").copy()
+    target_labels = {
+        row.local_deck: f"{int(row.rank)}. {row.limitless_deck}"
+        for row in target_options.itertuples(index=False)
+        if pd.notna(row.rank)
+    }
+    target_col, sample_col = st.columns([2, 1])
+    with target_col:
+        target_deck = st.selectbox(
+            "Target deck",
+            target_options["local_deck"].tolist(),
+            format_func=lambda deck: target_labels.get(deck, deck),
+        )
+    with sample_col:
+        min_target_matches = st.number_input("Minimum matches", min_value=1, max_value=100, value=10, step=1)
+
+    target_report = deck_analysis.best_decks_against_target(
+        target_deck,
+        filtered_cards,
+        filtered_matches,
+        min_matches=int(min_target_matches),
+    )
+    if target_report.empty:
+        st.info("No decks meet the current minimum match count into that target.")
+    else:
+        _show_table(
+            target_report.head(5),
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+        )
+
     full_columns = [
         "meta_rank",
         "deck",
