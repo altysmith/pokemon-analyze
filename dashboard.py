@@ -121,21 +121,7 @@ min_tech_decks = st.slider(
     max_value=max(deck_list_count, 1),
     value=min_default,
 )
-min_meta_matches = st.slider(
-    "Minimum matches vs meta decks",
-    min_value=1,
-    max_value=500,
-    value=10,
-)
-
-meta_col, eligibility_col = st.columns([1, 2])
-with meta_col:
-    meta_deck_count = st.selectbox("Meta deck count", [10, 20], index=1)
-with eligibility_col:
-    candidate_filter = st.selectbox(
-        "Candidate deck filter",
-        ["Major top 100", "Major top 200", "Any deck"],
-    )
+meta_deck_count = st.selectbox("Limitless meta decks to target", [10, 20, 25], index=2)
 
 report = deck_analysis.analyze_deck(
     selected_deck,
@@ -166,19 +152,10 @@ else:
     resolved_meta_decks = pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
 meta_targets = resolved_meta_decks["local_deck"].tolist()
 
-major_cutoff = None
-if candidate_filter == "Major top 100":
-    major_cutoff = 100
-elif candidate_filter == "Major top 200":
-    major_cutoff = 200
-
-major_eligible_decks = None
-if major_cutoff is not None:
-    major_eligible_decks = deck_analysis.major_top_finish_decks(filtered_all_cards, placement_cutoff=major_cutoff)
 best_meta_kwargs = {
     "meta_n": meta_deck_count,
-    "min_matches": min_meta_matches,
-    "eligible_decks": major_eligible_decks,
+    "min_matches": 1,
+    "eligible_decks": None,
     "meta_decks": meta_targets or None,
     "meta_deck_map": resolved_meta_decks if not resolved_meta_decks.empty else None,
 }
@@ -199,11 +176,7 @@ else:
     if limitless_meta_decks.empty:
         st.caption("Using the top decks from the pulled dashboard data. Run pull_limitless_meta.py to use Limitless's metagame ranking.")
     else:
-        st.caption(f"Using Limitless's top {meta_deck_count} metagame decks as matchup targets.")
-    if major_cutoff is None:
-        st.caption("All decks with enough matchup data are considered.")
-    else:
-        st.caption(f"Only decks with at least one Major top-{major_cutoff} finish in the selected date window are considered.")
+        st.caption(f"Using Limitless's top {meta_deck_count} split-variant metagame decks as matchup targets. No Major eligibility or minimum-match filter is applied.")
     _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
 if not resolved_meta_decks.empty:

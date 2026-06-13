@@ -116,8 +116,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a deck dropdown
 - an All, Online, or Majors source filter
 - matchup percentages against the top 20 overall decks
-- a best-decks table for top 10 or top 20 Limitless meta matchups
-- candidate filters for Major top-100, Major top-200, or any deck
+- a best-decks table against the top 10, 20, or 25 split-variant Limitless meta decks
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards
@@ -125,12 +124,11 @@ The dashboard reads `outputs/cards.csv` and includes:
 
 The "Best Decks Against Top Meta Decks" table uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
-ranking page. It can compare against either the top 10 or top 20 Limitless meta
-decks. By default, it considers decks with at least one Major top-100 finish in
-the selected date window, then applies the minimum-match filter shown in the
-dashboard. You can loosen that to Major top-200 or any deck from the dashboard
-filters. The table ranks decks by how many top meta decks they have winning
-records against, then by aggregate tie-adjusted win rate.
+ranking page with deck variants split. It can compare against the top 10, 20,
+or 25 Limitless meta decks. This table intentionally does not apply a Major
+finish requirement or a minimum-match filter; it ranks decks by how many top
+meta decks they have winning records against, then by aggregate tie-adjusted
+win rate.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 

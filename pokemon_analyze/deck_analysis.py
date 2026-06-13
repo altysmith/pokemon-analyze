@@ -623,6 +623,10 @@ def _matching_local_decks(limitless_name: str, local_decks: list[str]) -> list[s
     if not meta_tokens:
         return []
 
+    exact_matches = [deck for deck in local_decks if _deck_match_tokens(deck) == meta_tokens]
+    if exact_matches:
+        return exact_matches
+
     matches: list[str] = []
     for local_deck in local_decks:
         local_tokens = _deck_match_tokens(local_deck)
