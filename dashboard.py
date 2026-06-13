@@ -102,11 +102,13 @@ def _source_decklist_url(row: pd.Series) -> str:
 
 
 def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataFrame:
-    """Pick one strong saved list for each deck and format it for display."""
+    """Pick the best saved Major list for each deck and format it for display."""
 
     rows: list[dict[str, object]] = []
     for deck in decks:
         deck_cards = cards[cards["deck"] == deck].copy()
+        if "source" in deck_cards.columns:
+            deck_cards = deck_cards[deck_cards["source"] == "major"].copy()
         if deck_cards.empty:
             continue
 
@@ -287,7 +289,8 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
             top_target_decks,
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
         )
-        representatives = _representative_decklists(filtered_cards, top_target_decks["deck"].tolist())
+        major_link_cards = _filter_by_date(cards, start_date, end_date)
+        representatives = _representative_decklists(major_link_cards, top_target_decks["deck"].tolist())
         if not representatives.empty:
             st.markdown("Representative decklists")
             for row in representatives.itertuples(index=False):
