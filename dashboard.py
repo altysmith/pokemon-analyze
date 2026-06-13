@@ -249,7 +249,7 @@ def _meta_overview(
         ["tie_adjusted_win_rate", "matches"],
         ascending=[False, False],
     ).head(5)
-    list_columns = [
+    matchup_columns = [
         "deck",
         "matches",
         "favorable_matchups",
@@ -258,13 +258,22 @@ def _meta_overview(
         "win_rate",
         "tie_adjusted_win_rate",
     ]
+    win_rate_columns = [
+        "deck",
+        "matches",
+        "win_rate",
+        "tie_adjusted_win_rate",
+        "favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+    ]
     spread_col, win_col = st.columns(2)
     with spread_col:
         st.markdown("#### Most Favorable Matchups")
-        _show_table(most_favorable[list_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
+        _show_table(most_favorable[matchup_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
     with win_col:
         st.markdown("#### Highest Adjusted Win %")
-        _show_table(highest_win_rate[list_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
+        _show_table(highest_win_rate[win_rate_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
     st.markdown("#### Most Favorable Matchup Details")
     for rank, row in enumerate(most_favorable.itertuples(index=False), start=1):
