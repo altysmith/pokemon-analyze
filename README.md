@@ -123,7 +123,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a target-deck dropdown that shows the top 5 decks into one selected meta deck
 - side-by-side top-5 lists for most favorable matchups and highest overall win percentage
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
-- favorable and unfavorable matchup lines for each top performer
+- favorable and unfavorable matchup lines at the top of each selected deck detail page
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards

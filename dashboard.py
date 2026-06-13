@@ -189,6 +189,49 @@ def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, me
     return report.merge(meta_details, on="deck", how="left")
 
 
+def _render_deck_meta_summary(deck: str, details: pd.DataFrame, meta_rank: object = "-") -> None:
+    """Show a compact matchup summary for one selected deck."""
+
+    st.subheader(f"{deck} Meta Matchup Summary")
+    if details.empty:
+        st.info("No top-meta matchup rows are available for this deck and filter set.")
+        return
+
+    wins = int(details["wins"].sum())
+    losses = int(details["losses"].sum())
+    ties = int(details["ties"].sum())
+    matches = int(details["matches"].sum())
+    win_rate = wins / matches if matches else 0
+    adjusted_rate = (wins + (deck_analysis.TIE_WIN_VALUE * ties)) / matches if matches else 0
+    favorable = details[details["matchup_label"].isin(["favorable", "very favorable"])].sort_values(
+        ["tie_adjusted_win_rate", "matches"], ascending=[False, False]
+    )
+    unfavorable = details[details["matchup_label"].isin(["unfavorable", "very unfavorable"])].sort_values(
+        ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
+    )
+    very_unfavorable = details[details["matchup_label"] == "very unfavorable"].sort_values(
+        ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
+    )
+
+    rank_value = "-"
+    rank_number = pd.to_numeric(meta_rank, errors="coerce")
+    if not pd.isna(rank_number):
+        rank_value = int(rank_number)
+
+    cols = st.columns(8)
+    cols[0].metric("Meta Rank", rank_value)
+    cols[1].metric("W-L-T", f"{wins}-{losses}-{ties}")
+    cols[2].metric("Win %", _format_percent(win_rate))
+    cols[3].metric("Adj. Win %", _format_percent(adjusted_rate))
+    cols[4].metric("Favorable", int(details["matchup_label"].isin(["favorable", "very favorable"]).sum()))
+    cols[5].metric("Very Fav.", int((details["matchup_label"] == "very favorable").sum()))
+    cols[6].metric("Unfav.", int(details["matchup_label"].isin(["unfavorable", "very unfavorable"]).sum()))
+    cols[7].metric("Very Unfav.", int((details["matchup_label"] == "very unfavorable").sum()))
+    st.write(f"**Favorable matchups:** {_format_matchup_list(favorable)}")
+    st.write(f"**Unfavorable matchups:** {_format_matchup_list(unfavorable)}")
+    st.write(f"**Very unfavorable matchups:** {_format_matchup_list(very_unfavorable)}")
+
+
 def _meta_overview(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
@@ -275,34 +318,6 @@ def _meta_overview(
         st.markdown("#### Highest Adjusted Win %")
         _show_table(highest_win_rate[win_rate_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
-    st.markdown("#### Most Favorable Matchup Details")
-    for rank, row in enumerate(most_favorable.itertuples(index=False), start=1):
-        details = deck_analysis.deck_matchups_against_meta(row.deck, filtered_cards, filtered_matches, resolved_meta)
-        favorable = details[details["matchup_label"].isin(["favorable", "very favorable"])].sort_values(
-            ["tie_adjusted_win_rate", "matches"], ascending=[False, False]
-        )
-        unfavorable = details[details["matchup_label"].isin(["unfavorable", "very unfavorable"])].sort_values(
-            ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
-        )
-        very_unfavorable = details[details["matchup_label"] == "very unfavorable"].sort_values(
-            ["tie_adjusted_win_rate", "matches"], ascending=[True, False]
-        )
-
-        st.markdown(f"### {rank}. {row.deck}")
-        cols = st.columns(8)
-        cols[0].metric("Meta Rank", int(row.meta_rank) if pd.notna(row.meta_rank) else "-")
-        cols[1].metric("W-L-T", f"{int(row.wins)}-{int(row.losses)}-{int(row.ties)}")
-        cols[2].metric("Win %", _format_percent(row.win_rate))
-        cols[3].metric("Adj. Win %", _format_percent(row.tie_adjusted_win_rate))
-        cols[4].metric("Favorable", int(row.favorable_matchups))
-        cols[5].metric("Very Fav.", int(row.very_favorable_matchups))
-        cols[6].metric("Unfav.", int(row.unfavorable_matchups))
-        cols[7].metric("Very Unfav.", int(row.very_unfavorable_matchups))
-        st.write(f"**Favorable matchups:** {_format_matchup_list(favorable)}")
-        st.write(f"**Unfavorable matchups:** {_format_matchup_list(unfavorable)}")
-        st.write(f"**Very unfavorable matchups:** {_format_matchup_list(very_unfavorable)}")
-        st.divider()
-
     st.subheader("Best Decks To Beat One Target")
     target_options = resolved_meta.sort_values("rank").copy()
     target_labels = {
@@ -369,7 +384,12 @@ def _meta_overview(
     _show_table(best_display[full_columns], percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"])
 
 
-def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame, meta_count: int) -> None:
+def _deck_detail(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    limitless_meta_decks: pd.DataFrame,
+    meta_count: int,
+) -> None:
     """Second page: individual deck analysis."""
 
     st.header("Deck Detail")
@@ -433,6 +453,15 @@ def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame, meta_count: int) ->
     metric_two.metric("Unique Cards", int(deck_cards["card"].nunique()))
     metric_three.metric("Date Range", date_range or "Unknown")
 
+    meta_decks = limitless_meta_decks.head(meta_count).copy()
+    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
+    deck_rank = "-"
+    rank_rows = resolved_meta[resolved_meta["local_deck"] == selected_deck] if not resolved_meta.empty else pd.DataFrame()
+    if not rank_rows.empty:
+        deck_rank = rank_rows.iloc[0]["rank"]
+    meta_details = deck_analysis.deck_matchups_against_meta(selected_deck, filtered_cards, filtered_matches, resolved_meta)
+    _render_deck_meta_summary(selected_deck, meta_details, deck_rank)
+
     if bucket == "monthly" and _unique_period_count(deck_cards, "M") < 2:
         st.info("Monthly trends need data from at least two months.")
     elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
@@ -493,4 +522,4 @@ meta_count = st.sidebar.slider(
 if page == "Meta Overview":
     _meta_overview(cards, matches, limitless_meta_decks, meta_count)
 else:
-    _deck_detail(cards, matches, meta_count)
+    _deck_detail(cards, matches, limitless_meta_decks, meta_count)
