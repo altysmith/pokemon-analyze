@@ -350,6 +350,8 @@ def _meta_overview(
     full_columns = [
         "meta_rank",
         "deck",
+        "meta_points",
+        "meta_share",
         "matches",
         "wins",
         "losses",
@@ -364,10 +366,7 @@ def _meta_overview(
     ]
     st.subheader(f"Full Top-{meta_count} Meta Performance Table")
     best_display = _ensure_columns(best, full_columns)
-    _show_table(best_display[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
-
-    st.subheader(f"Current Limitless Top {meta_count} Meta List")
-    _show_table(meta_decks[["rank", "deck", "points", "share"]], percent_columns=["share"])
+    _show_table(best_display[full_columns], percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"])
 
 
 def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame, meta_count: int) -> None:
