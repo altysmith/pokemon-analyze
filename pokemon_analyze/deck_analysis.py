@@ -339,7 +339,7 @@ def best_decks_against_meta(
             "ties",
             "win_rate",
             "tie_adjusted_win_rate",
-            "top10_opponents_faced",
+            "meta_opponents_faced",
         ]
     )
     if cards.empty or matches.empty:
@@ -375,7 +375,7 @@ def best_decks_against_meta(
             wins=("result", lambda values: (values == "win").sum()),
             losses=("result", lambda values: (values == "loss").sum()),
             ties=("result", lambda values: (values == "tie").sum()),
-            top10_opponents_faced=("opponent_deck", "nunique"),
+            meta_opponents_faced=("opponent_deck", "nunique"),
         )
     )
     if eligible_decks is not None:
@@ -387,7 +387,7 @@ def best_decks_against_meta(
     summary["win_rate"] = summary["wins"] / summary["matches"]
     summary["tie_adjusted_win_rate"] = (summary["wins"] + (0.5 * summary["ties"])) / summary["matches"]
     return summary.sort_values(
-        ["tie_adjusted_win_rate", "matches", "top10_opponents_faced"],
+        ["tie_adjusted_win_rate", "matches", "meta_opponents_faced"],
         ascending=[False, False, False],
     )
 

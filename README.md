@@ -114,14 +114,18 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a deck dropdown
 - an All, Online, or Majors source filter
 - matchup percentages against the top 20 overall decks
+- a best-decks table for top 10 or top 20 meta matchups
+- candidate filters for Major top-100, Major top-200, or any deck
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top 10 Meta Decks" table only considers decks that have
-at least one Major top-100 finish in the selected date window, then applies the
-minimum-match filter shown in the dashboard.
+The "Best Decks Against Top Meta Decks" table can compare against either the top
+10 or top 20 meta decks. By default, it considers decks with at least one Major
+top-100 finish in the selected date window, then applies the minimum-match
+filter shown in the dashboard. You can loosen that to Major top-200 or any deck
+from the dashboard filters.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 

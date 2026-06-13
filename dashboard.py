@@ -124,11 +124,20 @@ min_tech_decks = st.slider(
     value=min_default,
 )
 min_meta_matches = st.slider(
-    "Minimum matches vs top 10 meta",
+    "Minimum matches vs meta decks",
     min_value=1,
     max_value=500,
-    value=30,
+    value=10,
 )
+
+meta_col, eligibility_col = st.columns([1, 2])
+with meta_col:
+    meta_deck_count = st.selectbox("Meta deck count", [10, 20], index=1)
+with eligibility_col:
+    candidate_filter = st.selectbox(
+        "Candidate deck filter",
+        ["Major top 100", "Major top 200", "Any deck"],
+    )
 
 report = analyze_deck(
     selected_deck,
@@ -152,19 +161,30 @@ if bucket == "monthly" and _unique_period_count(deck_cards, "M") < 2:
 elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
     st.info("Daily trends need data from at least two different days. Widen the date range if the trend tables are empty.")
 
-st.subheader("Best Decks Against Top 10 Meta Decks")
-major_eligible_decks = major_top_finish_decks(filtered_all_cards, placement_cutoff=100)
+st.subheader(f"Best Decks Against Top {meta_deck_count} Meta Decks")
+major_cutoff = None
+if candidate_filter == "Major top 100":
+    major_cutoff = 100
+elif candidate_filter == "Major top 200":
+    major_cutoff = 200
+
+major_eligible_decks = None
+if major_cutoff is not None:
+    major_eligible_decks = major_top_finish_decks(filtered_all_cards, placement_cutoff=major_cutoff)
 best_meta_decks = best_decks_against_meta(
     filtered_cards,
     filtered_matches,
-    meta_n=10,
+    meta_n=meta_deck_count,
     min_matches=min_meta_matches,
     eligible_decks=major_eligible_decks,
 )
 if best_meta_decks.empty:
-    st.info("No decks meet the current minimum matchup sample and Major top-100 eligibility filter.")
+    st.info("No decks meet the current matchup filters. Try lowering minimum matches or changing the candidate deck filter.")
 else:
-    st.caption("Only decks with at least one Major top-100 finish in the selected date window are considered.")
+    if major_cutoff is None:
+        st.caption("All decks with enough matchup data are considered.")
+    else:
+        st.caption(f"Only decks with at least one Major top-{major_cutoff} finish in the selected date window are considered.")
     _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
 st.subheader("Matchups Against Top 20 Decks")
