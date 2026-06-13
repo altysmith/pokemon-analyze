@@ -7,7 +7,7 @@ python limitless_pull.py --format STANDARD --min-players 100 --days 31 --pages 5
 if errorlevel 1 goto failed
 
 echo Pulling Limitless metagame ranking...
-python pull_limitless_meta.py --format TEF-CRI --limit 50
+python pull_limitless_meta.py --format TEF-CRI --time 1months --limit 50
 if errorlevel 1 goto failed
 
 echo Pulling Limitless major events...

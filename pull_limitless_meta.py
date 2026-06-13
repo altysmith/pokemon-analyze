@@ -27,6 +27,11 @@ def main() -> None:
     parser.add_argument("--format", default="TEF-CRI", help="Limitless format code, such as TEF-CRI.")
     parser.add_argument("--limit", type=int, default=50, help="Maximum deck rows to keep.")
     parser.add_argument(
+        "--time",
+        default="1months",
+        help="Limitless time filter. Use 1months for Past month, 3months for Past 3 months, etc.",
+    )
+    parser.add_argument(
         "--combined-decks",
         action="store_true",
         help="Use Limitless's combined archetype ranking instead of split variants.",
@@ -34,15 +39,27 @@ def main() -> None:
     args = parser.parse_args()
 
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    rows = fetch_meta_decks(format_id=args.format, limit=args.limit, split_variants=not args.combined_decks)
+    rows = fetch_meta_decks(
+        format_id=args.format,
+        limit=args.limit,
+        split_variants=not args.combined_decks,
+        time_filter=args.time,
+    )
     pd.DataFrame(rows).to_csv(META_CSV, index=False)
     print(f"Wrote {META_CSV} with {len(rows)} Limitless meta deck rows.")
 
 
-def fetch_meta_decks(format_id: str = "TEF-CRI", limit: int = 50, split_variants: bool = True) -> list[dict[str, Any]]:
+def fetch_meta_decks(
+    format_id: str = "TEF-CRI",
+    limit: int = 50,
+    split_variants: bool = True,
+    time_filter: str = "1months",
+) -> list[dict[str, Any]]:
     """Fetch and parse the Limitless deck ranking page."""
 
     params: dict[str, str] = {"format": format_id}
+    if time_filter:
+        params["time"] = time_filter
     if split_variants:
         params["variants"] = "on"
 

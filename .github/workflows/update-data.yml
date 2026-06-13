@@ -40,7 +40,7 @@ jobs:
           --pairings-delay 1.5
 
       - name: Pull Limitless metagame ranking
-        run: python pull_limitless_meta.py --format TEF-CRI --limit 50
+        run: python pull_limitless_meta.py --format TEF-CRI --time 1months --limit 50
 
       - name: Pull major events
         run: >

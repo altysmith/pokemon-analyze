@@ -70,7 +70,9 @@ Useful options:
 
 `pull_all.bat` and the daily GitHub Action use `--top-percent 50` for online
 events. Major events are not filtered by top 50%; the app keeps the published
-Limitless major decklists, which are already a selective event cut.
+Limitless major decklists, which are already a selective event cut. The
+Limitless meta ranking is pulled with `--time 1months`, matching Limitless's
+"Past month" tournament filter.
 
 These commands write CSV files under `outputs/`:
 
@@ -124,11 +126,11 @@ The dashboard reads `outputs/cards.csv` and includes:
 
 The "Best Decks Against Top Meta Decks" table uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
-ranking page with deck variants split. It can compare against the top 10, 20,
-or 25 Limitless meta decks. This table intentionally does not apply a Major
-finish requirement or a minimum-match filter; it ranks decks by how many top
-meta decks they have winning records against, then by aggregate tie-adjusted
-win rate.
+ranking page with deck variants split and the "Past month" time filter. It can
+compare against the top 10, 20, or 25 Limitless meta decks. This table
+intentionally does not apply a Major finish requirement or a minimum-match
+filter; it ranks decks by how many top meta decks they have winning records
+against, then by aggregate tie-adjusted win rate.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 
