@@ -252,11 +252,11 @@ def _meta_overview(
     list_columns = [
         "deck",
         "matches",
-        "win_rate",
-        "tie_adjusted_win_rate",
         "favorable_matchups",
         "unfavorable_matchups",
         "very_unfavorable_matchups",
+        "win_rate",
+        "tie_adjusted_win_rate",
     ]
     spread_col, win_col = st.columns(2)
     with spread_col:
