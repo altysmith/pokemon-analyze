@@ -55,6 +55,7 @@ jobs:
           python combine_matches.py
           python extract_cards.py
           python analyze_players.py
+          python best_meta_report.py
 
       - name: Commit updated CSVs
         run: |

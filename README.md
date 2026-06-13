@@ -32,6 +32,7 @@ python limitless_major_pull.py
 python combine_players.py
 python extract_cards.py
 python analyze_players.py
+python best_meta_report.py
 ```
 
 By default, `limitless_pull.py` pulls one page of recent tournaments. Pull more
@@ -87,6 +88,7 @@ These commands write CSV files under `outputs/`:
 - `outputs/players.csv`
 - `outputs/cards.csv`
 - `outputs/deck_summary.csv`
+- `outputs/best_decks_against_top25_meta.csv`
 
 Existing CSV outputs are not removed by the app.
 
@@ -135,6 +137,12 @@ very favorable matchup is 60% or higher. The table sorts by favorable matchups,
 then very favorable matchups, then aggregate tie-adjusted win rate.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
+
+To rebuild just the top-25 meta matchup report after data is already pulled:
+
+```powershell
+python best_meta_report.py
+```
 
 ## Daily Data Updates
 

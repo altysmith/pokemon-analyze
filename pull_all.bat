@@ -30,6 +30,10 @@ echo Building deck summary...
 python analyze_players.py
 if errorlevel 1 goto failed
 
+echo Building top-25 meta matchup report...
+python best_meta_report.py
+if errorlevel 1 goto failed
+
 echo.
 echo Done. Start the dashboard with:
 echo python -m streamlit run dashboard.py
