@@ -11,7 +11,8 @@ import streamlit as st
 import pokemon_analyze.deck_analysis as deck_analysis
 
 
-TOP_META_COUNT = 15
+DEFAULT_META_COUNT = 10
+MAX_META_COUNT = 25
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -188,7 +189,12 @@ def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, me
     return report.merge(meta_details, on="deck", how="left")
 
 
-def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_decks: pd.DataFrame) -> None:
+def _meta_overview(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    limitless_meta_decks: pd.DataFrame,
+    meta_count: int,
+) -> None:
     """Opening page: top meta list and best performers into that meta."""
 
     st.header("Meta Overview")
@@ -206,10 +212,10 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     source_cards, source_matches = _filter_by_source(cards, matches, selected_source)
     filtered_cards = _filter_by_date(source_cards, start_date, end_date)
     filtered_matches = _filter_by_date(source_matches, start_date, end_date)
-    meta_decks = limitless_meta_decks.head(TOP_META_COUNT).copy()
-    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=TOP_META_COUNT)
+    meta_decks = limitless_meta_decks.head(meta_count).copy()
+    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
 
-    st.subheader(f"Best Decks Against Top {TOP_META_COUNT} Meta Decks")
+    st.subheader(f"Best Decks Against Top {meta_count} Meta Decks")
     if resolved_meta.empty:
         st.info("No Limitless top-meta decks could be matched to the current card data.")
         return
@@ -217,7 +223,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     best = deck_analysis.best_decks_against_meta(
         filtered_cards,
         filtered_matches,
-        **_best_meta_kwargs(TOP_META_COUNT, set(resolved_meta["local_deck"]), resolved_meta),
+        **_best_meta_kwargs(meta_count, set(resolved_meta["local_deck"]), resolved_meta),
     )
     best = _add_meta_rank_columns(best, resolved_meta, meta_decks)
     if best.empty:
@@ -234,7 +240,7 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
     st.caption(
         "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
         "Very favorable means 60%+. "
-        f"Candidates and targets both come from the current Limitless top-{TOP_META_COUNT} split-variant meta list."
+        f"Candidates and targets both come from the current Limitless top-{meta_count} split-variant meta list."
     )
 
     for rank, row in enumerate(best.head(5).itertuples(index=False), start=1):
@@ -317,15 +323,15 @@ def _meta_overview(cards: pd.DataFrame, matches: pd.DataFrame, limitless_meta_de
         "very_unfavorable_matchups",
         "meta_opponents_faced",
     ]
-    st.subheader("Full Top-25 Meta Performance Table")
+    st.subheader(f"Full Top-{meta_count} Meta Performance Table")
     best_display = _ensure_columns(best, full_columns)
     _show_table(best_display[full_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
-    st.subheader(f"Current Limitless Top {TOP_META_COUNT} Meta List")
+    st.subheader(f"Current Limitless Top {meta_count} Meta List")
     _show_table(meta_decks[["rank", "deck", "points", "share"]], percent_columns=["share"])
 
 
-def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame) -> None:
+def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame, meta_count: int) -> None:
     """Second page: individual deck analysis."""
 
     st.header("Deck Detail")
@@ -394,8 +400,8 @@ def _deck_detail(cards: pd.DataFrame, matches: pd.DataFrame) -> None:
     elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
         st.info("Daily trends need data from at least two different days.")
 
-    st.subheader(f"Matchups Against Top {TOP_META_COUNT} Decks")
-    matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=TOP_META_COUNT)
+    st.subheader(f"Matchups Against Top {meta_count} Decks")
+    matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=meta_count)
     if matchups.empty:
         st.info("No matchup rows are available for this deck and filter set.")
     else:
@@ -439,7 +445,14 @@ matches = deck_analysis.read_matches()
 limitless_meta_decks = deck_analysis.read_limitless_meta_decks()
 
 page = st.sidebar.radio("Page", ["Meta Overview", "Deck Detail"])
+meta_count = st.sidebar.slider(
+    "Meta deck count",
+    min_value=1,
+    max_value=MAX_META_COUNT,
+    value=DEFAULT_META_COUNT,
+    step=1,
+)
 if page == "Meta Overview":
-    _meta_overview(cards, matches, limitless_meta_decks)
+    _meta_overview(cards, matches, limitless_meta_decks, meta_count)
 else:
-    _deck_detail(cards, matches)
+    _deck_detail(cards, matches, meta_count)

@@ -119,7 +119,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a Meta Overview opening page
 - a Deck Detail page with a deck dropdown
 - an All, Online, or Majors source filter
-- a top-5 best decks list against the top 15 split-variant Limitless meta decks
+- a top-5 best decks list against a selectable top meta range, defaulting to top 10 and expanding up to top 25
 - a target-deck dropdown that shows the top 5 decks into one selected meta deck
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
 - favorable and unfavorable matchup lines for each top performer
@@ -128,10 +128,10 @@ The dashboard reads `outputs/cards.csv` and includes:
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top 15 Meta Decks" overview uses
+The "Best Decks Against Top Meta Decks" overview uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
 ranking page with deck variants split and the "Past month" time filter.
-Candidates and targets both come from that same top-15 meta list. A favorable
+Candidates and targets both come from the selected top meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
 very favorable matchup is 60% or higher. The overview sorts by favorable
 matchups, then very favorable matchups, then aggregate tie-adjusted win rate.
@@ -142,7 +142,7 @@ tech/flex placement analysis for one selected deck.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 
-To rebuild just the top-15 meta matchup report after data is already pulled:
+To rebuild just the meta matchup report after data is already pulled:
 
 ```powershell
 python best_meta_report.py
