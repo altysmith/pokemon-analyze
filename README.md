@@ -113,6 +113,10 @@ The dashboard reads `outputs/cards.csv` and includes:
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
+The "Best Decks Against Top 10 Meta Decks" table only considers decks that have
+at least one Major top-100 finish in the selected date window, then applies the
+minimum-match filter shown in the dashboard.
+
 Percentages and numbers are formatted to at most 3 decimals for readability.
 
 ## Daily Data Updates

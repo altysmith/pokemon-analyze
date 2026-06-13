@@ -7,7 +7,14 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from reports.deck_analysis import analyze_deck, best_decks_against_meta, matchup_summary, read_cards, read_matches
+from reports.deck_analysis import (
+    analyze_deck,
+    best_decks_against_meta,
+    major_top_finish_decks,
+    matchup_summary,
+    read_cards,
+    read_matches,
+)
 
 
 def _filter_cards_by_date(cards: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -98,6 +105,7 @@ with start_col:
 with end_col:
     end_date = st.date_input("End date", value=today.date())
 
+filtered_all_cards = _filter_cards_by_date(cards, start_date=start_date, end_date=end_date)
 filtered_cards = _filter_cards_by_date(source_cards, start_date=start_date, end_date=end_date)
 filtered_matches = _filter_cards_by_date(source_matches, start_date=start_date, end_date=end_date)
 filtered_deck_counts = filtered_cards.groupby("deck")["list_id"].nunique().sort_values(ascending=False)
@@ -145,15 +153,18 @@ elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
     st.info("Daily trends need data from at least two different days. Widen the date range if the trend tables are empty.")
 
 st.subheader("Best Decks Against Top 10 Meta Decks")
+major_eligible_decks = major_top_finish_decks(filtered_all_cards, placement_cutoff=100)
 best_meta_decks = best_decks_against_meta(
     filtered_cards,
     filtered_matches,
     meta_n=10,
     min_matches=min_meta_matches,
+    eligible_decks=major_eligible_decks,
 )
 if best_meta_decks.empty:
-    st.info("No decks meet the current minimum matchup sample against the top 10 meta decks.")
+    st.info("No decks meet the current minimum matchup sample and Major top-100 eligibility filter.")
 else:
+    st.caption("Only decks with at least one Major top-100 finish in the selected date window are considered.")
     _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
 st.subheader("Matchups Against Top 20 Decks")

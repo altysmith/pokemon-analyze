@@ -326,6 +326,7 @@ def best_decks_against_meta(
     matches: pd.DataFrame,
     meta_n: int = 10,
     min_matches: int = 30,
+    eligible_decks: set[str] | None = None,
 ) -> pd.DataFrame:
     """Rank decks by aggregate performance against the top meta decks."""
 
@@ -377,6 +378,8 @@ def best_decks_against_meta(
             top10_opponents_faced=("opponent_deck", "nunique"),
         )
     )
+    if eligible_decks is not None:
+        summary = summary[summary["deck"].isin(eligible_decks)].copy()
     summary = summary[summary["matches"] >= min_matches].copy()
     if summary.empty:
         return empty
@@ -387,6 +390,20 @@ def best_decks_against_meta(
         ["tie_adjusted_win_rate", "matches", "top10_opponents_faced"],
         ascending=[False, False, False],
     )
+
+
+def major_top_finish_decks(cards: pd.DataFrame, placement_cutoff: int = 100) -> set[str]:
+    """Return decks with at least one Major finish at or above the cutoff."""
+
+    if cards.empty or "placement" not in cards.columns or "source" not in cards.columns:
+        return set()
+
+    major_cards = cards[
+        (cards["source"] == "major")
+        & (cards["placement"].notna())
+        & (cards["placement"] <= placement_cutoff)
+    ]
+    return set(major_cards["deck"].dropna().astype(str).unique())
 
 
 def build_deck_summary(cards: pd.DataFrame | None = None, path: str | Path = CARDS_CSV) -> pd.DataFrame:
