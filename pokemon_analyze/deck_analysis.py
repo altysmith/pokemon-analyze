@@ -358,7 +358,8 @@ def best_decks_against_meta(
     empty = pd.DataFrame(
         columns=[
             "deck",
-            "winning_meta_matchups",
+            "favorable_matchups",
+            "very_favorable_matchups",
             "meta_opponents_faced",
             "matches",
             "wins",
@@ -421,10 +422,15 @@ def best_decks_against_meta(
     per_opponent["opponent_tie_adjusted_win_rate"] = (
         per_opponent["opponent_wins"] + (0.5 * per_opponent["opponent_ties"])
     ) / per_opponent["opponent_matches"]
-    winning_counts = (
-        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] > 0.5]
+    favorable_counts = (
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] >= 0.55]
         .groupby("deck", as_index=False)
-        .agg(winning_meta_matchups=("meta_opponent_deck", "nunique"))
+        .agg(favorable_matchups=("meta_opponent_deck", "nunique"))
+    )
+    very_favorable_counts = (
+        per_opponent[per_opponent["opponent_tie_adjusted_win_rate"] >= 0.60]
+        .groupby("deck", as_index=False)
+        .agg(very_favorable_matchups=("meta_opponent_deck", "nunique"))
     )
 
     summary = (
@@ -437,8 +443,10 @@ def best_decks_against_meta(
             meta_opponents_faced=("meta_opponent_deck", "nunique"),
         )
     )
-    summary = summary.merge(winning_counts, on="deck", how="left")
-    summary["winning_meta_matchups"] = summary["winning_meta_matchups"].fillna(0).astype(int)
+    summary = summary.merge(favorable_counts, on="deck", how="left")
+    summary = summary.merge(very_favorable_counts, on="deck", how="left")
+    summary["favorable_matchups"] = summary["favorable_matchups"].fillna(0).astype(int)
+    summary["very_favorable_matchups"] = summary["very_favorable_matchups"].fillna(0).astype(int)
     if eligible_decks is not None:
         summary = summary[summary["deck"].isin(eligible_decks)].copy()
     summary = summary[summary["matches"] >= min_matches].copy()
@@ -450,7 +458,8 @@ def best_decks_against_meta(
     summary = summary[
         [
             "deck",
-            "winning_meta_matchups",
+            "favorable_matchups",
+            "very_favorable_matchups",
             "meta_opponents_faced",
             "matches",
             "wins",
@@ -461,8 +470,8 @@ def best_decks_against_meta(
         ]
     ]
     return summary.sort_values(
-        ["winning_meta_matchups", "tie_adjusted_win_rate", "matches"],
-        ascending=[False, False, False],
+        ["favorable_matchups", "very_favorable_matchups", "tie_adjusted_win_rate", "matches"],
+        ascending=[False, False, False, False],
     )
 
 

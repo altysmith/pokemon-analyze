@@ -147,15 +147,17 @@ elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
 
 st.subheader(f"Best Decks Against Top {meta_deck_count} Meta Decks")
 if hasattr(deck_analysis, "resolve_meta_decks"):
-    resolved_meta_decks = deck_analysis.resolve_meta_decks(filtered_cards, limitless_meta_decks, limit=meta_deck_count)
+    eligible_meta_decks = deck_analysis.resolve_meta_decks(filtered_cards, limitless_meta_decks, limit=25)
+    resolved_meta_decks = eligible_meta_decks[eligible_meta_decks["rank"] <= meta_deck_count].copy()
 else:
+    eligible_meta_decks = pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
     resolved_meta_decks = pd.DataFrame(columns=["rank", "limitless_deck", "local_deck"])
 meta_targets = resolved_meta_decks["local_deck"].tolist()
 
 best_meta_kwargs = {
     "meta_n": meta_deck_count,
     "min_matches": 1,
-    "eligible_decks": None,
+    "eligible_decks": set(eligible_meta_decks["local_deck"]),
     "meta_decks": meta_targets or None,
     "meta_deck_map": resolved_meta_decks if not resolved_meta_decks.empty else None,
 }
@@ -176,7 +178,11 @@ else:
     if limitless_meta_decks.empty:
         st.caption("Using the top decks from the pulled dashboard data. Run pull_limitless_meta.py to use Limitless's metagame ranking.")
     else:
-        st.caption(f"Using Limitless's top {meta_deck_count} split-variant metagame decks as matchup targets. No Major eligibility or minimum-match filter is applied.")
+        st.caption(
+            "Candidates are limited to Limitless's top 25 split-variant meta decks. "
+            f"Targets are the top {meta_deck_count}. Favorable means 55%+ tie-adjusted win rate; "
+            "very favorable means 60%+."
+        )
     _show_table(best_meta_decks, percent_columns=["win_rate", "tie_adjusted_win_rate"])
 
 if not resolved_meta_decks.empty:

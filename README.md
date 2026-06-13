@@ -128,9 +128,11 @@ The "Best Decks Against Top Meta Decks" table uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
 ranking page with deck variants split and the "Past month" time filter. It can
 compare against the top 10, 20, or 25 Limitless meta decks. This table
-intentionally does not apply a Major finish requirement or a minimum-match
-filter; it ranks decks by how many top meta decks they have winning records
-against, then by aggregate tie-adjusted win rate.
+intentionally limits candidate decks to the same top-25 Limitless meta list. It
+does not apply a Major finish requirement or a minimum-match filter. A favorable
+matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
+very favorable matchup is 60% or higher. The table sorts by favorable matchups,
+then very favorable matchups, then aggregate tie-adjusted win rate.
 
 Percentages and numbers are formatted to at most 3 decimals for readability.
 
