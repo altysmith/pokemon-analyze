@@ -353,9 +353,9 @@ def _meta_overview(
         "matches": "M",
         "win_rate": "Win",
         "tie_adjusted_win_rate": "Adj",
-        "favorable_matchups": "Fav",
-        "unfavorable_matchups": "Unfav",
-        "very_unfavorable_matchups": "V Unfav",
+        "favorable_matchups": "Fav MU",
+        "unfavorable_matchups": "Unfav MU",
+        "very_unfavorable_matchups": "V Unfav MU",
     }
     spread_col, win_col, non_dragapult_col = st.columns(3)
     with spread_col:
@@ -418,7 +418,6 @@ def _meta_overview(
     full_columns = [
         "meta_rank",
         "deck",
-        "meta_points",
         "meta_share",
         "matches",
         "wins",
@@ -432,9 +431,30 @@ def _meta_overview(
         "very_unfavorable_matchups",
         "meta_opponents_faced",
     ]
+    full_labels = {
+        "meta_rank": "Rank",
+        "deck": "Deck",
+        "meta_share": "Share",
+        "matches": "M",
+        "wins": "W",
+        "losses": "L",
+        "ties": "T",
+        "win_rate": "Win",
+        "tie_adjusted_win_rate": "Adj",
+        "favorable_matchups": "Fav MU",
+        "very_favorable_matchups": "V Fav MU",
+        "unfavorable_matchups": "Unfav MU",
+        "very_unfavorable_matchups": "V Unfav MU",
+        "meta_opponents_faced": "Meta Faced",
+    }
     st.subheader(f"Full Top-{meta_count} Meta Performance Table")
     best_display = _ensure_columns(best, full_columns)
-    _show_table(best_display[full_columns], percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"])
+    best_display = best_display.sort_values("meta_rank", ascending=True)
+    _show_table(
+        best_display[full_columns],
+        percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
+        column_labels=full_labels,
+    )
 
 
 def _deck_detail(
