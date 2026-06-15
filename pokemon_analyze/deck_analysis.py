@@ -273,13 +273,15 @@ def best_average_placement_cards(cards: pd.DataFrame, min_decks_played: int = 3)
     groups = classify_cards(cards)
     flex_and_tech = groups[groups["category"].isin(["flex", "tech"])]
 
+    placement_groups = flex_and_tech[["card", "category"]].rename(columns={"category": "usage_category"})
     placements = (
-        cards.merge(flex_and_tech[["card", "category"]], on="card", how="inner")
-        .groupby(["card", "category"], as_index=False)
+        cards.merge(placement_groups, on="card", how="inner")
+        .groupby(["card", "usage_category"], as_index=False)
         .agg(
             average_placement=("placement", "mean"),
             decks_played=("list_id", "nunique"),
         )
+        .rename(columns={"usage_category": "category"})
         .sort_values(["average_placement", "decks_played", "card"], ascending=[True, False, True])
     )
     return placements[placements["decks_played"] >= min_decks_played]
