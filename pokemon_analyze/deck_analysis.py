@@ -586,13 +586,15 @@ def card_impact_against_meta(
     empty_summary = pd.DataFrame(columns=summary_columns)
     empty_matchups = pd.DataFrame(columns=matchup_columns)
 
-    query = card_query.strip()
-    if not query or cards.empty or matches.empty or meta_deck_map.empty:
+    query = str(card_query or "").strip()
+    if not query or cards.empty or matches.empty or meta_deck_map is None or meta_deck_map.empty:
         return query, empty_summary, empty_matchups
 
     deck_cards = cards[cards["deck"] == deck].copy()
     if deck_cards.empty:
         return query, empty_summary, empty_matchups
+    if "list_id" not in deck_cards.columns:
+        deck_cards["list_id"] = _list_id(deck_cards)
 
     all_list_keys = set(deck_cards["list_id"].dropna().astype(str).unique())
     matched_card_names = _matching_card_names(deck_cards["card"].dropna().astype(str).unique(), query)
@@ -609,7 +611,15 @@ def card_impact_against_meta(
     if match_rows.empty:
         return matched_name, empty_summary, empty_matchups
 
+    needed_meta_columns = {"limitless_deck", "local_deck"}
+    if not needed_meta_columns.issubset(meta_deck_map.columns):
+        summary = _card_impact_overall_summary(pd.DataFrame(), included_list_keys, excluded_list_keys)
+        return matched_name, summary, empty_matchups
+
     meta_targets = meta_deck_map[["limitless_deck", "local_deck"]].dropna().drop_duplicates().copy()
+    if meta_targets.empty:
+        summary = _card_impact_overall_summary(pd.DataFrame(), included_list_keys, excluded_list_keys)
+        return matched_name, summary, empty_matchups
     selected = match_rows[
         (match_rows["deck"] == deck)
         & (match_rows["opponent_deck"].isin(meta_targets["local_deck"]))
@@ -624,6 +634,7 @@ def card_impact_against_meta(
         on="opponent_deck",
         how="inner",
     )
+    selected["list_key"] = selected["list_key"].astype(str)
     selected["card_group"] = selected["list_key"].apply(lambda key: "with" if key in included_list_keys else "without")
     selected = selected[selected["list_key"].isin(included_list_keys | excluded_list_keys)].copy()
 
@@ -771,9 +782,9 @@ def _card_impact_matchup_table(selected_matches: pd.DataFrame, meta_targets: pd.
     """Return included-vs-excluded matchup rows for each selected meta deck."""
 
     rows = []
-    for target in meta_targets.itertuples(index=False):
-        opponent = target.limitless_deck
-        local_deck = target.local_deck
+    for _, target in meta_targets.iterrows():
+        opponent = target.get("limitless_deck", "")
+        local_deck = target.get("local_deck", "")
         opponent_matches = selected_matches[selected_matches["opponent_deck"] == local_deck]
         row: dict[str, object] = {"opponent_deck": opponent}
         rates: dict[str, float] = {}
