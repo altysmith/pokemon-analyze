@@ -581,7 +581,7 @@ def _deck_detail(
             "without_losses": "Out L",
             "without_ties": "Out T",
             "without_tie_adjusted_win_rate": "Out Adj",
-            "delta_tie_adjusted_win_rate": "Delta",
+            "delta_tie_adjusted_win_rate": "Change vs Out",
         }
         if impact_matchups.empty:
             st.info("No top-15 matchup rows are available for this card search and filter set.")
