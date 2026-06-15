@@ -40,22 +40,37 @@ def _unique_period_count(cards: pd.DataFrame, period_code: str) -> int:
     return cards.dropna(subset=["date"])["date"].dt.to_period(period_code).nunique()
 
 
-def _show_table(table: pd.DataFrame, percent_columns: list[str] | None = None) -> None:
+def _show_table(
+    table: pd.DataFrame,
+    percent_columns: list[str] | None = None,
+    column_labels: dict[str, str] | None = None,
+) -> None:
     """Show a numeric table with readable formatting and real numeric sorting."""
 
     percent_columns = percent_columns or []
+    column_labels = column_labels or {}
     display = table.copy()
     column_config = {}
 
     for column in percent_columns:
         if column in display.columns:
             display[column] = display[column] * 100
-            column_config[column] = st.column_config.NumberColumn(format="%.3f%%")
+            column_config[column] = st.column_config.NumberColumn(
+                label=column_labels.get(column, column),
+                format="%.3f%%",
+            )
 
     for column in display.columns:
-        if column in column_config or not pd.api.types.is_numeric_dtype(display[column]):
+        if column in column_config:
             continue
-        column_config[column] = st.column_config.NumberColumn(format="%.0f")
+        if not pd.api.types.is_numeric_dtype(display[column]):
+            if column in column_labels:
+                column_config[column] = st.column_config.TextColumn(label=column_labels[column])
+            continue
+        column_config[column] = st.column_config.NumberColumn(
+            label=column_labels.get(column, column),
+            format="%.0f",
+        )
 
     st.dataframe(display, column_config=column_config, width="stretch", hide_index=True)
 
@@ -292,6 +307,11 @@ def _meta_overview(
         ["tie_adjusted_win_rate", "matches"],
         ascending=[False, False],
     ).head(5)
+    highest_non_dragapult = (
+        best[~best["deck"].astype(str).str.contains("Dragapult", case=False, na=False)]
+        .sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
+        .head(5)
+    )
     matchup_columns = [
         "deck",
         "matches",
@@ -310,13 +330,37 @@ def _meta_overview(
         "unfavorable_matchups",
         "very_unfavorable_matchups",
     ]
-    spread_col, win_col = st.columns(2)
+    compact_labels = {
+        "deck": "Deck",
+        "matches": "M",
+        "win_rate": "Win",
+        "tie_adjusted_win_rate": "Adj",
+        "favorable_matchups": "Fav",
+        "unfavorable_matchups": "Unfav",
+        "very_unfavorable_matchups": "V Unfav",
+    }
+    spread_col, win_col, non_dragapult_col = st.columns(3)
     with spread_col:
         st.markdown("#### Most Favorable Matchups")
-        _show_table(most_favorable[matchup_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
+        _show_table(
+            most_favorable[matchup_columns],
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+            column_labels=compact_labels,
+        )
     with win_col:
         st.markdown("#### Highest Adjusted Win %")
-        _show_table(highest_win_rate[win_rate_columns], percent_columns=["win_rate", "tie_adjusted_win_rate"])
+        _show_table(
+            highest_win_rate[win_rate_columns],
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+            column_labels=compact_labels,
+        )
+    with non_dragapult_col:
+        st.markdown("#### Highest Adjusted Win % Non Dragapult")
+        _show_table(
+            highest_non_dragapult[win_rate_columns],
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+            column_labels=compact_labels,
+        )
 
     st.subheader("Best Decks To Beat One Target")
     target_options = resolved_meta.sort_values("rank").copy()
