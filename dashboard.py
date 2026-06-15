@@ -118,7 +118,7 @@ def _source_decklist_url(row: pd.Series) -> str:
 
 
 def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataFrame:
-    """Pick the best saved Major list for each deck and format it for display."""
+    """Pick the newest Major list for each deck, then best placement at that Major."""
 
     rows: list[dict[str, object]] = []
     for deck in decks:
@@ -148,7 +148,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
             lists["date_sort"] = lists["date"].fillna(pd.Timestamp.min)
         else:
             lists["date_sort"] = pd.Timestamp.min
-        best_list = lists.sort_values(["placement_sort", "date_sort"], ascending=[True, False]).iloc[0]
+        best_list = lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True]).iloc[0]
 
         card_lines = (
             deck_cards[deck_cards["list_id"] == best_list["list_id"]]
@@ -166,6 +166,24 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
             }
         )
     return pd.DataFrame(rows)
+
+
+def _show_representative_decklists(representatives: pd.DataFrame, heading: str = "Representative decklists") -> None:
+    """Render saved representative decklists as expandable text blocks."""
+
+    if representatives.empty:
+        st.info("No saved Major decklist found for this deck in the selected date window.")
+        return
+
+    st.markdown(heading)
+    for row in representatives.itertuples(index=False):
+        placement_number = pd.to_numeric(row.placement, errors="coerce")
+        placement = "" if pd.isna(placement_number) else f" - {int(placement_number)}"
+        label = f"{row.deck}: {row.player}{placement} at {row.tournament}"
+        with st.expander(label):
+            if row.source_link:
+                st.link_button("Open source event", row.source_link)
+            st.code(row.decklist, language="text")
 
 
 def _best_meta_kwargs(
@@ -395,16 +413,7 @@ def _meta_overview(
         )
         major_link_cards = _filter_by_date(cards, start_date, end_date)
         representatives = _representative_decklists(major_link_cards, top_target_decks["deck"].tolist())
-        if not representatives.empty:
-            st.markdown("Representative decklists")
-            for row in representatives.itertuples(index=False):
-                placement_number = pd.to_numeric(row.placement, errors="coerce")
-                placement = "" if pd.isna(placement_number) else f" - {int(placement_number)}"
-                label = f"{row.deck}: {row.player}{placement} at {row.tournament}"
-                with st.expander(label):
-                    if row.source_link:
-                        st.link_button("Open source event", row.source_link)
-                    st.code(row.decklist, language="text")
+        _show_representative_decklists(representatives)
 
     full_columns = [
         "meta_rank",
@@ -496,6 +505,10 @@ def _deck_detail(
     metric_one.metric("Deck Lists", deck_list_count)
     metric_two.metric("Unique Cards", int(deck_cards["card"].nunique()))
     metric_three.metric("Date Range", date_range or "Unknown")
+
+    major_link_cards = _filter_by_date(cards, start_date, end_date)
+    representatives = _representative_decklists(major_link_cards, [selected_deck])
+    _show_representative_decklists(representatives, heading="Newest Major representative decklist")
 
     meta_decks = limitless_meta_decks.head(meta_count).copy()
     resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
