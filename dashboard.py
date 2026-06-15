@@ -223,11 +223,28 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
             card_name = str(row.card)
             fallback = metadata.get(card_name, {})
             set_code = str(row.set or fallback.get("set", "")).strip()
-            number = str(row.number or fallback.get("number", "")).strip()
+            number = _clean_card_number(row.number or fallback.get("number", ""))
             suffix = f" {set_code} {number}".rstrip() if set_code or number else ""
-            lines.append(f"{int(row.count)} {card_name}{suffix}")
+            lines.append(f"{_clean_card_count(row.count)} {card_name}{suffix}")
         lines.append("")
     return "\n".join(lines).strip()
+
+
+def _clean_card_count(value: object) -> int:
+    """Show decklist counts as whole numbers for import tools."""
+
+    return int(pd.to_numeric(value, errors="coerce")) if not pd.isna(pd.to_numeric(value, errors="coerce")) else 0
+
+
+def _clean_card_number(value: object) -> str:
+    """Remove spreadsheet-style decimals from card numbers, such as 54.0."""
+
+    if value is None or pd.isna(value):
+        return ""
+    text = str(value).strip()
+    if text.endswith(".0"):
+        return text[:-2]
+    return text
 
 
 def _cards_for_section(
