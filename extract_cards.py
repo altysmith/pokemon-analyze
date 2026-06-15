@@ -42,22 +42,25 @@ def extract_cards(players: pd.DataFrame) -> pd.DataFrame:
 
     rows: list[dict[str, object]] = []
     for index, player in players.iterrows():
-        for count, card_name in _parse_card_list(player.get(card_column, "")):
+        for card in _parse_card_list(player.get(card_column, "")):
             row = player.drop(labels=[card_column]).to_dict()
             row["player_id"] = _first_non_empty(row.get("player_id"), row.get("player"), index)
-            row["card"] = card_name
-            row["count"] = count
+            row["card"] = card["name"]
+            row["count"] = card["count"]
+            row["category"] = card.get("category", "")
+            row["set"] = card.get("set", "")
+            row["number"] = card.get("number", "")
             rows.append(row)
 
     return pd.DataFrame(rows)
 
 
-def _parse_card_list(raw_cards: object) -> list[tuple[int, str]]:
+def _parse_card_list(raw_cards: object) -> list[dict[str, object]]:
     parsed_json = _parse_json_card_list(raw_cards)
     if parsed_json:
         return parsed_json
 
-    cards: list[tuple[int, str]] = []
+    cards: list[dict[str, object]] = []
     for line in str(raw_cards).replace(";", "\n").splitlines():
         line = line.strip()
         if not line:
@@ -65,13 +68,13 @@ def _parse_card_list(raw_cards: object) -> list[tuple[int, str]]:
 
         parts = line.split(" ", 1)
         if parts and parts[0].isdigit() and len(parts) > 1:
-            cards.append((int(parts[0]), parts[1].strip()))
+            cards.append({"count": int(parts[0]), "name": parts[1].strip()})
         else:
-            cards.append((1, line))
+            cards.append({"count": 1, "name": line})
     return cards
 
 
-def _parse_json_card_list(raw_cards: object) -> list[tuple[int, str]]:
+def _parse_json_card_list(raw_cards: object) -> list[dict[str, object]]:
     """Parse card lists stored as JSON by limitless_pull.py."""
 
     try:
@@ -79,44 +82,52 @@ def _parse_json_card_list(raw_cards: object) -> list[tuple[int, str]]:
     except (TypeError, json.JSONDecodeError):
         return []
 
-    cards: list[tuple[int, str]] = []
+    cards: list[dict[str, object]] = []
     if isinstance(loaded, list):
         for item in loaded:
             cards.extend(_parse_json_card_item(item))
     elif isinstance(loaded, dict):
-        for name, count in loaded.items():
-            if isinstance(count, (list, dict)):
-                cards.extend(_parse_json_card_item(count))
+        for name, value in loaded.items():
+            if isinstance(value, (list, dict)):
+                cards.extend(_parse_json_card_item(value, category=name))
             else:
-                cards.append((_safe_count(count), str(name)))
+                cards.append({"count": _safe_count(value), "name": str(name), "category": ""})
 
     return cards
 
 
-def _parse_json_card_item(item: object) -> list[tuple[int, str]]:
+def _parse_json_card_item(item: object, category: str = "") -> list[dict[str, object]]:
     """Parse one item or nested section from a Limitless decklist."""
 
     if isinstance(item, str):
-        return [(1, item)]
+        return [{"count": 1, "name": item, "category": category}]
 
     if isinstance(item, list):
-        cards: list[tuple[int, str]] = []
+        cards: list[dict[str, object]] = []
         for nested_item in item:
-            cards.extend(_parse_json_card_item(nested_item))
+            cards.extend(_parse_json_card_item(nested_item, category=category))
         return cards
 
     if isinstance(item, dict):
         name = item.get("card") or item.get("name") or item.get("card_name")
         count = item.get("count") or item.get("qty") or item.get("quantity") or 1
         if name:
-            return [(_safe_count(count), str(name))]
+            return [
+                {
+                    "count": _safe_count(count),
+                    "name": str(name),
+                    "category": str(item.get("category") or item.get("type") or category),
+                    "set": str(item.get("set") or item.get("set_code") or ""),
+                    "number": str(item.get("number") or item.get("card_number") or ""),
+                }
+            ]
 
-        cards: list[tuple[int, str]] = []
+        cards: list[dict[str, object]] = []
         for nested_name, nested_value in item.items():
             if isinstance(nested_value, (list, dict)):
-                cards.extend(_parse_json_card_item(nested_value))
+                cards.extend(_parse_json_card_item(nested_value, category=str(nested_name)))
             else:
-                cards.append((_safe_count(nested_value), str(nested_name)))
+                cards.append({"count": _safe_count(nested_value), "name": str(nested_name), "category": category})
         return cards
 
     return []

@@ -121,6 +121,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
     """Pick the newest Major list for each deck, then best placement at that Major."""
 
     rows: list[dict[str, object]] = []
+    card_metadata = _card_metadata_lookup(cards)
     for deck in decks:
         deck_cards = cards[cards["deck"] == deck].copy()
         if "source" in deck_cards.columns:
@@ -150,11 +151,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
             lists["date_sort"] = pd.Timestamp.min
         best_list = lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True]).iloc[0]
 
-        card_lines = (
-            deck_cards[deck_cards["list_id"] == best_list["list_id"]]
-            .sort_values(["card"])
-            .assign(card_line=lambda data: data["count"].astype(int).astype(str) + " " + data["card"])
-        )
+        list_cards = deck_cards[deck_cards["list_id"] == best_list["list_id"]].copy()
         rows.append(
             {
                 "deck": deck,
@@ -162,10 +159,99 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
                 "placement": best_list.get("placement", ""),
                 "tournament": best_list.get("tournament_name", ""),
                 "source_link": _source_decklist_url(best_list),
-                "decklist": "\n".join(card_lines["card_line"].tolist()),
+                "decklist": _format_importable_decklist(list_cards, card_metadata),
             }
         )
     return pd.DataFrame(rows)
+
+
+def _card_metadata_lookup(cards: pd.DataFrame) -> dict[str, dict[str, str]]:
+    """Build a simple card-name lookup for set/number/category fallbacks."""
+
+    needed = {"card", "set", "number"}
+    if cards.empty or not needed.issubset(cards.columns):
+        return {}
+
+    metadata: dict[str, dict[str, str]] = {}
+    usable = cards.dropna(subset=["card"]).copy()
+    usable["set"] = usable["set"].fillna("").astype(str)
+    usable["number"] = usable["number"].fillna("").astype(str)
+    if "category" not in usable.columns:
+        usable["category"] = ""
+    usable["category"] = usable["category"].fillna("").astype(str)
+
+    for row in usable.itertuples(index=False):
+        card_name = str(getattr(row, "card", ""))
+        set_code = str(getattr(row, "set", ""))
+        number = str(getattr(row, "number", ""))
+        category = str(getattr(row, "category", ""))
+        if not card_name or not set_code or not number:
+            continue
+        metadata.setdefault(
+            card_name,
+            {
+                "category": category,
+                "set": set_code,
+                "number": number,
+            },
+        )
+    return metadata
+
+
+def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[str, str]]) -> str:
+    """Format a decklist for copy/paste into deck building tools."""
+
+    sections = [
+        ("pokemon", "Pokémon"),
+        ("trainer", "Trainer"),
+        ("energy", "Energy"),
+    ]
+    display_cards = cards.copy()
+    for column in ["category", "set", "number"]:
+        if column not in display_cards.columns:
+            display_cards[column] = ""
+        display_cards[column] = display_cards[column].fillna("").astype(str)
+
+    lines: list[str] = []
+    for category_key, heading in sections:
+        section_cards = _cards_for_section(display_cards, category_key, metadata)
+        if section_cards.empty:
+            continue
+        total = int(section_cards["count"].sum())
+        lines.append(f"{heading}: {total}")
+        for row in section_cards.sort_values(["card"]).itertuples(index=False):
+            card_name = str(row.card)
+            fallback = metadata.get(card_name, {})
+            set_code = str(row.set or fallback.get("set", "")).strip()
+            number = str(row.number or fallback.get("number", "")).strip()
+            suffix = f" {set_code} {number}".rstrip() if set_code or number else ""
+            lines.append(f"{int(row.count)} {card_name}{suffix}")
+        lines.append("")
+    return "\n".join(lines).strip()
+
+
+def _cards_for_section(
+    cards: pd.DataFrame,
+    category_key: str,
+    metadata: dict[str, dict[str, str]],
+) -> pd.DataFrame:
+    """Return cards matching one import section."""
+
+    def normalized_category(row: pd.Series) -> str:
+        category = str(row.get("category", "")).strip().lower()
+        if category:
+            return category
+        fallback = metadata.get(str(row.get("card", "")), {})
+        return str(fallback.get("category", "")).strip().lower()
+
+    categories = cards.apply(normalized_category, axis=1)
+    if category_key == "pokemon":
+        mask = categories.str.contains("pokemon|pokémon", regex=True, na=False)
+    elif category_key == "trainer":
+        mask = categories.str.contains("trainer", regex=False, na=False)
+    else:
+        mask = categories.str.contains("energy", regex=False, na=False)
+    return cards[mask].copy()
 
 
 def _show_representative_decklists(representatives: pd.DataFrame, heading: str = "Representative decklists") -> None:

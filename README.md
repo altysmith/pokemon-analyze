@@ -122,6 +122,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - a top-5 best decks list against a selectable top meta range, defaulting to top 10 and expanding up to top 25
 - a target-deck dropdown that shows the top 5 decks into one selected meta deck
 - representative decklists from the newest available Major, using best placement within that event
+- copyable representative decklists formatted with section totals and card set/number identifiers when available
 - side-by-side top-5 lists for most favorable matchups, highest overall win percentage, and highest non-Dragapult win percentage
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
 - favorable and unfavorable matchup lines at the top of each selected deck detail page
