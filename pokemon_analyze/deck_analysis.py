@@ -47,7 +47,7 @@ def read_matches(path: str | Path = MATCHES_CSV) -> pd.DataFrame:
     if not csv_path.exists():
         return pd.DataFrame(columns=["tournament_id", "player1", "player2", "winner", "date"])
 
-    matches = pd.read_csv(csv_path)
+    matches = pd.read_csv(csv_path, low_memory=False)
     matches = _normalize_columns(matches)
 
     for column in ["tournament_id", "player1", "player2", "winner"]:
@@ -559,6 +559,79 @@ def deck_matchups_against_meta(
     return summary.sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
 
 
+def card_impact_against_meta(
+    deck: str,
+    card_query: str,
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    meta_deck_map: pd.DataFrame,
+) -> tuple[str, pd.DataFrame, pd.DataFrame]:
+    """Compare top-meta matchups for decklists with and without a searched card."""
+
+    summary_columns = ["group", "lists", "matches", "wins", "losses", "ties", "win_rate", "tie_adjusted_win_rate"]
+    matchup_columns = [
+        "opponent_deck",
+        "with_matches",
+        "with_wins",
+        "with_losses",
+        "with_ties",
+        "with_tie_adjusted_win_rate",
+        "without_matches",
+        "without_wins",
+        "without_losses",
+        "without_ties",
+        "without_tie_adjusted_win_rate",
+        "delta_tie_adjusted_win_rate",
+    ]
+    empty_summary = pd.DataFrame(columns=summary_columns)
+    empty_matchups = pd.DataFrame(columns=matchup_columns)
+
+    query = card_query.strip()
+    if not query or cards.empty or matches.empty or meta_deck_map.empty:
+        return query, empty_summary, empty_matchups
+
+    deck_cards = cards[cards["deck"] == deck].copy()
+    if deck_cards.empty:
+        return query, empty_summary, empty_matchups
+
+    all_list_keys = set(deck_cards["list_id"].dropna().astype(str).unique())
+    matched_card_names = _matching_card_names(deck_cards["card"].dropna().astype(str).unique(), query)
+    matched_name = ", ".join(matched_card_names) if matched_card_names else query
+    if matched_card_names:
+        included = deck_cards[deck_cards["card"].isin(matched_card_names)]
+        included_list_keys = set(included["list_id"].dropna().astype(str).unique())
+    else:
+        included_list_keys = set()
+    excluded_list_keys = all_list_keys - included_list_keys
+
+    deck_map = _deck_map_from_cards(cards)
+    match_rows = _matches_with_decks(matches, deck_map)
+    if match_rows.empty:
+        return matched_name, empty_summary, empty_matchups
+
+    meta_targets = meta_deck_map[["limitless_deck", "local_deck"]].dropna().drop_duplicates().copy()
+    selected = match_rows[
+        (match_rows["deck"] == deck)
+        & (match_rows["opponent_deck"].isin(meta_targets["local_deck"]))
+        & (match_rows["opponent_deck"] != deck)
+    ].copy()
+    if selected.empty:
+        summary = _card_impact_overall_summary(selected, included_list_keys, excluded_list_keys)
+        return matched_name, summary, empty_matchups
+
+    selected = selected.merge(
+        meta_targets.rename(columns={"local_deck": "opponent_deck", "limitless_deck": "meta_opponent_deck"}),
+        on="opponent_deck",
+        how="inner",
+    )
+    selected["card_group"] = selected["list_key"].apply(lambda key: "with" if key in included_list_keys else "without")
+    selected = selected[selected["list_key"].isin(included_list_keys | excluded_list_keys)].copy()
+
+    summary = _card_impact_overall_summary(selected, included_list_keys, excluded_list_keys)
+    matchups = _card_impact_matchup_table(selected, meta_targets)
+    return matched_name, summary, matchups
+
+
 def best_decks_against_target(
     target_deck: str,
     cards: pd.DataFrame,
@@ -652,6 +725,74 @@ def _matchup_label(tie_adjusted_win_rate: float) -> str:
     if tie_adjusted_win_rate < 0.45:
         return "unfavorable"
     return "even"
+
+
+def _matching_card_names(card_names: Iterable[str], query: str) -> list[str]:
+    """Find card names matching a user-entered search string."""
+
+    query_clean = query.strip().lower()
+    names = sorted({str(name) for name in card_names if str(name).strip()})
+    exact = [name for name in names if name.lower() == query_clean]
+    if exact:
+        return exact
+    return [name for name in names if query_clean in name.lower()]
+
+
+def _card_impact_overall_summary(
+    selected_matches: pd.DataFrame,
+    included_list_keys: set[str],
+    excluded_list_keys: set[str],
+) -> pd.DataFrame:
+    """Return one overall row for lists with the card and one without it."""
+
+    rows = []
+    for group_name, list_keys in [("With card", included_list_keys), ("Without card", excluded_list_keys)]:
+        group_matches = selected_matches[selected_matches["list_key"].isin(list_keys)] if not selected_matches.empty else selected_matches
+        matches = len(group_matches)
+        wins = int((group_matches["result"] == "win").sum()) if matches else 0
+        losses = int((group_matches["result"] == "loss").sum()) if matches else 0
+        ties = int((group_matches["result"] == "tie").sum()) if matches else 0
+        rows.append(
+            {
+                "group": group_name,
+                "lists": len(list_keys),
+                "matches": matches,
+                "wins": wins,
+                "losses": losses,
+                "ties": ties,
+                "win_rate": wins / matches if matches else 0,
+                "tie_adjusted_win_rate": (wins + (TIE_WIN_VALUE * ties)) / matches if matches else 0,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _card_impact_matchup_table(selected_matches: pd.DataFrame, meta_targets: pd.DataFrame) -> pd.DataFrame:
+    """Return included-vs-excluded matchup rows for each selected meta deck."""
+
+    rows = []
+    for target in meta_targets.itertuples(index=False):
+        opponent = target.limitless_deck
+        local_deck = target.local_deck
+        opponent_matches = selected_matches[selected_matches["opponent_deck"] == local_deck]
+        row: dict[str, object] = {"opponent_deck": opponent}
+        rates: dict[str, float] = {}
+        for group in ["with", "without"]:
+            group_matches = opponent_matches[opponent_matches["card_group"] == group]
+            matches = len(group_matches)
+            wins = int((group_matches["result"] == "win").sum()) if matches else 0
+            losses = int((group_matches["result"] == "loss").sum()) if matches else 0
+            ties = int((group_matches["result"] == "tie").sum()) if matches else 0
+            adjusted_rate = (wins + (TIE_WIN_VALUE * ties)) / matches if matches else 0
+            row[f"{group}_matches"] = matches
+            row[f"{group}_wins"] = wins
+            row[f"{group}_losses"] = losses
+            row[f"{group}_ties"] = ties
+            row[f"{group}_tie_adjusted_win_rate"] = adjusted_rate
+            rates[group] = adjusted_rate
+        row["delta_tie_adjusted_win_rate"] = rates["with"] - rates["without"]
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 def major_top_finish_decks(cards: pd.DataFrame, placement_cutoff: int = 100) -> set[str]:
@@ -868,7 +1009,7 @@ def _list_id(cards: pd.DataFrame) -> pd.Series:
 
 def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.DataFrame:
     if matches.empty or deck_map.empty:
-        return pd.DataFrame(columns=["deck", "opponent_deck", "result"])
+        return pd.DataFrame(columns=["tournament_id", "player", "list_key", "deck", "opponent_deck", "result"])
 
     match_rows = matches.dropna(subset=["tournament_id"]).copy()
     match_rows["tournament_id"] = match_rows["tournament_id"].astype(str)
@@ -877,22 +1018,22 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
     match_rows["winner"] = match_rows["winner"].astype(str)
 
     player_one = match_rows.merge(
-        deck_map.rename(columns={"player_id": "player1", "deck": "deck"}),
+        deck_map.rename(columns={"player_id": "player1", "deck": "deck", "list_key": "list_key"}),
         on=["tournament_id", "player1"],
         how="left",
     ).merge(
-        deck_map.rename(columns={"player_id": "player2", "deck": "opponent_deck"}),
+        deck_map.rename(columns={"player_id": "player2", "deck": "opponent_deck", "list_key": "opponent_list_key"}),
         on=["tournament_id", "player2"],
         how="left",
     )
     player_one["player"] = player_one["player1"]
 
     player_two = match_rows.merge(
-        deck_map.rename(columns={"player_id": "player2", "deck": "deck"}),
+        deck_map.rename(columns={"player_id": "player2", "deck": "deck", "list_key": "list_key"}),
         on=["tournament_id", "player2"],
         how="left",
     ).merge(
-        deck_map.rename(columns={"player_id": "player1", "deck": "opponent_deck"}),
+        deck_map.rename(columns={"player_id": "player1", "deck": "opponent_deck", "list_key": "opponent_list_key"}),
         on=["tournament_id", "player1"],
         how="left",
     )
@@ -902,7 +1043,7 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
     combined = combined.dropna(subset=["deck", "opponent_deck"])
     combined = combined[(combined["player"] != "") & (combined["opponent_deck"] != "")]
     combined["result"] = combined.apply(_match_result, axis=1)
-    return combined[["deck", "opponent_deck", "result"]]
+    return combined[["tournament_id", "player", "list_key", "deck", "opponent_deck", "result"]]
 
 
 def _match_result(row: pd.Series) -> str:

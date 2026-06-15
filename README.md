@@ -125,6 +125,7 @@ The dashboard reads `outputs/cards.csv` and includes:
 - side-by-side top-5 lists for most favorable matchups, highest overall win percentage, and highest non-Dragapult win percentage
 - matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
 - favorable and unfavorable matchup lines at the top of each selected deck detail page
+- a card-impact text search that compares lists with and without a card against the top 15 meta decks
 - daily or monthly trend buckets
 - core, common, flex, and tech card groups
 - trending up and trending down cards

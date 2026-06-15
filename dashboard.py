@@ -537,6 +537,67 @@ def _deck_detail(
     meta_details = deck_analysis.deck_matchups_against_meta(selected_deck, filtered_cards, filtered_matches, resolved_meta)
     _render_deck_meta_summary(selected_deck, meta_details, deck_rank)
 
+    st.subheader("Card Impact Against Top 15 Meta")
+    card_query = st.text_input("Card name", key=f"card_impact_{selected_deck}")
+    if card_query.strip():
+        impact_meta_decks = limitless_meta_decks.head(15).copy()
+        impact_meta = deck_analysis.resolve_meta_decks(filtered_cards, impact_meta_decks, limit=15)
+        matched_card, impact_summary, impact_matchups = deck_analysis.card_impact_against_meta(
+            selected_deck,
+            card_query,
+            filtered_cards,
+            filtered_matches,
+            impact_meta,
+        )
+        st.caption(f"Search matched: {matched_card}")
+        if not impact_summary.empty:
+            with_count = int(impact_summary.loc[impact_summary["group"] == "With card", "lists"].sum())
+            if with_count == 0:
+                st.info("No saved decklists for this deck include that card in the selected filters.")
+            summary_labels = {
+                "group": "Set",
+                "lists": "Lists",
+                "matches": "M",
+                "wins": "W",
+                "losses": "L",
+                "ties": "T",
+                "win_rate": "Win",
+                "tie_adjusted_win_rate": "Adj",
+            }
+            _show_table(
+                impact_summary,
+                percent_columns=["win_rate", "tie_adjusted_win_rate"],
+                column_labels=summary_labels,
+            )
+        matchup_labels = {
+            "opponent_deck": "MU",
+            "with_matches": "In M",
+            "with_wins": "In W",
+            "with_losses": "In L",
+            "with_ties": "In T",
+            "with_tie_adjusted_win_rate": "In Adj",
+            "without_matches": "Out M",
+            "without_wins": "Out W",
+            "without_losses": "Out L",
+            "without_ties": "Out T",
+            "without_tie_adjusted_win_rate": "Out Adj",
+            "delta_tie_adjusted_win_rate": "Delta",
+        }
+        if impact_matchups.empty:
+            st.info("No top-15 matchup rows are available for this card search and filter set.")
+        else:
+            _show_table(
+                impact_matchups,
+                percent_columns=[
+                    "with_tie_adjusted_win_rate",
+                    "without_tie_adjusted_win_rate",
+                    "delta_tie_adjusted_win_rate",
+                ],
+                column_labels=matchup_labels,
+            )
+    else:
+        st.info("Type a card name to compare lists with and without that card into the top 15 meta decks.")
+
     if bucket == "monthly" and _unique_period_count(deck_cards, "M") < 2:
         st.info("Monthly trends need data from at least two months.")
     elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
