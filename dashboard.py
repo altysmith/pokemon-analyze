@@ -429,7 +429,6 @@ def _meta_overview(
         "very_favorable_matchups",
         "unfavorable_matchups",
         "very_unfavorable_matchups",
-        "meta_opponents_faced",
     ]
     full_labels = {
         "meta_rank": "Rank",
@@ -445,7 +444,6 @@ def _meta_overview(
         "very_favorable_matchups": "V Fav MU",
         "unfavorable_matchups": "Unfav MU",
         "very_unfavorable_matchups": "V Unfav MU",
-        "meta_opponents_faced": "Meta Faced",
     }
     st.subheader(f"Full Top-{meta_count} Meta Performance Table")
     best_display = _ensure_columns(best, full_columns)
