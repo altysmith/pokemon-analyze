@@ -13,6 +13,7 @@ import pokemon_analyze.deck_analysis as deck_analysis
 
 DEFAULT_META_COUNT = 10
 MAX_META_COUNT = 25
+FULL_META_COUNT = 25
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -584,14 +585,25 @@ def _meta_overview(
         "unfavorable_matchups": "Unfav MU",
         "very_unfavorable_matchups": "V Unfav MU",
     }
-    st.subheader(f"Full Top-{meta_count} Meta Performance Table")
-    best_display = _ensure_columns(best, full_columns)
-    best_display = best_display.sort_values("meta_rank", ascending=True)
-    _show_table(
-        best_display[full_columns],
-        percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
-        column_labels=full_labels,
-    )
+    full_meta_decks = limitless_meta_decks.head(FULL_META_COUNT).copy()
+    full_resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, full_meta_decks, limit=FULL_META_COUNT)
+    st.subheader(f"Full Top-{FULL_META_COUNT} Meta Performance Table")
+    if full_resolved_meta.empty:
+        st.info("No Limitless top-25 meta decks could be matched to the current card data.")
+    else:
+        full_best = deck_analysis.best_decks_against_meta(
+            filtered_cards,
+            filtered_matches,
+            **_best_meta_kwargs(FULL_META_COUNT, set(full_resolved_meta["local_deck"]), full_resolved_meta),
+        )
+        full_best = _add_meta_rank_columns(full_best, full_resolved_meta, full_meta_decks)
+        best_display = _ensure_columns(full_best, full_columns)
+        best_display = best_display.sort_values("meta_rank", ascending=True)
+        _show_table(
+            best_display[full_columns],
+            percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
+            column_labels=full_labels,
+        )
 
 
 def _deck_detail(
