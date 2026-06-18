@@ -123,9 +123,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
     rows: list[dict[str, object]] = []
     card_metadata = _card_metadata_lookup(cards)
     for deck in decks:
-        deck_cards = cards[cards["deck"] == deck].copy()
-        if "source" in deck_cards.columns:
-            deck_cards = deck_cards[deck_cards["source"] == "major"].copy()
+        deck_cards = _representative_cards_for_deck(cards, deck)
         if deck_cards.empty:
             continue
 
@@ -154,7 +152,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
         list_cards = deck_cards[deck_cards["list_id"] == best_list["list_id"]].copy()
         rows.append(
             {
-                "deck": deck,
+                "deck": best_list.get("deck", deck),
                 "player": best_list.get("player", ""),
                 "placement": best_list.get("placement", ""),
                 "tournament": best_list.get("tournament_name", ""),
@@ -163,6 +161,44 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
             }
         )
     return pd.DataFrame(rows)
+
+
+def _representative_cards_for_deck(cards: pd.DataFrame, deck: str) -> pd.DataFrame:
+    """Find Major card rows for a deck, allowing close variant names."""
+
+    major_cards = cards.copy()
+    if "source" in major_cards.columns:
+        major_cards = major_cards[major_cards["source"] == "major"].copy()
+    exact = major_cards[major_cards["deck"] == deck].copy()
+    if not exact.empty:
+        return exact
+
+    requested_tokens = _deck_name_tokens(deck)
+    if not requested_tokens:
+        return exact
+
+    candidates: list[tuple[int, str]] = []
+    candidate_decks = sorted(major_cards["deck"].dropna().astype(str).unique())
+    for candidate in candidate_decks:
+        candidate_tokens = _deck_name_tokens(candidate)
+        if not candidate_tokens:
+            continue
+        if candidate_tokens.issubset(requested_tokens) or requested_tokens.issubset(candidate_tokens):
+            overlap = len(candidate_tokens & requested_tokens)
+            candidates.append((overlap, candidate))
+
+    if candidates:
+        _, best_candidate = sorted(candidates, key=lambda item: (-item[0], item[1]))[0]
+        return major_cards[major_cards["deck"] == best_candidate].copy()
+
+    return exact
+
+
+def _deck_name_tokens(deck: str) -> set[str]:
+    """Normalize deck names for loose representative-list matching."""
+
+    ignored = {"ex", "the", "box", "variant"}
+    return {token for token in str(deck).lower().replace("-", " ").split() if token and token not in ignored}
 
 
 def _card_metadata_lookup(cards: pd.DataFrame) -> dict[str, dict[str, str]]:
