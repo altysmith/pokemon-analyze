@@ -1070,8 +1070,9 @@ def _deck_detail(
         if overview_matchups.empty:
             st.info("No top-25 matchup rows are available for this deck and filter set.")
         else:
-            overview_columns = ["opponent", "matches", "win_rate", "loss_rate", "wins", "losses", "ties"]
+            overview_columns = ["rank", "opponent", "matches", "win_rate", "loss_rate", "wins", "losses", "ties"]
             overview_labels = {
+                "rank": "Rank",
                 "opponent": "Opponent",
                 "matches": "Matches",
                 "win_rate": "Win %",
@@ -1122,8 +1123,9 @@ def _deck_detail(
         if explorer_matchups.empty:
             st.info("No matchup rows meet the current minimum match count.")
         else:
-            matchup_columns = ["opponent", "matches", "win_rate", "loss_rate", "tie_rate", "wins", "losses", "ties", "result"]
+            matchup_columns = ["rank", "opponent", "matches", "win_rate", "loss_rate", "tie_rate", "wins", "losses", "ties", "result"]
             matchup_labels = {
+                "rank": "Rank",
                 "opponent": "Opponent",
                 "matches": "M",
                 "win_rate": "Win",
