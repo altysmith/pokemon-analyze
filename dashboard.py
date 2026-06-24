@@ -543,7 +543,7 @@ def _show_overview_metrics(stats: dict[str, object]) -> None:
 
 
 def _show_favorable_buckets(matchups: pd.DataFrame) -> None:
-    """Show compact matchup buckets using the selected deck's win rate."""
+    """Show matchup buckets with one readable row per matchup."""
 
     st.subheader("Favorable Matchups")
     if matchups.empty:
@@ -554,12 +554,32 @@ def _show_favorable_buckets(matchups: pd.DataFrame) -> None:
     rows = []
     for bucket in bucket_order:
         bucket_rows = matchups[matchups["result"] == bucket].sort_values(["win_rate", "matches"], ascending=[False, False])
-        matchup_text = "; ".join(
-            f"{row.opponent} ({_format_percent(row.win_rate)}, {int(row.wins)}-{int(row.losses)}-{int(row.ties)})"
-            for row in bucket_rows.itertuples(index=False)
-        )
-        rows.append({"Type": bucket, "Matchups": matchup_text or "None"})
-    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        if bucket_rows.empty:
+            rows.append({"type": bucket, "opponent": "None", "win_rate": pd.NA, "matches": pd.NA, "record": ""})
+            continue
+        for row in bucket_rows.itertuples(index=False):
+            rows.append(
+                {
+                    "type": bucket,
+                    "opponent": row.opponent,
+                    "win_rate": row.win_rate,
+                    "matches": int(row.matches),
+                    "record": f"{int(row.wins)}-{int(row.losses)}-{int(row.ties)}",
+                }
+            )
+
+    labels = {
+        "type": "Type",
+        "opponent": "Opponent",
+        "win_rate": "Win %",
+        "matches": "M",
+        "record": "W-L-T",
+    }
+    _show_table(
+        pd.DataFrame(rows)[["type", "opponent", "win_rate", "matches", "record"]],
+        percent_columns=["win_rate"],
+        column_labels=labels,
+    )
 
 
 def _recent_window_cards(cards: pd.DataFrame, end_date: date, days: int = 31) -> tuple[pd.DataFrame, pd.DataFrame]:
