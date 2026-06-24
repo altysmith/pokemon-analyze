@@ -12,8 +12,9 @@ import pokemon_analyze.deck_analysis as deck_analysis
 
 
 DEFAULT_META_COUNT = 10
-MAX_META_COUNT = 25
+MAX_META_COUNT = 35
 FULL_META_COUNT = 25
+DETAIL_DEFAULT_META_COUNT = 25
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -105,6 +106,34 @@ def _format_matchup_list(rows: pd.DataFrame, limit: int = 6) -> str:
     return "; ".join(pieces)
 
 
+def _matchup_result_label(win_rate: float) -> str:
+    """Bucket a matchup into the labels players usually talk through."""
+
+    if win_rate >= 0.65:
+        return "Very Fav"
+    if win_rate >= 0.55:
+        return "Fav"
+    if win_rate < 0.40:
+        return "Very Unfav"
+    if win_rate < 0.45:
+        return "Unfav"
+    return "Even-ish"
+
+
+def _find_card_names(card_names: pd.Series | list[str], query: str) -> list[str]:
+    """Find exact card-name matches first, then partial matches."""
+
+    query_clean = str(query or "").strip().lower()
+    if not query_clean:
+        return []
+
+    names = sorted({str(name) for name in card_names if str(name).strip()})
+    exact = [name for name in names if name.lower() == query_clean]
+    if exact:
+        return exact
+    return [name for name in names if query_clean in name.lower()]
+
+
 def _source_decklist_url(row: pd.Series) -> str:
     """Build the best source link we can from saved tournament data."""
 
@@ -158,6 +187,117 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
                 "placement": best_list.get("placement", ""),
                 "tournament": best_list.get("tournament_name", ""),
                 "source_link": _source_decklist_url(best_list),
+                "decklist": _format_importable_decklist(list_cards, card_metadata),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _recent_major_representatives(cards: pd.DataFrame, deck: str, major_count: int = 3) -> pd.DataFrame:
+    """Show one best matching list from each of the most recent Major events."""
+
+    if cards.empty:
+        return pd.DataFrame()
+
+    major_cards = cards.copy()
+    if "source" in major_cards.columns:
+        major_cards = major_cards[major_cards["source"] == "major"].copy()
+    if major_cards.empty or "date" not in major_cards.columns:
+        return pd.DataFrame()
+
+    event_columns = ["tournament_id", "tournament_name", "date"]
+    events = major_cards[event_columns].drop_duplicates().copy()
+    events["date_sort"] = events["date"].fillna(pd.Timestamp.min)
+    events = events.sort_values(["date_sort", "tournament_name"], ascending=[False, True]).head(major_count)
+
+    rows: list[pd.DataFrame] = []
+    for event in events.itertuples(index=False):
+        event_cards = major_cards[major_cards["tournament_id"] == event.tournament_id].copy()
+        exact = event_cards[event_cards["deck"] == deck].copy()
+        if exact.empty:
+            exact = _closest_deck_cards(event_cards, deck)
+        if exact.empty:
+            continue
+
+        lists = _list_summaries(exact)
+        if lists.empty:
+            continue
+        best = lists.sort_values(["placement_sort", "player"], ascending=[True, True]).head(1)
+        rows.append(_decklist_rows_from_lists(exact, best["list_id"].tolist()))
+
+    if not rows:
+        return pd.DataFrame()
+    return pd.concat(rows, ignore_index=True, sort=False)
+
+
+def _closest_deck_cards(cards: pd.DataFrame, deck: str) -> pd.DataFrame:
+    """Find close archetype rows when the exact local variant name is missing."""
+
+    requested_tokens = _deck_name_tokens(deck)
+    if not requested_tokens or cards.empty:
+        return pd.DataFrame()
+
+    candidates: list[tuple[int, str]] = []
+    for candidate in sorted(cards["deck"].dropna().astype(str).unique()):
+        candidate_tokens = _deck_name_tokens(candidate)
+        if candidate_tokens.issubset(requested_tokens) or requested_tokens.issubset(candidate_tokens):
+            candidates.append((len(candidate_tokens & requested_tokens), candidate))
+
+    if not candidates:
+        return pd.DataFrame()
+    _, best_candidate = sorted(candidates, key=lambda item: (-item[0], item[1]))[0]
+    return cards[cards["deck"] == best_candidate].copy()
+
+
+def _list_summaries(cards: pd.DataFrame) -> pd.DataFrame:
+    """Return one sortable row per saved decklist."""
+
+    if cards.empty or "list_id" not in cards.columns:
+        return pd.DataFrame()
+
+    columns = [
+        "list_id",
+        "deck",
+        "player",
+        "placement",
+        "tournament_name",
+        "tournament_id",
+        "source",
+        "date",
+    ]
+    available = [column for column in columns if column in cards.columns]
+    lists = cards[available].drop_duplicates("list_id").copy()
+    if "placement" in lists.columns:
+        lists["placement_sort"] = pd.to_numeric(lists["placement"], errors="coerce").fillna(9999)
+    else:
+        lists["placement_sort"] = 9999
+    if "date" in lists.columns:
+        lists["date_sort"] = lists["date"].fillna(pd.Timestamp.min)
+    else:
+        lists["date_sort"] = pd.Timestamp.min
+    return lists
+
+
+def _decklist_rows_from_lists(cards: pd.DataFrame, list_ids: list[str]) -> pd.DataFrame:
+    """Build render-ready representative decklist rows from selected list ids."""
+
+    if cards.empty or not list_ids:
+        return pd.DataFrame()
+
+    card_metadata = _card_metadata_lookup(cards)
+    rows: list[dict[str, object]] = []
+    lists = _list_summaries(cards[cards["list_id"].isin(list_ids)].copy())
+    lists = lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True])
+    for list_row in lists.itertuples(index=False):
+        list_cards = cards[cards["list_id"] == list_row.list_id].copy()
+        rows.append(
+            {
+                "deck": getattr(list_row, "deck", ""),
+                "player": getattr(list_row, "player", ""),
+                "placement": getattr(list_row, "placement", ""),
+                "tournament": getattr(list_row, "tournament_name", ""),
+                "date": getattr(list_row, "date", pd.NaT),
+                "source_link": _source_decklist_url(pd.Series(list_row._asdict())),
                 "decklist": _format_importable_decklist(list_cards, card_metadata),
             }
         )
@@ -324,6 +464,244 @@ def _show_representative_decklists(representatives: pd.DataFrame, heading: str =
             if row.source_link:
                 st.link_button("Open source event", row.source_link)
             st.code(row.decklist, language="text")
+
+
+def _deck_matchup_table(
+    selected_deck: str,
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    limitless_meta_decks: pd.DataFrame,
+    meta_count: int,
+    min_matches: int = 0,
+) -> tuple[pd.DataFrame, pd.DataFrame, object]:
+    """Build the selected deck's matchup rows against the resolved meta list."""
+
+    meta_decks = limitless_meta_decks.head(meta_count).copy()
+    resolved_meta = deck_analysis.resolve_meta_decks(cards, meta_decks, limit=meta_count)
+    if resolved_meta.empty:
+        return pd.DataFrame(), resolved_meta, "-"
+
+    rank_rows = resolved_meta[resolved_meta["local_deck"] == selected_deck]
+    deck_rank = "-" if rank_rows.empty else rank_rows.iloc[0]["rank"]
+    details = deck_analysis.deck_matchups_against_meta(selected_deck, cards, matches, resolved_meta)
+
+    base = resolved_meta.rename(columns={"limitless_deck": "opponent", "local_deck": "local_opponent"})[
+        ["rank", "opponent", "local_opponent"]
+    ].copy()
+    if details.empty:
+        table = base.copy()
+        for column in ["matches", "wins", "losses", "ties", "win_rate", "loss_rate", "tie_rate"]:
+            table[column] = 0
+    else:
+        details = details.rename(columns={"opponent_deck": "opponent"})
+        table = base.merge(details, on="opponent", how="left")
+        for column in ["matches", "wins", "losses", "ties"]:
+            table[column] = pd.to_numeric(table[column], errors="coerce").fillna(0)
+        table["win_rate"] = pd.to_numeric(table["win_rate"], errors="coerce").fillna(0)
+        table["loss_rate"] = table["losses"] / table["matches"].replace(0, pd.NA)
+        table["tie_rate"] = table["ties"] / table["matches"].replace(0, pd.NA)
+        table[["loss_rate", "tie_rate"]] = table[["loss_rate", "tie_rate"]].fillna(0)
+        table[["win_rate", "loss_rate", "tie_rate"]] = table[["win_rate", "loss_rate", "tie_rate"]].astype(float)
+
+    table = table[table["local_opponent"] != selected_deck].copy()
+    if min_matches:
+        table = table[table["matches"] >= min_matches].copy()
+    table["result"] = table["win_rate"].apply(_matchup_result_label)
+    table["rank_sort"] = pd.to_numeric(table["rank"], errors="coerce").fillna(9999)
+    table = table.sort_values(["rank_sort", "opponent"]).drop(columns=["rank_sort"])
+    return table, resolved_meta, deck_rank
+
+
+def _deck_overall_stats(matchups: pd.DataFrame, meta_rank: object) -> dict[str, object]:
+    """Summarize W-L-T and rates from a selected deck matchup table."""
+
+    wins = int(matchups["wins"].sum()) if "wins" in matchups.columns else 0
+    losses = int(matchups["losses"].sum()) if "losses" in matchups.columns else 0
+    ties = int(matchups["ties"].sum()) if "ties" in matchups.columns else 0
+    matches = int(matchups["matches"].sum()) if "matches" in matchups.columns else 0
+    rank_number = pd.to_numeric(meta_rank, errors="coerce")
+    return {
+        "Meta Rank": "-" if pd.isna(rank_number) else int(rank_number),
+        "Win Rate": wins / matches if matches else 0,
+        "Loss Rate": losses / matches if matches else 0,
+        "Matches": matches,
+        "W-L-T": f"{wins}-{losses}-{ties}",
+        "Tie Rate": ties / matches if matches else 0,
+        "Adjusted Win Rate": (wins + (deck_analysis.TIE_WIN_VALUE * ties)) / matches if matches else 0,
+    }
+
+
+def _show_overview_metrics(stats: dict[str, object]) -> None:
+    """Render the Deck Overview top summary in the requested order."""
+
+    columns = st.columns(7)
+    for index, label in enumerate(["Meta Rank", "Win Rate", "Loss Rate", "Matches", "W-L-T", "Tie Rate", "Adjusted Win Rate"]):
+        value = stats[label]
+        if "Rate" in label:
+            value = _format_percent(float(value))
+        columns[index].metric(label, value)
+
+
+def _show_favorable_buckets(matchups: pd.DataFrame) -> None:
+    """Show compact matchup buckets using the selected deck's win rate."""
+
+    st.subheader("Favorable Matchups")
+    if matchups.empty:
+        st.info("No matchup rows are available for these filters.")
+        return
+
+    bucket_order = ["Very Fav", "Fav", "Even-ish", "Unfav", "Very Unfav"]
+    rows = []
+    for bucket in bucket_order:
+        bucket_rows = matchups[matchups["result"] == bucket].sort_values(["win_rate", "matches"], ascending=[False, False])
+        matchup_text = "; ".join(
+            f"{row.opponent} ({_format_percent(row.win_rate)}, {int(row.wins)}-{int(row.losses)}-{int(row.ties)})"
+            for row in bucket_rows.itertuples(index=False)
+        )
+        rows.append({"Type": bucket, "Matchups": matchup_text or "None"})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+
+
+def _recent_window_cards(cards: pd.DataFrame, end_date: date, days: int = 31) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split cards into recent and previous windows for trend-style searches."""
+
+    if cards.empty or "date" not in cards.columns:
+        return cards.iloc[0:0].copy(), cards.iloc[0:0].copy()
+
+    end = pd.Timestamp(end_date) + pd.Timedelta(days=1)
+    recent_start = end - pd.Timedelta(days=days)
+    previous_start = recent_start - pd.Timedelta(days=days)
+    dated = cards.dropna(subset=["date"]).copy()
+    recent = dated[(dated["date"] >= recent_start) & (dated["date"] < end)].copy()
+    previous = dated[(dated["date"] >= previous_start) & (dated["date"] < recent_start)].copy()
+    return recent, previous
+
+
+def _usage_table(cards: pd.DataFrame) -> pd.DataFrame:
+    """Return per-card usage for a card pool."""
+
+    if cards.empty:
+        return pd.DataFrame(columns=["card", "lists", "usage_rate", "avg_count", "max_count"])
+
+    total_lists = max(cards["list_id"].nunique(), 1)
+    usage = (
+        cards.groupby("card", as_index=False)
+        .agg(
+            lists=("list_id", "nunique"),
+            avg_count=("count", "mean"),
+            max_count=("count", "max"),
+        )
+        .sort_values(["lists", "avg_count", "card"], ascending=[False, False, True])
+    )
+    usage["usage_rate"] = usage["lists"] / total_lists
+    return usage
+
+
+def _rising_cards(cards: pd.DataFrame, end_date: date) -> pd.DataFrame:
+    """Compare recent card usage to the prior 31 days for one archetype."""
+
+    recent, previous = _recent_window_cards(cards, end_date)
+    recent_usage = _usage_table(recent).rename(
+        columns={"usage_rate": "recent_usage", "avg_count": "recent_avg_count", "lists": "recent_lists"}
+    )
+    previous_usage = _usage_table(previous).rename(columns={"usage_rate": "previous_usage"})
+    if recent_usage.empty and previous_usage.empty:
+        return pd.DataFrame(columns=["card", "recent_usage", "previous_usage", "change", "recent_avg_count", "recent_lists"])
+
+    trends = recent_usage[["card", "recent_usage", "recent_avg_count", "recent_lists"]].merge(
+        previous_usage[["card", "previous_usage"]],
+        on="card",
+        how="outer",
+    ).fillna(0)
+    trends["change"] = trends["recent_usage"] - trends["previous_usage"]
+    return trends.sort_values(["change", "recent_usage", "card"], ascending=[False, False, True])
+
+
+def _archetype_card_search(cards: pd.DataFrame, query: str) -> tuple[str, pd.DataFrame, pd.DataFrame]:
+    """Search one selected archetype for a card and return summary plus lists."""
+
+    summary_columns = ["matched_card", "lists_with_card", "usage_rate", "avg_placement_with", "avg_placement_without"]
+    if cards.empty:
+        return query, pd.DataFrame(columns=summary_columns), pd.DataFrame()
+
+    matches = _find_card_names(cards["card"].dropna().astype(str).unique().tolist(), query)
+    matched = ", ".join(matches) if matches else query
+    list_count = max(cards["list_id"].nunique(), 1)
+    list_summaries = _list_summaries(cards)
+    with_ids = set(cards[cards["card"].isin(matches)]["list_id"].dropna().astype(str).unique()) if matches else set()
+    with_lists = list_summaries[list_summaries["list_id"].isin(with_ids)]
+    without_lists = list_summaries[~list_summaries["list_id"].isin(with_ids)]
+    summary = pd.DataFrame(
+        [
+            {
+                "matched_card": matched,
+                "lists_with_card": len(with_ids),
+                "usage_rate": len(with_ids) / list_count,
+                "avg_placement_with": with_lists["placement_sort"].mean() if not with_lists.empty else pd.NA,
+                "avg_placement_without": without_lists["placement_sort"].mean() if not without_lists.empty else pd.NA,
+            }
+        ]
+    )
+    list_rows = _decklist_rows_from_lists(cards, with_lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True])["list_id"].head(10).tolist())
+    return matched, summary, list_rows
+
+
+def _meta_card_search(cards: pd.DataFrame, all_source_cards: pd.DataFrame, query: str, end_date: date) -> tuple[str, pd.DataFrame, pd.DataFrame]:
+    """Search the whole selected meta for one card and show deck-level prevalence."""
+
+    summary_columns = [
+        "matched_card",
+        "total_lists_using",
+        "meta_usage",
+        "avg_count",
+        "max_count",
+        "recent_usage",
+        "previous_usage",
+        "change",
+    ]
+    breakdown_columns = ["deck", "lists_with_card", "usage_in_deck", "avg_count"]
+    if cards.empty:
+        return query, pd.DataFrame(columns=summary_columns), pd.DataFrame(columns=breakdown_columns)
+
+    matches = _find_card_names(cards["card"].dropna().astype(str).unique().tolist(), query)
+    matched = ", ".join(matches) if matches else query
+    total_lists = max(cards["list_id"].nunique(), 1)
+    card_rows = cards[cards["card"].isin(matches)].copy() if matches else cards.iloc[0:0].copy()
+    list_ids = set(card_rows["list_id"].dropna().astype(str).unique())
+
+    recent_all, previous_all = _recent_window_cards(all_source_cards, end_date)
+    recent_card_rows = recent_all[recent_all["card"].isin(matches)] if matches else recent_all.iloc[0:0]
+    previous_card_rows = previous_all[previous_all["card"].isin(matches)] if matches else previous_all.iloc[0:0]
+    recent_total = max(recent_all["list_id"].nunique(), 1) if not recent_all.empty else 1
+    previous_total = max(previous_all["list_id"].nunique(), 1) if not previous_all.empty else 1
+    recent_usage = recent_card_rows["list_id"].nunique() / recent_total
+    previous_usage = previous_card_rows["list_id"].nunique() / previous_total
+
+    summary = pd.DataFrame(
+        [
+            {
+                "matched_card": matched,
+                "total_lists_using": len(list_ids),
+                "meta_usage": len(list_ids) / total_lists,
+                "avg_count": card_rows["count"].mean() if not card_rows.empty else 0,
+                "max_count": card_rows["count"].max() if not card_rows.empty else 0,
+                "recent_usage": recent_usage,
+                "previous_usage": previous_usage,
+                "change": recent_usage - previous_usage,
+            }
+        ]
+    )
+    if card_rows.empty:
+        return matched, summary, pd.DataFrame(columns=breakdown_columns)
+
+    deck_totals = cards.groupby("deck", as_index=False).agg(total_lists=("list_id", "nunique"))
+    breakdown = (
+        card_rows.groupby("deck", as_index=False)
+        .agg(lists_with_card=("list_id", "nunique"), avg_count=("count", "mean"))
+        .merge(deck_totals, on="deck", how="left")
+    )
+    breakdown["usage_in_deck"] = breakdown["lists_with_card"] / breakdown["total_lists"].replace(0, pd.NA)
+    return matched, summary, breakdown[breakdown_columns].sort_values(["lists_with_card", "usage_in_deck"], ascending=[False, False])
 
 
 def _best_meta_kwargs(
@@ -618,7 +996,7 @@ def _deck_detail(
 
     today = pd.Timestamp.today().normalize()
     default_start = today - pd.Timedelta(days=31)
-    source_col, deck_col, bucket_col, start_col, end_col = st.columns([1, 2, 1, 1, 1])
+    source_col, deck_col, start_col, end_col = st.columns([1, 2, 1, 1])
     with source_col:
         selected_source = st.selectbox("Source", ["All", "Online", "Majors"], key="detail_source")
 
@@ -634,8 +1012,6 @@ def _deck_detail(
             deck_counts.index.tolist(),
             format_func=lambda deck: f"{deck} ({int(deck_counts[deck])} lists)",
         )
-    with bucket_col:
-        bucket = st.radio("Trend bucket", ["daily", "monthly"], index=1, horizontal=True)
     with start_col:
         start_date = st.date_input("Start date", value=default_start.date(), key="detail_start")
     with end_col:
@@ -650,140 +1026,222 @@ def _deck_detail(
 
     deck_cards = filtered_cards[filtered_cards["deck"] == selected_deck]
     deck_list_count = int(filtered_deck_counts[selected_deck])
-    min_default = min(max(5, int(round(deck_list_count * 0.05))), max(deck_list_count, 1))
-    min_tech_decks = st.slider(
-        "Minimum decks for tech/flex placement",
-        min_value=1,
-        max_value=max(deck_list_count, 1),
-        value=min_default,
-    )
-
-    report = deck_analysis.analyze_deck(
-        selected_deck,
-        cards=filtered_cards,
-        bucket=bucket,
-        limit=100,
-        min_tech_decks=min_tech_decks,
-    )
-
-    date_range = ""
+    date_range = "Unknown"
     if "date" in deck_cards.columns and deck_cards["date"].notna().any():
         date_range = f"{deck_cards['date'].min().date()} to {deck_cards['date'].max().date()}"
 
-    metric_one, metric_two, metric_three = st.columns(3)
-    metric_one.metric("Deck Lists", deck_list_count)
-    metric_two.metric("Unique Cards", int(deck_cards["card"].nunique()))
-    metric_three.metric("Date Range", date_range or "Unknown")
+    st.caption(f"{deck_list_count} selected lists | {int(deck_cards['card'].nunique())} unique cards | {date_range}")
 
-    major_link_cards = _filter_by_date(cards, start_date, end_date)
-    representatives = _representative_decklists(major_link_cards, [selected_deck])
-    _show_representative_decklists(representatives, heading="Newest Major representative decklist")
+    overview_tab, matchup_tab, tech_tab = st.tabs(["Overview", "Matchup Explorer", "Decklists & Tech"])
 
-    meta_decks = limitless_meta_decks.head(meta_count).copy()
-    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
-    deck_rank = "-"
-    rank_rows = resolved_meta[resolved_meta["local_deck"] == selected_deck] if not resolved_meta.empty else pd.DataFrame()
-    if not rank_rows.empty:
-        deck_rank = rank_rows.iloc[0]["rank"]
-    meta_details = deck_analysis.deck_matchups_against_meta(selected_deck, filtered_cards, filtered_matches, resolved_meta)
-    _render_deck_meta_summary(selected_deck, meta_details, deck_rank)
-
-    st.subheader("Card Impact Against Top 15 Meta")
-    card_query = st.text_input("Card name", key=f"card_impact_{selected_deck}")
-    if card_query.strip():
-        impact_meta_decks = limitless_meta_decks.head(15).copy()
-        impact_meta = deck_analysis.resolve_meta_decks(filtered_cards, impact_meta_decks, limit=15)
-        matched_card, impact_summary, impact_matchups = deck_analysis.card_impact_against_meta(
+    with overview_tab:
+        overview_matchups, _, overview_rank = _deck_matchup_table(
             selected_deck,
-            card_query,
             filtered_cards,
             filtered_matches,
-            impact_meta,
+            limitless_meta_decks,
+            FULL_META_COUNT,
         )
-        st.caption(f"Search matched: {matched_card}")
-        if not impact_summary.empty:
-            with_count = int(impact_summary.loc[impact_summary["group"] == "With card", "lists"].sum())
-            if with_count == 0:
-                st.info("No saved decklists for this deck include that card in the selected filters.")
-            summary_labels = {
-                "group": "Set",
-                "lists": "Lists",
-                "matches": "M",
+        _show_overview_metrics(_deck_overall_stats(overview_matchups, overview_rank))
+
+        _show_favorable_buckets(overview_matchups)
+
+        st.subheader("Top 25 Meta Matchups")
+        if overview_matchups.empty:
+            st.info("No top-25 matchup rows are available for this deck and filter set.")
+        else:
+            overview_columns = ["opponent", "matches", "win_rate", "loss_rate", "wins", "losses", "ties"]
+            overview_labels = {
+                "opponent": "Opponent",
+                "matches": "Matches",
+                "win_rate": "Win %",
+                "loss_rate": "Loss %",
                 "wins": "W",
                 "losses": "L",
                 "ties": "T",
-                "win_rate": "Win",
-                "tie_adjusted_win_rate": "Adj",
             }
             _show_table(
-                impact_summary,
-                percent_columns=["win_rate", "tie_adjusted_win_rate"],
-                column_labels=summary_labels,
+                overview_matchups[overview_columns],
+                percent_columns=["win_rate", "loss_rate"],
+                column_labels=overview_labels,
             )
-        matchup_labels = {
-            "opponent_deck": "MU",
-            "with_matches": "In M",
-            "with_wins": "In W",
-            "with_losses": "In L",
-            "with_ties": "In T",
-            "with_tie_adjusted_win_rate": "In Adj",
-            "without_matches": "Out M",
-            "without_wins": "Out W",
-            "without_losses": "Out L",
-            "without_ties": "Out T",
-            "without_tie_adjusted_win_rate": "Out Adj",
-            "delta_tie_adjusted_win_rate": "Change vs Out",
-        }
-        if impact_matchups.empty:
-            st.info("No top-15 matchup rows are available for this card search and filter set.")
+
+        representatives = _recent_major_representatives(cards, selected_deck, major_count=3)
+        _show_representative_decklists(representatives, heading="Representative decklists from last 3 Majors")
+
+    with matchup_tab:
+        filter_col, sample_col = st.columns([1, 1])
+        with filter_col:
+            detail_meta_count = st.slider(
+                "Top meta count",
+                min_value=5,
+                max_value=MAX_META_COUNT,
+                value=DETAIL_DEFAULT_META_COUNT,
+                step=1,
+                key="detail_matchup_meta_count",
+            )
+        with sample_col:
+            min_matchups = st.number_input(
+                "Minimum matches",
+                min_value=1,
+                max_value=300,
+                value=30,
+                step=1,
+                key="detail_matchup_min_matches",
+            )
+
+        explorer_matchups, _, _ = _deck_matchup_table(
+            selected_deck,
+            filtered_cards,
+            filtered_matches,
+            limitless_meta_decks,
+            detail_meta_count,
+            min_matches=int(min_matchups),
+        )
+        st.subheader(f"{selected_deck} Against Top {detail_meta_count} Meta")
+        if explorer_matchups.empty:
+            st.info("No matchup rows meet the current minimum match count.")
         else:
+            matchup_columns = ["opponent", "matches", "win_rate", "loss_rate", "tie_rate", "wins", "losses", "ties", "result"]
+            matchup_labels = {
+                "opponent": "Opponent",
+                "matches": "M",
+                "win_rate": "Win",
+                "loss_rate": "Loss",
+                "tie_rate": "Tie",
+                "wins": "W",
+                "losses": "L",
+                "ties": "T",
+                "result": "Result",
+            }
             _show_table(
-                impact_matchups,
-                percent_columns=[
-                    "with_tie_adjusted_win_rate",
-                    "without_tie_adjusted_win_rate",
-                    "delta_tie_adjusted_win_rate",
-                ],
+                explorer_matchups[matchup_columns],
+                percent_columns=["win_rate", "loss_rate", "tie_rate"],
                 column_labels=matchup_labels,
             )
-    else:
-        st.info("Type a card name to compare lists with and without that card into the top 15 meta decks.")
 
-    if bucket == "monthly" and _unique_period_count(deck_cards, "M") < 2:
-        st.info("Monthly trends need data from at least two months.")
-    elif bucket == "daily" and _unique_period_count(deck_cards, "D") < 2:
-        st.info("Daily trends need data from at least two different days.")
-
-    st.subheader(f"Matchups Against Top {meta_count} Decks")
-    matchups = deck_analysis.matchup_summary(selected_deck, filtered_cards, filtered_matches, top_n=meta_count)
-    if matchups.empty:
-        st.info("No matchup rows are available for this deck and filter set.")
-    else:
-        _show_table(matchups, percent_columns=["win_rate", "loss_rate", "tie_rate"])
-
-    st.subheader("Core / Common / Flex / Tech Cards")
-    _show_table(report.card_groups, percent_columns=["adoption_rate"])
-
-    trend_up, trend_down = st.columns(2)
-    with trend_up:
-        st.subheader("Trending Up Cards")
-        if report.trending_up.empty:
-            st.info("No trend yet. Pull data from at least two daily or monthly buckets.")
+        st.subheader(f"Best Decks To Beat {selected_deck}")
+        target_report = deck_analysis.best_decks_against_target(
+            selected_deck,
+            filtered_cards,
+            filtered_matches,
+            min_matches=int(min_matchups),
+        )
+        if target_report.empty:
+            st.info("No counter decks meet the current minimum match count.")
         else:
-            _show_table(report.trending_up, percent_columns=["previous_rate", "latest_rate", "trend"])
+            target_report = target_report.head(5).copy()
+            target_report["loss_rate"] = target_report["losses"] / target_report["matches"].replace(0, pd.NA)
+            target_report["loss_rate"] = target_report["loss_rate"].fillna(0).astype(float)
+            target_report["result"] = target_report["win_rate"].apply(_matchup_result_label)
+            counter_columns = ["deck", "matches", "win_rate", "loss_rate", "wins", "losses", "ties", "result"]
+            counter_labels = {
+                "deck": "Deck",
+                "matches": "M",
+                "win_rate": "Win",
+                "loss_rate": "Loss",
+                "wins": "W",
+                "losses": "L",
+                "ties": "T",
+                "result": "Result",
+            }
+            _show_table(
+                target_report[counter_columns],
+                percent_columns=["win_rate", "loss_rate"],
+                column_labels=counter_labels,
+            )
+            representatives = _representative_decklists(cards, target_report["deck"].tolist())
+            _show_representative_decklists(representatives, heading="Counter deck representative lists")
 
-    with trend_down:
-        st.subheader("Trending Down Cards")
-        if report.trending_down.empty:
-            st.info("No trend yet. Pull data from at least two daily or monthly buckets.")
+    with tech_tab:
+        st.subheader("Recent Major Lists")
+        recent_major_cards = _representative_cards_for_deck(cards, selected_deck)
+        recent_lists = _list_summaries(recent_major_cards)
+        if recent_lists.empty:
+            st.info("No saved Major lists found for this deck.")
         else:
-            _show_table(report.trending_down, percent_columns=["previous_rate", "latest_rate", "trend"])
+            recent_list_ids = recent_lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True])[
+                "list_id"
+            ].head(10).tolist()
+            _show_representative_decklists(
+                _decklist_rows_from_lists(recent_major_cards, recent_list_ids),
+                heading="Recent Major decklists",
+            )
 
-    st.subheader("Best Average Placement Tech/Flex Cards")
-    if report.best_placement_cards.empty:
-        st.info("No tech/flex placement rows meet the current minimum deck count.")
-    else:
-        _show_table(report.best_placement_cards)
+        st.subheader("New / Rising Cards")
+        rising = _rising_cards(source_cards[source_cards["deck"] == selected_deck].copy(), end_date)
+        if rising.empty:
+            st.info("Rising cards need dated lists from the recent and previous 31-day windows.")
+        else:
+            rising_columns = ["card", "recent_usage", "previous_usage", "change", "recent_avg_count", "recent_lists"]
+            rising_labels = {
+                "card": "Card",
+                "recent_usage": "Recent",
+                "previous_usage": "Previous",
+                "change": "Change",
+                "recent_avg_count": "Avg Count",
+                "recent_lists": "Lists",
+            }
+            _show_table(
+                rising.head(25)[rising_columns],
+                percent_columns=["recent_usage", "previous_usage", "change"],
+                column_labels=rising_labels,
+            )
+
+        st.subheader("Archetype Card Search")
+        archetype_query = st.text_input("Search this deck for a card", key=f"archetype_card_{selected_deck}")
+        if archetype_query.strip():
+            matched_card, card_summary, list_rows = _archetype_card_search(deck_cards, archetype_query)
+            st.caption(f"Search matched: {matched_card}")
+            archetype_labels = {
+                "matched_card": "Card",
+                "lists_with_card": "Lists",
+                "usage_rate": "Usage",
+                "avg_placement_with": "Avg Place With",
+                "avg_placement_without": "Avg Place Without",
+            }
+            _show_table(card_summary, percent_columns=["usage_rate"], column_labels=archetype_labels)
+            _show_representative_decklists(list_rows, heading="Recent lists using this card")
+
+        st.subheader("Meta Card Search")
+        meta_query = st.text_input("Search the whole meta for a card", key="meta_card_search")
+        if meta_query.strip():
+            matched_card, meta_summary, meta_breakdown = _meta_card_search(
+                filtered_cards,
+                source_cards,
+                meta_query,
+                end_date,
+            )
+            st.caption(f"Search matched: {matched_card}")
+            meta_labels = {
+                "matched_card": "Card",
+                "total_lists_using": "Lists",
+                "meta_usage": "Meta Usage",
+                "avg_count": "Avg Count",
+                "max_count": "Max Count",
+                "recent_usage": "Recent",
+                "previous_usage": "Previous",
+                "change": "Change",
+            }
+            _show_table(
+                meta_summary,
+                percent_columns=["meta_usage", "recent_usage", "previous_usage", "change"],
+                column_labels=meta_labels,
+            )
+            if meta_breakdown.empty:
+                st.info("No selected meta lists include that card.")
+            else:
+                breakdown_labels = {
+                    "deck": "Deck",
+                    "lists_with_card": "Lists",
+                    "usage_in_deck": "Usage",
+                    "avg_count": "Avg Count",
+                }
+                _show_table(
+                    meta_breakdown.head(25),
+                    percent_columns=["usage_in_deck"],
+                    column_labels=breakdown_labels,
+                )
 
 
 st.set_page_config(page_title="Pokemon Analyze", layout="wide")
