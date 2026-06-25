@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import base64
 from datetime import date
+import html
 import inspect
+import re
 
 import pandas as pd
 import streamlit as st
@@ -187,6 +190,7 @@ def _representative_decklists(cards: pd.DataFrame, decks: list[str]) -> pd.DataF
                 "placement": best_list.get("placement", ""),
                 "tournament": best_list.get("tournament_name", ""),
                 "source_link": _source_decklist_url(best_list),
+                "decklist_rows": _decklist_display_rows(list_cards, card_metadata),
                 "decklist": _format_importable_decklist(list_cards, card_metadata),
             }
         )
@@ -211,6 +215,7 @@ def _recent_major_representatives(cards: pd.DataFrame, deck: str, major_count: i
     events = events.sort_values(["date_sort", "tournament_name"], ascending=[False, True]).head(major_count)
 
     rows: list[pd.DataFrame] = []
+    card_metadata = _card_metadata_lookup(cards)
     for event in events.itertuples(index=False):
         event_cards = major_cards[major_cards["tournament_id"] == event.tournament_id].copy()
         exact = event_cards[event_cards["deck"] == deck].copy()
@@ -223,7 +228,7 @@ def _recent_major_representatives(cards: pd.DataFrame, deck: str, major_count: i
         if lists.empty:
             continue
         best = lists.sort_values(["placement_sort", "player"], ascending=[True, True]).head(1)
-        rows.append(_decklist_rows_from_lists(exact, best["list_id"].tolist()))
+        rows.append(_decklist_rows_from_lists(exact, best["list_id"].tolist(), card_metadata))
 
     if not rows:
         return pd.DataFrame()
@@ -278,13 +283,17 @@ def _list_summaries(cards: pd.DataFrame) -> pd.DataFrame:
     return lists
 
 
-def _decklist_rows_from_lists(cards: pd.DataFrame, list_ids: list[str]) -> pd.DataFrame:
+def _decklist_rows_from_lists(
+    cards: pd.DataFrame,
+    list_ids: list[str],
+    metadata: dict[str, dict[str, str]] | None = None,
+) -> pd.DataFrame:
     """Build render-ready representative decklist rows from selected list ids."""
 
     if cards.empty or not list_ids:
         return pd.DataFrame()
 
-    card_metadata = _card_metadata_lookup(cards)
+    card_metadata = metadata or _card_metadata_lookup(cards)
     rows: list[dict[str, object]] = []
     lists = _list_summaries(cards[cards["list_id"].isin(list_ids)].copy())
     lists = lists.sort_values(["date_sort", "placement_sort"], ascending=[False, True])
@@ -298,6 +307,7 @@ def _decklist_rows_from_lists(cards: pd.DataFrame, list_ids: list[str]) -> pd.Da
                 "tournament": getattr(list_row, "tournament_name", ""),
                 "date": getattr(list_row, "date", pd.NaT),
                 "source_link": _source_decklist_url(pd.Series(list_row._asdict())),
+                "decklist_rows": _decklist_display_rows(list_cards, card_metadata),
                 "decklist": _format_importable_decklist(list_cards, card_metadata),
             }
         )
@@ -407,6 +417,72 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
     return "\n".join(lines).strip()
 
 
+def _decklist_display_rows(cards: pd.DataFrame, metadata: dict[str, dict[str, str]]) -> list[dict[str, object]]:
+    """Build grouped decklist rows for a readable in-app table."""
+
+    sections = [
+        ("pokemon", "Pokemon"),
+        ("trainer", "Trainer"),
+        ("energy", "Energy"),
+    ]
+    display_cards = cards.copy()
+    for column in ["category", "set", "number"]:
+        if column not in display_cards.columns:
+            display_cards[column] = ""
+        display_cards[column] = display_cards[column].fillna("").astype(str)
+
+    rows: list[dict[str, object]] = []
+    for category_key, heading in sections:
+        section_cards = _cards_for_section(display_cards, category_key, metadata)
+        for row in section_cards.sort_values(["card"]).itertuples(index=False):
+            card_name = str(row.card)
+            fallback = metadata.get(card_name, {})
+            rows.append(
+                {
+                    "Section": heading,
+                    "Count": _clean_card_count(row.count),
+                    "Card": card_name,
+                    "Set": str(row.set or fallback.get("set", "")).strip(),
+                    "#": _clean_card_number(row.number or fallback.get("number", "")),
+                }
+            )
+    return rows
+
+
+def _decklist_svg(title: str, decklist_text: str) -> bytes:
+    """Create a simple text SVG so a decklist can open/download like an image."""
+
+    lines = [line for line in decklist_text.splitlines() if line.strip()]
+    width = 900
+    line_height = 26
+    height = max(180, 96 + (len(lines) * line_height))
+    escaped_title = html.escape(title)
+    svg_lines = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="#101216"/>',
+        f'<text x="32" y="46" fill="#f5f5f5" font-family="Consolas, monospace" font-size="26" font-weight="700">{escaped_title}</text>',
+    ]
+    y = 88
+    for line in lines:
+        is_heading = line.endswith(":") or re.match(r"^[A-Za-z]+: \d+$", line)
+        color = "#ff4b5c" if is_heading else "#f5f5f5"
+        weight = "700" if is_heading else "400"
+        svg_lines.append(
+            f'<text x="32" y="{y}" fill="{color}" font-family="Consolas, monospace" '
+            f'font-size="20" font-weight="{weight}">{html.escape(line)}</text>'
+        )
+        y += line_height
+    svg_lines.append("</svg>")
+    return "\n".join(svg_lines).encode("utf-8")
+
+
+def _safe_file_stem(value: str) -> str:
+    """Make a short, browser-friendly filename for downloads."""
+
+    stem = re.sub(r"[^A-Za-z0-9]+", "-", value).strip("-").lower()
+    return stem or "decklist"
+
+
 def _clean_card_count(value: object) -> int:
     """Show decklist counts as whole numbers for import tools."""
 
@@ -456,13 +532,44 @@ def _show_representative_decklists(representatives: pd.DataFrame, heading: str =
         return
 
     st.markdown(heading)
-    for row in representatives.itertuples(index=False):
+    for index, row in enumerate(representatives.itertuples(index=False)):
         placement_number = pd.to_numeric(row.placement, errors="coerce")
         placement = "" if pd.isna(placement_number) else f" - {int(placement_number)}"
         label = f"{row.deck}: {row.player}{placement} at {row.tournament}"
         with st.expander(label):
-            if row.source_link:
-                st.link_button("Open source event", row.source_link)
+            title = f"{row.deck} - {row.player}{placement} at {row.tournament}"
+            source_col, image_col, text_col = st.columns(3)
+            with source_col:
+                if row.source_link:
+                    st.link_button("Open source event", row.source_link)
+            image_bytes = _decklist_svg(title, row.decklist)
+            image_name = _safe_file_stem(title)
+            widget_key = _safe_file_stem(f"{heading}-{index}-{title}")
+            image_data_url = "data:image/svg+xml;base64," + base64.b64encode(image_bytes).decode("ascii")
+            with image_col:
+                st.markdown(
+                    f'<a href="{image_data_url}" target="_blank">Open generated image</a>',
+                    unsafe_allow_html=True,
+                )
+            with text_col:
+                st.download_button(
+                    "Download text list",
+                    data=row.decklist,
+                    file_name=f"{image_name}.txt",
+                    mime="text/plain",
+                    key=f"text_{widget_key}",
+                )
+
+            decklist_rows = getattr(row, "decklist_rows", [])
+            if decklist_rows:
+                st.dataframe(pd.DataFrame(decklist_rows), width="stretch", hide_index=True)
+            st.download_button(
+                "Download image",
+                data=image_bytes,
+                file_name=f"{image_name}.svg",
+                mime="image/svg+xml",
+                key=f"image_{widget_key}",
+            )
             st.code(row.decklist, language="text")
 
 
@@ -1186,7 +1293,7 @@ def _deck_detail(
                 "list_id"
             ].head(10).tolist()
             _show_representative_decklists(
-                _decklist_rows_from_lists(recent_major_cards, recent_list_ids),
+                _decklist_rows_from_lists(recent_major_cards, recent_list_ids, _card_metadata_lookup(cards)),
                 heading="Recent Major decklists",
             )
 
