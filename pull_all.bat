@@ -26,6 +26,10 @@ echo Extracting cards...
 python extract_cards.py
 if errorlevel 1 goto failed
 
+echo Downloading card subtype metadata...
+python enrich_card_subtypes.py
+if errorlevel 1 goto failed
+
 echo Building deck summary...
 python analyze_players.py
 if errorlevel 1 goto failed

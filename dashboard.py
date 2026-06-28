@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import base64
 from datetime import date
+from functools import lru_cache
 import html
 import inspect
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -18,6 +20,16 @@ DEFAULT_META_COUNT = 10
 MAX_META_COUNT = 35
 FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
+CARD_SUBTYPES_CSV = Path("outputs/card_subtypes.csv")
+DECKLIST_SUBTYPE_ORDER = {
+    "Pokemon": 0,
+    "Supporter": 1,
+    "Item": 2,
+    "Tool": 3,
+    "Stadium": 4,
+    "Energy": 5,
+    "Special Energy": 6,
+}
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -370,19 +382,50 @@ def _card_metadata_lookup(cards: pd.DataFrame) -> dict[str, dict[str, str]]:
     for row in usable.itertuples(index=False):
         card_name = str(getattr(row, "card", ""))
         set_code = str(getattr(row, "set", ""))
-        number = str(getattr(row, "number", ""))
+        number = _clean_card_number(getattr(row, "number", ""))
         category = str(getattr(row, "category", ""))
         if not card_name or not set_code or not number:
             continue
+        subtype_lookup = _card_subtype_lookup()
+        subtype = subtype_lookup.get(
+            (set_code, number),
+            subtype_lookup.get((f"name:{card_name.lower()}", ""), ""),
+        )
         metadata.setdefault(
             card_name,
             {
                 "category": category,
                 "set": set_code,
                 "number": number,
+                "subtype": subtype,
             },
         )
     return metadata
+
+
+@lru_cache(maxsize=1)
+def _card_subtype_lookup() -> dict[tuple[str, str], str]:
+    """Read downloaded set/number subtype metadata."""
+
+    if not CARD_SUBTYPES_CSV.exists():
+        return {}
+
+    subtypes = pd.read_csv(CARD_SUBTYPES_CSV, dtype=str).fillna("")
+    needed = {"set", "number", "subtype"}
+    if not needed.issubset(subtypes.columns):
+        return {}
+    lookup = {
+        (str(row.set).strip(), _clean_card_number(row.number)): str(row.subtype).strip()
+        for row in subtypes.itertuples(index=False)
+        if str(row.set).strip() and str(row.number).strip()
+    }
+    if "card" in subtypes.columns:
+        for row in subtypes.itertuples(index=False):
+            card_name = str(getattr(row, "card", "")).strip().lower()
+            subtype = str(getattr(row, "subtype", "")).strip()
+            if card_name and subtype not in {"", "Trainer"}:
+                lookup.setdefault((f"name:{card_name}", ""), subtype)
+    return lookup
 
 
 def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[str, str]]) -> str:
@@ -406,10 +449,7 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
             continue
         total = int(section_cards["count"].sum())
         lines.append(f"{heading}: {total}")
-        for row in section_cards.sort_values(
-            ["count", "card"],
-            ascending=[False, True],
-        ).itertuples(index=False):
+        for row in _sorted_decklist_cards(section_cards, metadata).itertuples(index=False):
             card_name = str(row.card)
             fallback = metadata.get(card_name, {})
             set_code = str(row.set or fallback.get("set", "")).strip()
@@ -418,6 +458,23 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
             lines.append(f"{_clean_card_count(row.count)} {card_name}{suffix}")
         lines.append("")
     return "\n".join(lines).strip()
+
+
+def _sorted_decklist_cards(
+    cards: pd.DataFrame,
+    metadata: dict[str, dict[str, str]],
+) -> pd.DataFrame:
+    """Sort cards by decklist subtype, count descending, then card name."""
+
+    sorted_cards = cards.copy()
+    sorted_cards["subtype"] = sorted_cards["card"].apply(
+        lambda card: metadata.get(str(card), {}).get("subtype", "")
+    )
+    sorted_cards["subtype_sort"] = sorted_cards["subtype"].map(DECKLIST_SUBTYPE_ORDER).fillna(99)
+    return sorted_cards.sort_values(
+        ["subtype_sort", "count", "card"],
+        ascending=[True, False, True],
+    ).drop(columns=["subtype_sort"])
 
 
 def _decklist_display_rows(cards: pd.DataFrame, metadata: dict[str, dict[str, str]]) -> list[dict[str, object]]:
@@ -437,15 +494,13 @@ def _decklist_display_rows(cards: pd.DataFrame, metadata: dict[str, dict[str, st
     rows: list[dict[str, object]] = []
     for category_key, heading in sections:
         section_cards = _cards_for_section(display_cards, category_key, metadata)
-        for row in section_cards.sort_values(
-            ["count", "card"],
-            ascending=[False, True],
-        ).itertuples(index=False):
+        for row in _sorted_decklist_cards(section_cards, metadata).itertuples(index=False):
             card_name = str(row.card)
             fallback = metadata.get(card_name, {})
             rows.append(
                 {
                     "Section": heading,
+                    "Type": str(getattr(row, "subtype", "") or heading),
                     "Count": _clean_card_count(row.count),
                     "Card": card_name,
                     "Set": str(row.set or fallback.get("set", "")).strip(),

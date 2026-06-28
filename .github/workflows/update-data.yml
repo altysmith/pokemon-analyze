@@ -53,6 +53,7 @@ jobs:
           python combine_players.py
           python combine_matches.py
           python extract_cards.py
+          python enrich_card_subtypes.py
           python analyze_players.py
           python best_meta_report.py
 
