@@ -406,7 +406,10 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
             continue
         total = int(section_cards["count"].sum())
         lines.append(f"{heading}: {total}")
-        for row in section_cards.sort_values(["card"]).itertuples(index=False):
+        for row in section_cards.sort_values(
+            ["count", "card"],
+            ascending=[False, True],
+        ).itertuples(index=False):
             card_name = str(row.card)
             fallback = metadata.get(card_name, {})
             set_code = str(row.set or fallback.get("set", "")).strip()
@@ -434,7 +437,10 @@ def _decklist_display_rows(cards: pd.DataFrame, metadata: dict[str, dict[str, st
     rows: list[dict[str, object]] = []
     for category_key, heading in sections:
         section_cards = _cards_for_section(display_cards, category_key, metadata)
-        for row in section_cards.sort_values(["card"]).itertuples(index=False):
+        for row in section_cards.sort_values(
+            ["count", "card"],
+            ascending=[False, True],
+        ).itertuples(index=False):
             card_name = str(row.card)
             fallback = metadata.get(card_name, {})
             rows.append(
