@@ -16,7 +16,7 @@ import streamlit as st
 import pokemon_analyze.deck_analysis as deck_analysis
 
 
-DEFAULT_META_COUNT = 10
+DEFAULT_META_COUNT = 25
 MAX_META_COUNT = 35
 FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
