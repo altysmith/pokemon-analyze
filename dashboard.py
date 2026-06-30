@@ -1447,6 +1447,12 @@ def _meta_overview(
             percent_columns=["weighted_adjusted_win_rate"],
             column_labels=recommendation_labels,
         )
+        with st.expander("Show full recommendation score list"):
+            _show_table(
+                recommendations,
+                percent_columns=["weighted_adjusted_win_rate"],
+                column_labels=recommendation_labels,
+            )
 
 
 def _deck_detail(
