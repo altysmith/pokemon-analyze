@@ -1419,14 +1419,23 @@ def _meta_overview(
     st.subheader("Decks Worth Testing")
     st.caption(
         "Recommendations weight each matchup by the opponent's meta share, then adjust for favorable and "
-        "unfavorable matchup counts. The visible list favors decks at 50%+ weighted adjusted win rate; "
-        "use the exclude box to hide decks you do not want to play."
+        "unfavorable matchup counts. Use the exclude controls to hide decks you do not want to play."
+    )
+    recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
+    exclude_dragapult = st.checkbox(
+        "Exclude all Dragapult variants",
+        key="testing_recommendation_exclude_dragapult",
     )
     excluded_decks = st.multiselect(
         "Exclude decks",
-        sorted(best["deck"].dropna().astype(str).unique().tolist()),
+        recommendation_decks,
         key="testing_recommendation_exclusions",
     )
+    if exclude_dragapult:
+        excluded_decks = sorted(
+            set(excluded_decks)
+            | {deck for deck in recommendation_decks if "dragapult" in deck.lower()}
+        )
     recommendations = _build_testing_recommendations(
         filtered_cards,
         filtered_matches,
@@ -1449,11 +1458,8 @@ def _meta_overview(
             "very_unfavorable_matchups": "V Unfav",
             "note": "Why",
         }
-        visible_recommendations = recommendations[recommendations["weighted_adjusted_win_rate"] >= 0.50].head(5)
-        if visible_recommendations.empty:
-            visible_recommendations = recommendations.head(5)
         _show_table(
-            visible_recommendations,
+            recommendations.head(5),
             percent_columns=["weighted_adjusted_win_rate"],
             column_labels=recommendation_labels,
         )
