@@ -1410,40 +1410,6 @@ def _meta_overview(
         column_labels=compact_labels,
     )
 
-    st.subheader("Best Decks To Beat One Target")
-    target_options = resolved_meta.sort_values("rank").copy()
-    target_labels = {
-        row.local_deck: f"{int(row.rank)}. {row.limitless_deck}"
-        for row in target_options.itertuples(index=False)
-        if pd.notna(row.rank)
-    }
-    target_col, sample_col = st.columns([2, 1])
-    with target_col:
-        target_deck = st.selectbox(
-            "Target deck",
-            target_options["local_deck"].tolist(),
-            format_func=lambda deck: target_labels.get(deck, deck),
-        )
-    with sample_col:
-        min_target_matches = st.number_input("Minimum matches", min_value=1, max_value=100, value=30, step=1)
-
-    target_report = deck_analysis.best_decks_against_target(
-        target_deck,
-        filtered_cards,
-        filtered_matches,
-        min_matches=int(min_target_matches),
-    )
-    if target_report.empty:
-        st.info("No decks meet the current minimum match count into that target.")
-    else:
-        top_target_decks = target_report.head(5).copy()
-        _show_table(
-            top_target_decks,
-            percent_columns=["win_rate", "tie_adjusted_win_rate"],
-        )
-        representatives = _representative_decklists(filtered_cards, top_target_decks["deck"].tolist())
-        _show_representative_decklists(representatives)
-
     st.subheader("Decks Worth Testing")
     st.caption(
         "Recommendations weight each matchup by the opponent's meta share, then adjust for favorable and "
