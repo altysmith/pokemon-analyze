@@ -1388,14 +1388,7 @@ def _meta_overview(
         "unfavorable_matchups": "Unfav MU",
         "very_unfavorable_matchups": "V Unfav MU",
     }
-    spread_col, win_col, non_dragapult_col = st.columns(3)
-    with spread_col:
-        st.markdown("#### Most Favorable Matchups")
-        _show_table(
-            most_favorable[matchup_columns],
-            percent_columns=["win_rate", "tie_adjusted_win_rate"],
-            column_labels=compact_labels,
-        )
+    win_col, non_dragapult_col = st.columns(2)
     with win_col:
         st.markdown("#### Highest Adjusted Win %")
         _show_table(
@@ -1410,6 +1403,12 @@ def _meta_overview(
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
             column_labels=compact_labels,
         )
+    st.markdown("#### Most Favorable Matchups")
+    _show_table(
+        most_favorable[matchup_columns],
+        percent_columns=["win_rate", "tie_adjusted_win_rate"],
+        column_labels=compact_labels,
+    )
 
     st.subheader("Best Decks To Beat One Target")
     target_options = resolved_meta.sort_values("rank").copy()
