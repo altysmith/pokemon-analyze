@@ -14,6 +14,10 @@ echo Pulling Limitless major events...
 python limitless_major_pull.py --format standard --min-players 50 --days 31
 if errorlevel 1 goto failed
 
+echo Pulling Limitless Labs Day 2 conversion data...
+python limitless_labs_pull.py
+if errorlevel 1 goto failed
+
 echo Combining online and major rows...
 python combine_players.py
 if errorlevel 1 goto failed

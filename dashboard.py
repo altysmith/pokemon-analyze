@@ -1099,8 +1099,10 @@ def _show_full_meta_performance(
 
 def _testing_recommendation_note(
     label: str,
-    weighted_rate: float,
-    major_score: float,
+    trusted_rate: float,
+    adjusted_conversion: float,
+    day1: int,
+    day2: int,
     favorable: int,
     very_favorable: int,
     unfavorable: int,
@@ -1112,8 +1114,9 @@ def _testing_recommendation_note(
     """Write one readable sentence explaining why a deck was recommended."""
 
     opening = (
-        f"{label}: {_format_percent(weighted_rate)} weighted win rate, "
-        f"{major_score:.0f}/100 major score, and {_plural(favorable, 'favorable matchup')}"
+        f"{label}: {_format_percent(trusted_rate)} trusted win rate, "
+        f"{_format_percent(adjusted_conversion)} adjusted Day 2 conversion "
+        f"({day2} of {day1}), and {_plural(favorable, 'favorable matchup')}"
     )
 
     if very_favorable:
@@ -1134,6 +1137,69 @@ def _testing_recommendation_note(
 
     sample = " Low sample." if matches < 100 else ""
     return f"{opening}. Risk: {risk}.{sample}"
+
+
+def _conversion_profiles(
+    conversion: pd.DataFrame,
+    cards: pd.DataFrame,
+    local_decks: list[str],
+    prior_entries: int = 50,
+) -> tuple[dict[str, dict[str, float]], float]:
+    """Aggregate Labs conversion data and match its archetypes to local names."""
+
+    if conversion.empty:
+        return {}, 0
+
+    event_ids = set(
+        cards.loc[cards.get("source", pd.Series(index=cards.index, dtype=str)).eq("major"), "tournament_id"]
+        .dropna()
+        .astype(str)
+    )
+    selected = conversion[conversion["tournament_id"].astype(str).isin(event_ids)].copy()
+    if selected.empty:
+        return {}, 0
+
+    total_day1 = float(selected["day1"].sum())
+    baseline = float(selected["day2"].sum() / total_day1) if total_day1 else 0
+    aggregate = selected.groupby("deck", as_index=False).agg(day1=("day1", "sum"), day2=("day2", "sum"))
+    labs_decks = aggregate["deck"].dropna().astype(str).tolist()
+    aggregate_lookup = aggregate.set_index("deck").to_dict("index")
+    aliases = {
+        "Hydrapple": "Ogerpon Meganium Hydrapple",
+        "Ogerpon Box": "Basic Box",
+    }
+
+    profiles: dict[str, dict[str, float]] = {}
+    for local_deck in local_decks:
+        labs_deck = aliases.get(local_deck, "")
+        if not labs_deck:
+            local_tokens = deck_analysis._deck_match_tokens(local_deck)
+            token_matches = [
+                candidate
+                for candidate in labs_decks
+                if deck_analysis._deck_match_tokens(candidate) == local_tokens
+            ]
+            labs_deck = token_matches[0] if token_matches else ""
+        values = aggregate_lookup.get(labs_deck)
+        if not values:
+            continue
+
+        day1 = int(values["day1"])
+        day2 = int(values["day2"])
+        adjusted_rate = (
+            (day2 + (baseline * prior_entries)) / (day1 + prior_entries)
+            if day1 + prior_entries
+            else baseline
+        )
+        conversion_score = min(100, 50 * (adjusted_rate / baseline)) if baseline else 50
+        profiles[local_deck] = {
+            "day1": day1,
+            "day2": day2,
+            "raw_conversion_rate": day2 / day1 if day1 else 0,
+            "adjusted_conversion_rate": adjusted_rate,
+            "conversion_score": conversion_score,
+        }
+    return profiles, baseline
 
 
 def _major_recommendation_profiles(cards: pd.DataFrame) -> pd.DataFrame:
@@ -1216,24 +1282,30 @@ def _major_recommendation_profiles(cards: pd.DataFrame) -> pd.DataFrame:
 
 
 def _recommendation_label(
-    weighted_rate: float,
-    major_score: float,
+    trusted_rate: float,
+    adjusted_conversion: float,
+    conversion_baseline: float,
+    day1: int,
+    best_major_finish: int,
     recent_breakout: bool,
 ) -> str:
-    """Describe whether a deck is accessible, expert-oriented, or emerging."""
+    """Describe the evidence without forcing a deck into an avoid category."""
 
-    skill_gap = major_score - (weighted_rate * 100)
+    if best_major_finish <= 32 and conversion_baseline and adjusted_conversion < conversion_baseline * 0.85:
+        return "Spike result"
     if recent_breakout:
         return "Breakout watch"
-    if major_score >= 60 and weighted_rate < 0.50 and skill_gap >= 10:
-        return "Expert pick"
-    if weighted_rate >= 0.50 and major_score >= 50:
+    if trusted_rate >= 0.50 and adjusted_conversion >= conversion_baseline:
         return "Accessible pick"
-    if weighted_rate < 0.45 and major_score < 40:
-        return "Avoid for now"
-    if major_score < 25:
-        return "Unproven"
-    return "Established contender"
+    if conversion_baseline and adjusted_conversion >= conversion_baseline * 1.10:
+        return "Strong converter"
+    if best_major_finish <= 32 and trusted_rate < 0.50:
+        return "Expert pick"
+    if day1 < 30:
+        return "Limited evidence"
+    if conversion_baseline and adjusted_conversion < conversion_baseline * 0.80:
+        return "Conversion concern"
+    return "Day 2 contender"
 
 
 def _build_testing_recommendations(
@@ -1243,6 +1315,10 @@ def _build_testing_recommendations(
     meta_decks: pd.DataFrame,
     best: pd.DataFrame,
     excluded_decks: list[str],
+    conversion: pd.DataFrame | None = None,
+    win_weight: int = 70,
+    conversion_weight: int = 20,
+    coverage_weight: int = 10,
 ) -> pd.DataFrame:
     """Score decks worth testing, weighting matchups by opponent meta share."""
 
@@ -1251,7 +1327,12 @@ def _build_testing_recommendations(
         "label",
         "score",
         "weighted_adjusted_win_rate",
-        "major_finish_score",
+        "trusted_win_rate",
+        "adjusted_conversion_rate",
+        "raw_conversion_rate",
+        "day1",
+        "day2",
+        "coverage_score",
         "matches",
         "favorable_matchups",
         "very_favorable_matchups",
@@ -1307,6 +1388,12 @@ def _build_testing_recommendations(
     best_lookup = best.set_index("deck").to_dict("index")
     major_profiles = _major_recommendation_profiles(cards)
     major_lookup = major_profiles.set_index("deck").to_dict("index") if not major_profiles.empty else {}
+    conversion_lookup, conversion_baseline = _conversion_profiles(
+        conversion if conversion is not None else pd.DataFrame(),
+        cards,
+        sorted(per_opponent["deck"].dropna().astype(str).unique()),
+    )
+    weight_total = max(win_weight + conversion_weight + coverage_weight, 1)
     for deck, deck_rows in per_opponent.groupby("deck"):
         if deck in excluded or deck not in best_lookup:
             continue
@@ -1332,8 +1419,14 @@ def _build_testing_recommendations(
             ascending=[False, True, False],
         )
         major_profile = major_lookup.get(deck, {})
-        major_score = float(major_profile.get("major_finish_score", 0))
+        best_major_finish = int(major_profile.get("best_major_finish", 9999))
         recent_breakout = bool(major_profile.get("recent_breakout", False))
+        conversion_profile = conversion_lookup.get(deck, {})
+        day1 = int(conversion_profile.get("day1", 0))
+        day2 = int(conversion_profile.get("day2", 0))
+        raw_conversion = float(conversion_profile.get("raw_conversion_rate", 0))
+        adjusted_conversion = float(conversion_profile.get("adjusted_conversion_rate", conversion_baseline))
+        conversion_score = float(conversion_profile.get("conversion_score", 50))
         favorable_only = max(0, favorable - very_favorable)
         unfavorable_only = max(0, unfavorable - very_unfavorable)
         coverage_raw = (
@@ -1344,18 +1437,26 @@ def _build_testing_recommendations(
         )
         target_count = max(len(meta_targets), 1)
         coverage_score = max(0, min(100, ((coverage_raw + (2 * target_count)) / (4 * target_count)) * 100))
-        confidence_score = min(matches / 100, 1) * 100
+        trusted_rate = ((weighted_rate * matches) + (0.50 * 50)) / (matches + 50)
         score = (
-            (weighted_rate * 100 * 0.65)
-            + (major_score * 0.15)
-            + (coverage_score * 0.10)
-            + (confidence_score * 0.10)
+            ((trusted_rate * 100) * win_weight)
+            + (conversion_score * conversion_weight)
+            + (coverage_score * coverage_weight)
+        ) / weight_total
+        label = _recommendation_label(
+            trusted_rate,
+            adjusted_conversion,
+            conversion_baseline,
+            day1,
+            best_major_finish,
+            recent_breakout,
         )
-        label = _recommendation_label(weighted_rate, major_score, recent_breakout)
         note = _testing_recommendation_note(
             label,
-            weighted_rate,
-            major_score,
+            trusted_rate,
+            adjusted_conversion,
+            day1,
+            day2,
             favorable,
             very_favorable,
             unfavorable,
@@ -1370,7 +1471,12 @@ def _build_testing_recommendations(
                 "label": label,
                 "score": score,
                 "weighted_adjusted_win_rate": weighted_rate,
-                "major_finish_score": major_score,
+                "trusted_win_rate": trusted_rate,
+                "adjusted_conversion_rate": adjusted_conversion,
+                "raw_conversion_rate": raw_conversion,
+                "day1": day1,
+                "day2": day2,
+                "coverage_score": coverage_score,
                 "matches": matches,
                 "favorable_matchups": favorable,
                 "very_favorable_matchups": very_favorable,
@@ -1385,39 +1491,28 @@ def _build_testing_recommendations(
     return pd.DataFrame(rows).sort_values(["score", "matches"], ascending=[False, False])[columns]
 
 
-def _build_decks_to_avoid(recommendations: pd.DataFrame) -> pd.DataFrame:
-    """Return the three weakest weighted performers with a direct warning."""
+def _build_lowest_evidence(recommendations: pd.DataFrame) -> pd.DataFrame:
+    """Return the three lowest scores without declaring viable decks unplayable."""
 
     columns = [
         "deck",
-        "weighted_adjusted_win_rate",
-        "matches",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
+        "trusted_win_rate",
+        "adjusted_conversion_rate",
+        "label",
         "why",
     ]
     if recommendations.empty:
         return pd.DataFrame(columns=columns)
 
-    avoid = recommendations[recommendations["weighted_adjusted_win_rate"] < 0.50].copy()
-    avoid = avoid.sort_values(
-        [
-            "weighted_adjusted_win_rate",
-            "very_unfavorable_matchups",
-            "unfavorable_matchups",
-            "matches",
-        ],
-        ascending=[True, False, False, False],
-    ).head(3)
-    avoid["why"] = avoid.apply(
+    lowest = recommendations.sort_values(["score", "matches"], ascending=[True, False]).head(3).copy()
+    lowest["why"] = lowest.apply(
         lambda row: (
-            f"Avoid for now: {_format_percent(row['weighted_adjusted_win_rate'])} weighted win rate with "
-            f"{_plural(int(row['unfavorable_matchups']), 'unfavorable matchup')}, including "
-            f"{_plural(int(row['very_unfavorable_matchups']), 'very unfavorable matchup')}."
+            f"Current evidence: {_format_percent(row['trusted_win_rate'])} trusted win rate and "
+            f"{_format_percent(row['adjusted_conversion_rate'])} adjusted Day 2 conversion."
         ),
         axis=1,
     )
-    return avoid[columns]
+    return lowest[columns]
 
 
 def _render_deck_meta_summary(deck: str, details: pd.DataFrame, meta_rank: object = "-") -> None:
@@ -1467,6 +1562,7 @@ def _meta_overview(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
     limitless_meta_decks: pd.DataFrame,
+    labs_conversion: pd.DataFrame,
 ) -> None:
     """Opening page: top meta list and best performers into that meta."""
 
@@ -1596,10 +1692,27 @@ def _meta_overview(
 
     st.subheader("Decks Worth Testing")
     st.caption(
-        "Scores use 65% meta-share-weighted win rate, 15% major finishes, 10% matchup coverage, "
-        "and 10% sample confidence. Labels distinguish accessible, expert, breakout, and unproven choices. "
-        "Use the exclude controls to hide decks you do not want to play."
+        "Scores combine confidence-adjusted matchup win rate, sample-adjusted Day 2 conversion, "
+        "and matchup coverage. Major finishes affect evidence labels, not the score."
     )
+    with st.expander("Score Lab", expanded=True):
+        weight_columns = st.columns(3)
+        with weight_columns[0]:
+            win_weight = st.slider("Win rate weight", 0, 100, 70, 5)
+        with weight_columns[1]:
+            conversion_weight = st.slider("Day 2 conversion weight", 0, 100, 20, 5)
+        with weight_columns[2]:
+            coverage_weight = st.slider("Matchup coverage weight", 0, 100, 10, 5)
+        weight_total = win_weight + conversion_weight + coverage_weight
+        if weight_total:
+            st.caption(
+                "Normalized weights: "
+                f"win rate {win_weight / weight_total:.0%}, "
+                f"conversion {conversion_weight / weight_total:.0%}, "
+                f"coverage {coverage_weight / weight_total:.0%}."
+            )
+        else:
+            st.warning("Set at least one score weight above zero.")
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
     exclude_dragapult = st.checkbox(
         "Exclude all Dragapult variants",
@@ -1622,10 +1735,43 @@ def _meta_overview(
         meta_decks,
         best,
         [],
+        conversion=labs_conversion,
+        win_weight=win_weight,
+        conversion_weight=conversion_weight,
+        coverage_weight=coverage_weight,
+    )
+    _, conversion_baseline = _conversion_profiles(
+        labs_conversion,
+        filtered_cards,
+        recommendation_decks,
+    )
+    use_conversion_benchmark = st.checkbox(
+        "Show only decks meeting a Day 2 conversion benchmark",
+        value=False,
+    )
+    benchmark_percent = st.slider(
+        "Conversion benchmark relative to field",
+        0,
+        150,
+        80,
+        5,
+        disabled=not use_conversion_benchmark,
     )
     recommendations = all_recommendations[
         ~all_recommendations["deck"].isin(excluded_decks)
     ].copy()
+    if use_conversion_benchmark and conversion_baseline:
+        recommendations = recommendations[
+            recommendations["adjusted_conversion_rate"]
+            >= conversion_baseline * (benchmark_percent / 100)
+        ].copy()
+    if conversion_baseline:
+        st.caption(
+            f"Selected major field Day 2 baseline: {_format_percent(conversion_baseline)}. "
+            "The conversion benchmark is optional and does not change deck scores."
+        )
+    elif selected_source != "Online":
+        st.info("No Limitless Labs conversion rows are available for the selected majors yet.")
     if recommendations.empty:
         st.info("No deck recommendations are available after the current filters and exclusions.")
     else:
@@ -1633,8 +1779,11 @@ def _meta_overview(
             "deck": "Deck",
             "label": "Label",
             "score": "Score",
-            "weighted_adjusted_win_rate": "Wtd Adj",
-            "major_finish_score": "Major",
+            "trusted_win_rate": "Trusted Win",
+            "adjusted_conversion_rate": "Adj Conv",
+            "day1": "D1",
+            "day2": "D2",
+            "coverage_score": "Coverage",
             "matches": "M",
             "favorable_matchups": "Fav MU",
             "very_favorable_matchups": "V Fav",
@@ -1644,33 +1793,32 @@ def _meta_overview(
         }
         _show_table(
             recommendations.head(5),
-            percent_columns=["weighted_adjusted_win_rate"],
+            percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
             column_labels=recommendation_labels,
         )
         with st.expander("Show full recommendation score list"):
             _show_table(
                 recommendations,
-                percent_columns=["weighted_adjusted_win_rate"],
+                percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
                 column_labels=recommendation_labels,
             )
 
-    st.subheader("Top 3 Decks to Avoid Right Now")
-    avoid_decks = _build_decks_to_avoid(all_recommendations)
-    if avoid_decks.empty:
-        st.info("No decks in the current pool have a weighted adjusted win rate below 50%.")
+    st.subheader("Lowest Current Evidence")
+    lowest_evidence = _build_lowest_evidence(all_recommendations)
+    if lowest_evidence.empty:
+        st.info("No recommendation evidence is available.")
     else:
-        avoid_labels = {
+        evidence_labels = {
             "deck": "Deck",
-            "weighted_adjusted_win_rate": "Wtd Adj",
-            "matches": "M",
-            "unfavorable_matchups": "Unfav",
-            "very_unfavorable_matchups": "V Unfav",
+            "trusted_win_rate": "Trusted Win",
+            "adjusted_conversion_rate": "Adj Conv",
+            "label": "Label",
             "why": "Why",
         }
         _show_table(
-            avoid_decks,
-            percent_columns=["weighted_adjusted_win_rate"],
-            column_labels=avoid_labels,
+            lowest_evidence,
+            percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
+            column_labels=evidence_labels,
         )
 
 
@@ -1947,10 +2095,11 @@ except (FileNotFoundError, ValueError) as error:
 
 matches = deck_analysis.read_matches()
 limitless_meta_decks = deck_analysis.read_limitless_meta_decks()
+labs_conversion = deck_analysis.read_labs_conversion()
 
 page = st.sidebar.radio("Page", ["Meta Overview", "Deck Detail"])
 if page == "Meta Overview":
-    _meta_overview(cards, matches, limitless_meta_decks)
+    _meta_overview(cards, matches, limitless_meta_decks, labs_conversion)
 else:
     meta_count = st.sidebar.slider(
         "Meta deck count",

@@ -20,6 +20,7 @@ CARDS_CSV = OUTPUTS_DIR / "cards.csv"
 MATCHES_CSV = OUTPUTS_DIR / "matches.csv"
 DECK_SUMMARY_CSV = OUTPUTS_DIR / "deck_summary.csv"
 LIMITLESS_META_CSV = OUTPUTS_DIR / "limitless_meta_decks.csv"
+LABS_CONVERSION_CSV = OUTPUTS_DIR / "labs_conversion.csv"
 
 
 CORE_THRESHOLD = 0.65
@@ -86,6 +87,37 @@ def read_limitless_meta_decks(path: str | Path = LIMITLESS_META_CSV) -> pd.DataF
     if "deck" in meta_decks.columns:
         meta_decks["deck"] = meta_decks["deck"].fillna("").astype(str)
     return meta_decks
+
+
+def read_labs_conversion(path: str | Path = LABS_CONVERSION_CSV) -> pd.DataFrame:
+    """Read major-event Day 1 and Day 2 archetype counts."""
+
+    csv_path = Path(path)
+    columns = [
+        "tournament_id",
+        "labs_id",
+        "tournament_name",
+        "date",
+        "deck",
+        "day1",
+        "day2",
+        "conversion_rate",
+    ]
+    if not csv_path.exists():
+        return pd.DataFrame(columns=columns)
+
+    conversion = _normalize_columns(pd.read_csv(csv_path, low_memory=False))
+    for column in ["day1", "day2", "conversion_rate"]:
+        if column not in conversion.columns:
+            conversion[column] = 0
+        conversion[column] = pd.to_numeric(conversion[column], errors="coerce").fillna(0)
+    if "date" in conversion.columns:
+        conversion["date"] = _parse_date_column(conversion["date"])
+    for column in ["tournament_id", "labs_id", "tournament_name", "deck"]:
+        if column not in conversion.columns:
+            conversion[column] = ""
+        conversion[column] = conversion[column].fillna("").astype(str)
+    return conversion
 
 
 def read_cards(path: str | Path = CARDS_CSV) -> pd.DataFrame:

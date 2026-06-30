@@ -143,6 +143,12 @@ matchups, then very favorable matchups, then fewer unfavorable matchups, then
 fewer very unfavorable matchups, then aggregate tie-adjusted win rate.
 Recommendation scores use the full current Top 25 meta list and weight each
 opponent by its meta share.
+The Meta Overview Score Lab can rebalance confidence-adjusted matchup win rate,
+Limitless Labs Day 2 conversion, and matchup coverage without changing code.
+Its optional conversion benchmark is off by default, so every scored deck stays
+visible unless a user chooses to filter the table. Run
+`python limitless_labs_pull.py` after the major pull to refresh
+`outputs/labs_conversion.csv`.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and
