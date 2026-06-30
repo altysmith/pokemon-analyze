@@ -1191,7 +1191,17 @@ def _conversion_profiles(
             if day1 + prior_entries
             else baseline
         )
-        conversion_score = min(100, 50 * (adjusted_rate / baseline)) if baseline else 50
+        if baseline:
+            conversion_ratio = adjusted_rate / baseline
+            # Below-average conversion receives a steeper penalty. Above the
+            # field average remains linear and reaches 100 at twice the norm.
+            conversion_score = (
+                50 * (conversion_ratio**2)
+                if conversion_ratio < 1
+                else min(100, 50 * conversion_ratio)
+            )
+        else:
+            conversion_score = 50
         profiles[local_deck] = {
             "day1": day1,
             "day2": day2,
@@ -1427,16 +1437,26 @@ def _build_testing_recommendations(
         raw_conversion = float(conversion_profile.get("raw_conversion_rate", 0))
         adjusted_conversion = float(conversion_profile.get("adjusted_conversion_rate", conversion_baseline))
         conversion_score = float(conversion_profile.get("conversion_score", 50))
-        favorable_only = max(0, favorable - very_favorable)
-        unfavorable_only = max(0, unfavorable - very_unfavorable)
-        coverage_raw = (
-            (very_favorable * 2)
-            + favorable_only
-            - unfavorable_only
-            - (very_unfavorable * 2)
+        def coverage_value(rate: float) -> int:
+            if rate > 0.60:
+                return 2
+            if rate >= 0.55:
+                return 1
+            if rate < 0.40:
+                return -2
+            if rate < 0.45:
+                return -1
+            return 0
+
+        deck_rows = deck_rows.copy()
+        deck_rows["coverage_value"] = deck_rows["opponent_adjusted_win_rate"].map(coverage_value)
+        coverage_share = deck_rows["meta_share"].sum()
+        weighted_coverage = (
+            (deck_rows["coverage_value"] * deck_rows["meta_share"]).sum() / coverage_share
+            if coverage_share
+            else 0
         )
-        target_count = max(len(meta_targets), 1)
-        coverage_score = max(0, min(100, ((coverage_raw + (2 * target_count)) / (4 * target_count)) * 100))
+        coverage_score = max(0, min(100, ((weighted_coverage + 2) / 4) * 100))
         trusted_rate = ((weighted_rate * matches) + (0.50 * 50)) / (matches + 50)
         score = (
             ((trusted_rate * 100) * win_weight)
@@ -1693,7 +1713,8 @@ def _meta_overview(
     st.subheader("Decks Worth Testing")
     st.caption(
         "Scores combine confidence-adjusted matchup win rate, sample-adjusted Day 2 conversion, "
-        "and matchup coverage. Major finishes affect evidence labels, not the score."
+        "and meta-share-weighted matchup coverage. Below-average conversion receives a steeper "
+        "penalty. Major finishes affect evidence labels, not the score."
     )
     with st.expander("Score Lab", expanded=True):
         weight_columns = st.columns(3)

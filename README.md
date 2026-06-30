@@ -149,6 +149,9 @@ Its optional conversion benchmark is off by default, so every scored deck stays
 visible unless a user chooses to filter the table. Run
 `python limitless_labs_pull.py` after the major pull to refresh
 `outputs/labs_conversion.csv`.
+Matchup coverage is weighted by each opponent's meta share. Conversion below
+the selected major-field average uses a squared penalty, while above-average
+conversion remains linear.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and
