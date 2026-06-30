@@ -21,6 +21,13 @@ MAX_META_COUNT = 35
 FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
 CARD_SUBTYPES_CSV = Path("outputs/card_subtypes.csv")
+MAJOR_WINDOW_OPTIONS = {
+    "Last 3 majors": 3,
+    "Last 5 majors": 5,
+    "Last 8 majors": 8,
+    "Last 10 majors": 10,
+    "All majors": None,
+}
 DECKLIST_SUBTYPE_ORDER = {
     "Pokemon": 0,
     "Supporter": 1,
@@ -49,6 +56,87 @@ def _filter_by_source(cards: pd.DataFrame, matches: pd.DataFrame, source: str) -
     if source == "Majors":
         return cards[cards["source"] == "major"].copy(), matches[matches["source"] == "major"].copy()
     return cards.copy(), matches.copy()
+
+
+def _latest_major_event_ids(cards: pd.DataFrame, event_count: int | None) -> list[str]:
+    """Return tournament ids for the newest Major events in the current data."""
+
+    needed = {"source", "tournament_id", "date"}
+    if cards.empty or not needed.issubset(cards.columns):
+        return []
+
+    major_cards = cards[(cards["source"] == "major") & cards["tournament_id"].notna()].copy()
+    if major_cards.empty:
+        return []
+
+    if event_count is None:
+        return major_cards["tournament_id"].astype(str).drop_duplicates().tolist()
+
+    event_columns = ["tournament_id", "date"]
+    if "tournament_name" in major_cards.columns:
+        event_columns.append("tournament_name")
+
+    events = major_cards[event_columns].drop_duplicates("tournament_id").copy()
+    events["tournament_id"] = events["tournament_id"].astype(str)
+    events["date_sort"] = events["date"].fillna(pd.Timestamp.min)
+    name_sort = "tournament_name" if "tournament_name" in events.columns else "tournament_id"
+    events = events.sort_values(["date_sort", name_sort], ascending=[False, True]).head(event_count)
+    return events["tournament_id"].tolist()
+
+
+def _filter_recent_majors(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    event_count: int | None,
+) -> tuple[pd.DataFrame, pd.DataFrame, int]:
+    """Keep all rows from the newest Major events instead of cutting by date."""
+
+    major_cards, major_matches = _filter_by_source(cards, matches, "Majors")
+    event_ids = _latest_major_event_ids(cards, event_count)
+    if not event_ids:
+        return major_cards.iloc[0:0].copy(), major_matches.iloc[0:0].copy(), 0
+
+    event_set = set(event_ids)
+    filtered_cards = major_cards[major_cards["tournament_id"].astype(str).isin(event_set)].copy()
+    filtered_matches = major_matches[major_matches["tournament_id"].astype(str).isin(event_set)].copy()
+    return filtered_cards, filtered_matches, len(event_ids)
+
+
+def _filter_meta_overview_data(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    source: str,
+    online_start: date,
+    online_end: date,
+    major_event_count: int | None,
+) -> tuple[pd.DataFrame, pd.DataFrame, str]:
+    """Build the Meta Overview pool using date-filtered online data and event-filtered Major data."""
+
+    online_cards, online_matches = _filter_by_source(cards, matches, "Online")
+    online_cards = _filter_by_date(online_cards, online_start, online_end)
+    online_matches = _filter_by_date(online_matches, online_start, online_end)
+
+    major_cards, major_matches, major_events_used = _filter_recent_majors(cards, matches, major_event_count)
+
+    if source == "Online":
+        caption = f"Using online events from {online_start} to {online_end}."
+        return online_cards, online_matches, caption
+    major_caption = (
+        "all Major events"
+        if major_event_count is None
+        else f"the latest {major_events_used} Major event(s)"
+    )
+    if source == "Majors":
+        caption = f"Using {major_caption}, regardless of date."
+        return major_cards, major_matches, caption
+
+    combined_cards = pd.concat([online_cards, major_cards], ignore_index=True)
+    combined_matches = pd.concat([online_matches, major_matches], ignore_index=True)
+    caption = (
+        f"Using online events from {online_start} to {online_end} "
+        f"plus {major_caption}."
+    )
+    return combined_cards, combined_matches, caption
 
 
 def _unique_period_count(cards: pd.DataFrame, period_code: str) -> int:
@@ -1043,17 +1131,29 @@ def _meta_overview(
 
     today = pd.Timestamp.today().normalize()
     default_start = today - pd.Timedelta(days=31)
-    source_col, start_col, end_col = st.columns([1, 1, 1])
+    source_col, start_col, end_col, major_col = st.columns([1, 1, 1, 1])
     with source_col:
         selected_source = st.selectbox("Source", ["Both", "Online", "Majors"])
     with start_col:
-        start_date = st.date_input("Start date", value=default_start.date(), key="overview_start")
+        start_date = st.date_input("Online start", value=default_start.date(), key="overview_start")
     with end_col:
-        end_date = st.date_input("End date", value=today.date(), key="overview_end")
+        end_date = st.date_input("Online end", value=today.date(), key="overview_end")
+    with major_col:
+        major_window_label = st.selectbox(
+            "Major window",
+            list(MAJOR_WINDOW_OPTIONS.keys()),
+            index=1,
+        )
 
-    source_cards, source_matches = _filter_by_source(cards, matches, selected_source)
-    filtered_cards = _filter_by_date(source_cards, start_date, end_date)
-    filtered_matches = _filter_by_date(source_matches, start_date, end_date)
+    filtered_cards, filtered_matches, filter_caption = _filter_meta_overview_data(
+        cards,
+        matches,
+        selected_source,
+        start_date,
+        end_date,
+        MAJOR_WINDOW_OPTIONS[major_window_label],
+    )
+    st.caption(filter_caption)
 
     _show_full_meta_performance(filtered_cards, filtered_matches, limitless_meta_decks)
 
@@ -1180,8 +1280,7 @@ def _meta_overview(
             top_target_decks,
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
         )
-        major_link_cards = _filter_by_date(cards, start_date, end_date)
-        representatives = _representative_decklists(major_link_cards, top_target_decks["deck"].tolist())
+        representatives = _representative_decklists(filtered_cards, top_target_decks["deck"].tolist())
         _show_representative_decklists(representatives)
 
 
