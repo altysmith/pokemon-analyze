@@ -928,6 +928,66 @@ def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, me
     return report.merge(meta_details, on="deck", how="left")
 
 
+def _show_full_meta_performance(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    limitless_meta_decks: pd.DataFrame,
+) -> None:
+    """Show the current top-25 meta list with matchup performance columns."""
+
+    full_columns = [
+        "meta_rank",
+        "deck",
+        "meta_share",
+        "matches",
+        "wins",
+        "losses",
+        "ties",
+        "win_rate",
+        "tie_adjusted_win_rate",
+        "favorable_matchups",
+        "very_favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+    ]
+    full_labels = {
+        "meta_rank": "Rank",
+        "deck": "Deck",
+        "meta_share": "Share",
+        "matches": "M",
+        "wins": "W",
+        "losses": "L",
+        "ties": "T",
+        "win_rate": "Win",
+        "tie_adjusted_win_rate": "Adj",
+        "favorable_matchups": "Fav MU",
+        "very_favorable_matchups": "V Fav MU",
+        "unfavorable_matchups": "Unfav MU",
+        "very_unfavorable_matchups": "V Unfav MU",
+    }
+
+    st.subheader(f"Full Top-{FULL_META_COUNT} Meta Performance Table")
+    full_meta_decks = limitless_meta_decks.head(FULL_META_COUNT).copy()
+    full_resolved_meta = deck_analysis.resolve_meta_decks(cards, full_meta_decks, limit=FULL_META_COUNT)
+    if full_resolved_meta.empty:
+        st.info("No Limitless top-25 meta decks could be matched to the current source/date filters.")
+        return
+
+    full_best = deck_analysis.best_decks_against_meta(
+        cards,
+        matches,
+        **_best_meta_kwargs(FULL_META_COUNT, set(full_resolved_meta["local_deck"]), full_resolved_meta),
+    )
+    full_best = _add_meta_rank_columns(full_best, full_resolved_meta, full_meta_decks)
+    best_display = _ensure_columns(full_best, full_columns)
+    best_display = best_display.sort_values("meta_rank", ascending=True)
+    _show_table(
+        best_display[full_columns],
+        percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
+        column_labels=full_labels,
+    )
+
+
 def _render_deck_meta_summary(deck: str, details: pd.DataFrame, meta_rank: object = "-") -> None:
     """Show a compact matchup summary for one selected deck."""
 
@@ -985,7 +1045,7 @@ def _meta_overview(
     default_start = today - pd.Timedelta(days=31)
     source_col, start_col, end_col = st.columns([1, 1, 1])
     with source_col:
-        selected_source = st.selectbox("Source", ["All", "Online", "Majors"])
+        selected_source = st.selectbox("Source", ["Both", "Online", "Majors"])
     with start_col:
         start_date = st.date_input("Start date", value=default_start.date(), key="overview_start")
     with end_col:
@@ -994,6 +1054,9 @@ def _meta_overview(
     source_cards, source_matches = _filter_by_source(cards, matches, selected_source)
     filtered_cards = _filter_by_date(source_cards, start_date, end_date)
     filtered_matches = _filter_by_date(source_matches, start_date, end_date)
+
+    _show_full_meta_performance(filtered_cards, filtered_matches, limitless_meta_decks)
+
     meta_decks = limitless_meta_decks.head(meta_count).copy()
     resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
 
@@ -1120,56 +1183,6 @@ def _meta_overview(
         major_link_cards = _filter_by_date(cards, start_date, end_date)
         representatives = _representative_decklists(major_link_cards, top_target_decks["deck"].tolist())
         _show_representative_decklists(representatives)
-
-    full_columns = [
-        "meta_rank",
-        "deck",
-        "meta_share",
-        "matches",
-        "wins",
-        "losses",
-        "ties",
-        "win_rate",
-        "tie_adjusted_win_rate",
-        "favorable_matchups",
-        "very_favorable_matchups",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
-    ]
-    full_labels = {
-        "meta_rank": "Rank",
-        "deck": "Deck",
-        "meta_share": "Share",
-        "matches": "M",
-        "wins": "W",
-        "losses": "L",
-        "ties": "T",
-        "win_rate": "Win",
-        "tie_adjusted_win_rate": "Adj",
-        "favorable_matchups": "Fav MU",
-        "very_favorable_matchups": "V Fav MU",
-        "unfavorable_matchups": "Unfav MU",
-        "very_unfavorable_matchups": "V Unfav MU",
-    }
-    full_meta_decks = limitless_meta_decks.head(FULL_META_COUNT).copy()
-    full_resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, full_meta_decks, limit=FULL_META_COUNT)
-    st.subheader(f"Full Top-{FULL_META_COUNT} Meta Performance Table")
-    if full_resolved_meta.empty:
-        st.info("No Limitless top-25 meta decks could be matched to the current card data.")
-    else:
-        full_best = deck_analysis.best_decks_against_meta(
-            filtered_cards,
-            filtered_matches,
-            **_best_meta_kwargs(FULL_META_COUNT, set(full_resolved_meta["local_deck"]), full_resolved_meta),
-        )
-        full_best = _add_meta_rank_columns(full_best, full_resolved_meta, full_meta_decks)
-        best_display = _ensure_columns(full_best, full_columns)
-        best_display = best_display.sort_values("meta_rank", ascending=True)
-        _show_table(
-            best_display[full_columns],
-            percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
-            column_labels=full_labels,
-        )
 
 
 def _deck_detail(
