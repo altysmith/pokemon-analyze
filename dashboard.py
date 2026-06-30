@@ -1199,13 +1199,17 @@ def _build_testing_recommendations(
             ["meta_share", "opponent_adjusted_win_rate", "opponent_matches"],
             ascending=[False, True, False],
         )
+        below_even_penalty = max(0, 0.50 - weighted_rate) * 200
+        poor_rate_penalty = max(0, 0.45 - weighted_rate) * 300
         score = (
             (weighted_rate * 100)
-            + (favorable * 4)
-            + (very_favorable * 2)
-            - (unfavorable * 3)
-            - (very_unfavorable * 4)
-            + (confidence * 5)
+            + (favorable * 1.5)
+            + (very_favorable * 1)
+            - (unfavorable * 2)
+            - (very_unfavorable * 3)
+            + (confidence * 2)
+            - below_even_penalty
+            - poor_rate_penalty
         )
         note_parts = []
         if not best_matchups.empty:
@@ -1214,6 +1218,8 @@ def _build_testing_recommendations(
             note_parts.append("No 55%+ matchups, so this is mostly a weighted spread pick.")
         if not risky_matchups.empty:
             note_parts.append(f"Risk: {_format_testing_matchups(risky_matchups, limit=2)}.")
+        if weighted_rate < 0.50:
+            note_parts.append("Weighted win rate is under 50%, so treat as a narrow meta call.")
         if matches < 100:
             note_parts.append("Low sample.")
         note = " ".join(note_parts)
@@ -1413,7 +1419,8 @@ def _meta_overview(
     st.subheader("Decks Worth Testing")
     st.caption(
         "Recommendations weight each matchup by the opponent's meta share, then adjust for favorable and "
-        "unfavorable matchup counts. Use the exclude box to hide decks you do not want to play."
+        "unfavorable matchup counts. The visible list favors decks at 50%+ weighted adjusted win rate; "
+        "use the exclude box to hide decks you do not want to play."
     )
     excluded_decks = st.multiselect(
         "Exclude decks",
@@ -1442,8 +1449,11 @@ def _meta_overview(
             "very_unfavorable_matchups": "V Unfav",
             "note": "Why",
         }
+        visible_recommendations = recommendations[recommendations["weighted_adjusted_win_rate"] >= 0.50].head(5)
+        if visible_recommendations.empty:
+            visible_recommendations = recommendations.head(5)
         _show_table(
-            recommendations.head(5),
+            visible_recommendations,
             percent_columns=["weighted_adjusted_win_rate"],
             column_labels=recommendation_labels,
         )
