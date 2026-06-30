@@ -1095,6 +1095,18 @@ def _show_full_meta_performance(
     )
 
 
+def _format_testing_matchups(rows: pd.DataFrame, limit: int = 3) -> str:
+    """Format recommendation reasons with matchup name, rate, and record."""
+
+    pieces = []
+    for row in rows.head(limit).itertuples(index=False):
+        pieces.append(
+            f"{row.limitless_deck} {_format_percent(row.opponent_adjusted_win_rate)} "
+            f"({int(row.opponent_wins)}-{int(row.opponent_losses)}-{int(row.opponent_ties)})"
+        )
+    return "; ".join(pieces)
+
+
 def _build_testing_recommendations(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
@@ -1151,6 +1163,7 @@ def _build_testing_recommendations(
         .agg(
             opponent_matches=("result", "size"),
             opponent_wins=("result", lambda values: (values == "win").sum()),
+            opponent_losses=("result", lambda values: (values == "loss").sum()),
             opponent_ties=("result", lambda values: (values == "tie").sum()),
         )
     )
@@ -1178,6 +1191,14 @@ def _build_testing_recommendations(
         unfavorable = int(best_row.get("unfavorable_matchups", 0))
         very_unfavorable = int(best_row.get("very_unfavorable_matchups", 0))
         confidence = min(matches / 500, 1)
+        best_matchups = deck_rows[deck_rows["opponent_adjusted_win_rate"] >= 0.55].sort_values(
+            ["meta_share", "opponent_adjusted_win_rate", "opponent_matches"],
+            ascending=[False, False, False],
+        )
+        risky_matchups = deck_rows[deck_rows["opponent_adjusted_win_rate"] < 0.45].sort_values(
+            ["meta_share", "opponent_adjusted_win_rate", "opponent_matches"],
+            ascending=[False, True, False],
+        )
         score = (
             (weighted_rate * 100)
             + (favorable * 4)
@@ -1186,14 +1207,16 @@ def _build_testing_recommendations(
             - (very_unfavorable * 4)
             + (confidence * 5)
         )
-        if very_unfavorable:
-            note = f"Strong upside, but {very_unfavorable} very unfav MU."
-        elif unfavorable:
-            note = f"Playable spread with {unfavorable} unfav MU to respect."
-        elif matches < 100:
-            note = "Promising, but low sample."
+        note_parts = []
+        if not best_matchups.empty:
+            note_parts.append(f"Best signals: {_format_testing_matchups(best_matchups)}.")
         else:
-            note = "Good weighted spread into likely meta."
+            note_parts.append("No 55%+ matchups, so this is mostly a weighted spread pick.")
+        if not risky_matchups.empty:
+            note_parts.append(f"Risk: {_format_testing_matchups(risky_matchups, limit=2)}.")
+        if matches < 100:
+            note_parts.append("Low sample.")
+        note = " ".join(note_parts)
         rows.append(
             {
                 "deck": deck,
