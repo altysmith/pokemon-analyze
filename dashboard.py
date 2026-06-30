@@ -1103,7 +1103,9 @@ def _show_full_meta_performance(
 
 
 def _testing_recommendation_note(
+    label: str,
     weighted_rate: float,
+    major_score: float,
     favorable: int,
     very_favorable: int,
     unfavorable: int,
@@ -1114,13 +1116,10 @@ def _testing_recommendation_note(
 ) -> str:
     """Write one readable sentence explaining why a deck was recommended."""
 
-    if weighted_rate >= 0.50:
-        opening = f"Test: {_format_percent(weighted_rate)} weighted win rate and {_plural(favorable, 'favorable matchup')}"
-    else:
-        opening = (
-            f"Narrow call: {_format_percent(weighted_rate)} weighted win rate, "
-            f"but {_plural(favorable, 'favorable matchup')}"
-        )
+    opening = (
+        f"{label}: {_format_percent(weighted_rate)} weighted win rate, "
+        f"{major_score:.0f}/100 major score, and {_plural(favorable, 'favorable matchup')}"
+    )
 
     if very_favorable:
         opening += f", including {_plural(very_favorable, 'very favorable matchup')}"
@@ -1142,6 +1141,106 @@ def _testing_recommendation_note(
     return f"{opening}. Risk: {risk}.{sample}"
 
 
+def _major_recommendation_profiles(cards: pd.DataFrame) -> pd.DataFrame:
+    """Summarize major finishes and identify recent breakout results."""
+
+    columns = ["deck", "major_finish_score", "best_major_finish", "recent_breakout"]
+    needed = {"source", "deck", "placement", "tournament_id", "date", "list_id"}
+    if cards.empty or not needed.issubset(cards.columns):
+        return pd.DataFrame(columns=columns)
+
+    major_lists = cards[cards["source"].eq("major")].drop_duplicates("list_id").copy()
+    major_lists["placement"] = pd.to_numeric(major_lists["placement"], errors="coerce")
+    major_lists = major_lists[major_lists["placement"].notna()].copy()
+    if major_lists.empty:
+        return pd.DataFrame(columns=columns)
+
+    events = (
+        major_lists[["tournament_id", "date"]]
+        .drop_duplicates("tournament_id")
+        .sort_values("date", ascending=False)
+        .reset_index(drop=True)
+    )
+    events["recency_weight"] = [max(0.6, 1 - (index * 0.1)) for index in range(len(events))]
+    recent_events = set(events.head(2)["tournament_id"])
+    major_lists = major_lists.merge(events[["tournament_id", "recency_weight"]], on="tournament_id", how="left")
+
+    def finish_points(placement: float) -> int:
+        if placement <= 1:
+            return 100
+        if placement <= 2:
+            return 90
+        if placement <= 4:
+            return 80
+        if placement <= 8:
+            return 70
+        if placement <= 16:
+            return 55
+        if placement <= 32:
+            return 40
+        if placement <= 64:
+            return 25
+        if placement <= 100:
+            return 10
+        return 0
+
+    major_lists["finish_points"] = major_lists["placement"].map(finish_points)
+    major_lists["weighted_finish_points"] = major_lists["finish_points"] * major_lists["recency_weight"]
+    event_finishes = (
+        major_lists.groupby(["deck", "tournament_id"], as_index=False)
+        .agg(
+            weighted_finish_points=("weighted_finish_points", "max"),
+            best_finish=("placement", "min"),
+        )
+    )
+
+    rows: list[dict[str, object]] = []
+    for deck, deck_events in event_finishes.groupby("deck"):
+        top_scores = deck_events["weighted_finish_points"].nlargest(3).tolist()
+        diminishing_weights = [1, 0.5, 0.25]
+        major_score = sum(
+            score * weight for score, weight in zip(top_scores, diminishing_weights)
+        ) / 1.75
+        recent_top_finish = (
+            deck_events["tournament_id"].isin(recent_events)
+            & (deck_events["best_finish"] <= 32)
+        ).any()
+        prior_top_finish = (
+            ~deck_events["tournament_id"].isin(recent_events)
+            & (deck_events["best_finish"] <= 32)
+        ).any()
+        rows.append(
+            {
+                "deck": deck,
+                "major_finish_score": major_score,
+                "best_major_finish": int(deck_events["best_finish"].min()),
+                "recent_breakout": bool(recent_top_finish and not prior_top_finish),
+            }
+        )
+    return pd.DataFrame(rows, columns=columns)
+
+
+def _recommendation_label(
+    weighted_rate: float,
+    major_score: float,
+    recent_breakout: bool,
+) -> str:
+    """Describe whether a deck is accessible, expert-oriented, or emerging."""
+
+    skill_gap = major_score - (weighted_rate * 100)
+    if recent_breakout:
+        return "Breakout watch"
+    if major_score >= 60 and weighted_rate < 0.50 and skill_gap >= 10:
+        return "Expert pick"
+    if weighted_rate >= 0.50 and major_score >= 50:
+        return "Accessible pick"
+    if weighted_rate < 0.45 and major_score < 40:
+        return "Avoid for now"
+    if major_score < 25:
+        return "Unproven"
+    return "Established contender"
+
+
 def _build_testing_recommendations(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
@@ -1154,8 +1253,10 @@ def _build_testing_recommendations(
 
     columns = [
         "deck",
+        "label",
         "score",
         "weighted_adjusted_win_rate",
+        "major_finish_score",
         "matches",
         "favorable_matchups",
         "very_favorable_matchups",
@@ -1209,6 +1310,8 @@ def _build_testing_recommendations(
     rows: list[dict[str, object]] = []
     excluded = set(excluded_decks)
     best_lookup = best.set_index("deck").to_dict("index")
+    major_profiles = _major_recommendation_profiles(cards)
+    major_lookup = major_profiles.set_index("deck").to_dict("index") if not major_profiles.empty else {}
     for deck, deck_rows in per_opponent.groupby("deck"):
         if deck in excluded or deck not in best_lookup:
             continue
@@ -1225,7 +1328,6 @@ def _build_testing_recommendations(
         very_favorable = int(best_row.get("very_favorable_matchups", 0))
         unfavorable = int(best_row.get("unfavorable_matchups", 0))
         very_unfavorable = int(best_row.get("very_unfavorable_matchups", 0))
-        confidence = min(matches / 500, 1)
         best_matchups = deck_rows[deck_rows["opponent_adjusted_win_rate"] >= 0.55].sort_values(
             ["meta_share", "opponent_adjusted_win_rate", "opponent_matches"],
             ascending=[False, False, False],
@@ -1234,20 +1336,31 @@ def _build_testing_recommendations(
             ["meta_share", "opponent_adjusted_win_rate", "opponent_matches"],
             ascending=[False, True, False],
         )
-        below_even_penalty = max(0, 0.50 - weighted_rate) * 200
-        poor_rate_penalty = max(0, 0.45 - weighted_rate) * 300
-        score = (
-            (weighted_rate * 100)
-            + (favorable * 1.5)
-            + (very_favorable * 1)
-            - (unfavorable * 2)
-            - (very_unfavorable * 3)
-            + (confidence * 2)
-            - below_even_penalty
-            - poor_rate_penalty
+        major_profile = major_lookup.get(deck, {})
+        major_score = float(major_profile.get("major_finish_score", 0))
+        recent_breakout = bool(major_profile.get("recent_breakout", False))
+        favorable_only = max(0, favorable - very_favorable)
+        unfavorable_only = max(0, unfavorable - very_unfavorable)
+        coverage_raw = (
+            (very_favorable * 2)
+            + favorable_only
+            - unfavorable_only
+            - (very_unfavorable * 2)
         )
+        target_count = max(len(meta_targets), 1)
+        coverage_score = max(0, min(100, ((coverage_raw + (2 * target_count)) / (4 * target_count)) * 100))
+        confidence_score = min(matches / 100, 1) * 100
+        score = (
+            (weighted_rate * 100 * 0.65)
+            + (major_score * 0.15)
+            + (coverage_score * 0.10)
+            + (confidence_score * 0.10)
+        )
+        label = _recommendation_label(weighted_rate, major_score, recent_breakout)
         note = _testing_recommendation_note(
+            label,
             weighted_rate,
+            major_score,
             favorable,
             very_favorable,
             unfavorable,
@@ -1259,8 +1372,10 @@ def _build_testing_recommendations(
         rows.append(
             {
                 "deck": deck,
+                "label": label,
                 "score": score,
                 "weighted_adjusted_win_rate": weighted_rate,
+                "major_finish_score": major_score,
                 "matches": matches,
                 "favorable_matchups": favorable,
                 "very_favorable_matchups": very_favorable,
@@ -1486,8 +1601,9 @@ def _meta_overview(
 
     st.subheader("Decks Worth Testing")
     st.caption(
-        "Recommendations weight each matchup by the opponent's meta share, then adjust for favorable and "
-        "unfavorable matchup counts. Use the exclude controls to hide decks you do not want to play."
+        "Scores use 65% meta-share-weighted win rate, 15% major finishes, 10% matchup coverage, "
+        "and 10% sample confidence. Labels distinguish accessible, expert, breakout, and unproven choices. "
+        "Use the exclude controls to hide decks you do not want to play."
     )
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
     exclude_dragapult = st.checkbox(
@@ -1520,8 +1636,10 @@ def _meta_overview(
     else:
         recommendation_labels = {
             "deck": "Deck",
+            "label": "Label",
             "score": "Score",
             "weighted_adjusted_win_rate": "Wtd Adj",
+            "major_finish_score": "Major",
             "matches": "M",
             "favorable_matchups": "Fav MU",
             "very_favorable_matchups": "V Fav",
