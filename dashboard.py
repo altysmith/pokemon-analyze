@@ -197,6 +197,13 @@ def _format_percent(value: float) -> str:
     return f"{value * 100:.1f}%"
 
 
+def _plural(count: int, word: str) -> str:
+    """Return a simple count phrase with readable pluralization."""
+
+    suffix = "" if count == 1 else "s"
+    return f"{count} {word}{suffix}"
+
+
 def _format_matchup_list(rows: pd.DataFrame, limit: int = 6) -> str:
     """Build a readable matchup sentence for the top-5 overview cards."""
 
@@ -1095,16 +1102,47 @@ def _show_full_meta_performance(
     )
 
 
-def _format_testing_matchups(rows: pd.DataFrame, limit: int = 3) -> str:
-    """Format recommendation reasons with matchup name, rate, and record."""
+def _testing_recommendation_note(
+    weighted_rate: float,
+    favorable: int,
+    very_favorable: int,
+    unfavorable: int,
+    very_unfavorable: int,
+    matches: int,
+    best_matchups: pd.DataFrame,
+    risky_matchups: pd.DataFrame,
+) -> str:
+    """Write one readable sentence explaining why a deck was recommended."""
 
-    pieces = []
-    for row in rows.head(limit).itertuples(index=False):
-        pieces.append(
-            f"{row.limitless_deck} {_format_percent(row.opponent_adjusted_win_rate)} "
-            f"({int(row.opponent_wins)}-{int(row.opponent_losses)}-{int(row.opponent_ties)})"
+    if weighted_rate >= 0.50:
+        opening = (
+            f"This is worth testing because it has a {_format_percent(weighted_rate)} weighted adjusted win rate "
+            f"with {_plural(favorable, 'favorable matchup')}"
         )
-    return "; ".join(pieces)
+    else:
+        opening = (
+            f"This is a narrow meta call because its weighted adjusted win rate is only {_format_percent(weighted_rate)}, "
+            f"but it still has {_plural(favorable, 'favorable matchup')}"
+        )
+
+    if very_favorable:
+        opening += f", including {_plural(very_favorable, 'very favorable matchup')}"
+
+    if not best_matchups.empty:
+        best = best_matchups.iloc[0]
+        opening += f", led by {best['limitless_deck']}"
+
+    if very_unfavorable:
+        risk = f"the main concern is {_plural(very_unfavorable, 'very unfavorable matchup')}"
+    elif unfavorable:
+        risk = f"the main concern is {_plural(unfavorable, 'unfavorable matchup')}"
+    elif not risky_matchups.empty:
+        risk = f"the main concern is {risky_matchups.iloc[0]['limitless_deck']}"
+    else:
+        risk = "it does not show a major bad matchup in this pool"
+
+    sample = " with a low sample size" if matches < 100 else ""
+    return f"{opening}; {risk}{sample}."
 
 
 def _build_testing_recommendations(
@@ -1211,18 +1249,16 @@ def _build_testing_recommendations(
             - below_even_penalty
             - poor_rate_penalty
         )
-        note_parts = []
-        if not best_matchups.empty:
-            note_parts.append(f"Best signals: {_format_testing_matchups(best_matchups)}.")
-        else:
-            note_parts.append("No 55%+ matchups, so this is mostly a weighted spread pick.")
-        if not risky_matchups.empty:
-            note_parts.append(f"Risk: {_format_testing_matchups(risky_matchups, limit=2)}.")
-        if weighted_rate < 0.50:
-            note_parts.append("Weighted win rate is under 50%, so treat as a narrow meta call.")
-        if matches < 100:
-            note_parts.append("Low sample.")
-        note = " ".join(note_parts)
+        note = _testing_recommendation_note(
+            weighted_rate,
+            favorable,
+            very_favorable,
+            unfavorable,
+            very_unfavorable,
+            matches,
+            best_matchups,
+            risky_matchups,
+        )
         rows.append(
             {
                 "deck": deck,
