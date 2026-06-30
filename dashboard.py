@@ -20,6 +20,9 @@ DEFAULT_META_COUNT = 25
 MAX_META_COUNT = 35
 FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
+META_OVERVIEW_MAX_RANK = 15
+META_OVERVIEW_MIN_SHARE = 0.01
+META_OVERVIEW_LIST_SIZE = 10
 CARD_SUBTYPES_CSV = Path("outputs/card_subtypes.csv")
 MAJOR_WINDOW_OPTIONS = {
     "Last 3 majors": 3,
@@ -997,6 +1000,22 @@ def _best_meta_kwargs(
     return {name: value for name, value in kwargs.items() if name in accepted_args}
 
 
+def _meta_overview_target_decks(limitless_meta_decks: pd.DataFrame) -> pd.DataFrame:
+    """Use only the highest-share meta decks for overview recommendation tables."""
+
+    if limitless_meta_decks.empty:
+        return limitless_meta_decks.copy()
+
+    meta_decks = limitless_meta_decks.copy()
+    meta_decks["rank_sort"] = pd.to_numeric(meta_decks.get("rank"), errors="coerce")
+    meta_decks["share_sort"] = pd.to_numeric(meta_decks.get("share"), errors="coerce").fillna(0)
+    meta_decks = meta_decks[
+        (meta_decks["rank_sort"] <= META_OVERVIEW_MAX_RANK)
+        & (meta_decks["share_sort"] >= META_OVERVIEW_MIN_SHARE)
+    ].copy()
+    return meta_decks.sort_values("rank_sort").drop(columns=["rank_sort", "share_sort"])
+
+
 def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, meta_decks: pd.DataFrame) -> pd.DataFrame:
     """Attach Limitless rank/share to the matchup report."""
 
@@ -1123,7 +1142,6 @@ def _meta_overview(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
     limitless_meta_decks: pd.DataFrame,
-    meta_count: int,
 ) -> None:
     """Opening page: top meta list and best performers into that meta."""
 
@@ -1157,12 +1175,13 @@ def _meta_overview(
 
     _show_full_meta_performance(filtered_cards, filtered_matches, limitless_meta_decks)
 
-    meta_decks = limitless_meta_decks.head(meta_count).copy()
+    meta_decks = _meta_overview_target_decks(limitless_meta_decks)
+    meta_count = len(meta_decks)
     resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
 
-    st.subheader(f"Best Decks Against Top {meta_count} Meta Decks")
+    st.subheader(f"Best Decks Against 1%+ Meta Decks")
     if resolved_meta.empty:
-        st.info("No Limitless top-meta decks could be matched to the current card data.")
+        st.info("No 1%+ Limitless meta decks could be matched to the current card data.")
         return
 
     best = deck_analysis.best_decks_against_meta(
@@ -1186,18 +1205,20 @@ def _meta_overview(
         "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
         "Very favorable means over 60%. "
         "Unfavorable means under 45%, and very unfavorable means under 40%. "
-        f"Candidates and targets both come from the current Limitless top-{meta_count} split-variant meta list."
+        f"Candidates and targets both come from the current Limitless split-variant meta list, "
+        f"limited to top {META_OVERVIEW_MAX_RANK} decks with at least "
+        f"{META_OVERVIEW_MIN_SHARE:.0%} share."
     )
 
-    most_favorable = best.head(5).copy()
+    most_favorable = best.head(META_OVERVIEW_LIST_SIZE).copy()
     highest_win_rate = best.sort_values(
         ["tie_adjusted_win_rate", "matches"],
         ascending=[False, False],
-    ).head(5)
+    ).head(META_OVERVIEW_LIST_SIZE)
     highest_non_dragapult = (
         best[~best["deck"].astype(str).str.contains("Dragapult", case=False, na=False)]
         .sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
-        .head(5)
+        .head(META_OVERVIEW_LIST_SIZE)
     )
     matchup_columns = [
         "deck",
@@ -1559,14 +1580,14 @@ matches = deck_analysis.read_matches()
 limitless_meta_decks = deck_analysis.read_limitless_meta_decks()
 
 page = st.sidebar.radio("Page", ["Meta Overview", "Deck Detail"])
-meta_count = st.sidebar.slider(
-    "Meta deck count",
-    min_value=1,
-    max_value=MAX_META_COUNT,
-    value=DEFAULT_META_COUNT,
-    step=1,
-)
 if page == "Meta Overview":
-    _meta_overview(cards, matches, limitless_meta_decks, meta_count)
+    _meta_overview(cards, matches, limitless_meta_decks)
 else:
+    meta_count = st.sidebar.slider(
+        "Meta deck count",
+        min_value=1,
+        max_value=MAX_META_COUNT,
+        value=DEFAULT_META_COUNT,
+        step=1,
+    )
     _deck_detail(cards, matches, limitless_meta_decks, meta_count)
