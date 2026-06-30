@@ -1095,6 +1095,124 @@ def _show_full_meta_performance(
     )
 
 
+def _build_testing_recommendations(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    resolved_meta: pd.DataFrame,
+    meta_decks: pd.DataFrame,
+    best: pd.DataFrame,
+    excluded_decks: list[str],
+) -> pd.DataFrame:
+    """Score decks worth testing, weighting matchups by opponent meta share."""
+
+    columns = [
+        "deck",
+        "score",
+        "weighted_adjusted_win_rate",
+        "matches",
+        "favorable_matchups",
+        "very_favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+        "note",
+    ]
+    if cards.empty or matches.empty or resolved_meta.empty or best.empty:
+        return pd.DataFrame(columns=columns)
+
+    deck_map = deck_analysis._deck_map_from_cards(cards)
+    match_rows = deck_analysis._matches_with_decks(matches, deck_map)
+    if match_rows.empty:
+        return pd.DataFrame(columns=columns)
+
+    meta_targets = resolved_meta[["limitless_deck", "local_deck"]].dropna().drop_duplicates().copy()
+    share_map = (
+        meta_decks.rename(columns={"deck": "limitless_deck"})
+        .assign(meta_share=lambda frame: pd.to_numeric(frame["share"], errors="coerce").fillna(0))
+        [["limitless_deck", "meta_share"]]
+    )
+    meta_targets = meta_targets.merge(share_map, on="limitless_deck", how="left")
+    meta_targets["meta_share"] = meta_targets["meta_share"].fillna(0)
+
+    selected = match_rows[
+        (match_rows["deck"].isin(meta_targets["local_deck"]))
+        & (match_rows["opponent_deck"].isin(meta_targets["local_deck"]))
+        & (match_rows["deck"] != match_rows["opponent_deck"])
+    ].copy()
+    if selected.empty:
+        return pd.DataFrame(columns=columns)
+
+    selected = selected.merge(
+        meta_targets.rename(columns={"local_deck": "opponent_deck"}),
+        on="opponent_deck",
+        how="inner",
+    )
+    per_opponent = (
+        selected.groupby(["deck", "limitless_deck", "meta_share"], as_index=False)
+        .agg(
+            opponent_matches=("result", "size"),
+            opponent_wins=("result", lambda values: (values == "win").sum()),
+            opponent_ties=("result", lambda values: (values == "tie").sum()),
+        )
+    )
+    per_opponent["opponent_adjusted_win_rate"] = (
+        per_opponent["opponent_wins"] + (deck_analysis.TIE_WIN_VALUE * per_opponent["opponent_ties"])
+    ) / per_opponent["opponent_matches"].replace(0, pd.NA)
+
+    rows: list[dict[str, object]] = []
+    excluded = set(excluded_decks)
+    best_lookup = best.set_index("deck").to_dict("index")
+    for deck, deck_rows in per_opponent.groupby("deck"):
+        if deck in excluded or deck not in best_lookup:
+            continue
+
+        share_total = deck_rows["meta_share"].sum()
+        weighted_rate = (
+            (deck_rows["opponent_adjusted_win_rate"] * deck_rows["meta_share"]).sum() / share_total
+            if share_total
+            else deck_rows["opponent_adjusted_win_rate"].mean()
+        )
+        best_row = best_lookup[deck]
+        matches = int(best_row.get("matches", 0))
+        favorable = int(best_row.get("favorable_matchups", 0))
+        very_favorable = int(best_row.get("very_favorable_matchups", 0))
+        unfavorable = int(best_row.get("unfavorable_matchups", 0))
+        very_unfavorable = int(best_row.get("very_unfavorable_matchups", 0))
+        confidence = min(matches / 500, 1)
+        score = (
+            (weighted_rate * 100)
+            + (favorable * 4)
+            + (very_favorable * 2)
+            - (unfavorable * 3)
+            - (very_unfavorable * 4)
+            + (confidence * 5)
+        )
+        if very_unfavorable:
+            note = f"Strong upside, but {very_unfavorable} very unfav MU."
+        elif unfavorable:
+            note = f"Playable spread with {unfavorable} unfav MU to respect."
+        elif matches < 100:
+            note = "Promising, but low sample."
+        else:
+            note = "Good weighted spread into likely meta."
+        rows.append(
+            {
+                "deck": deck,
+                "score": score,
+                "weighted_adjusted_win_rate": weighted_rate,
+                "matches": matches,
+                "favorable_matchups": favorable,
+                "very_favorable_matchups": very_favorable,
+                "unfavorable_matchups": unfavorable,
+                "very_unfavorable_matchups": very_unfavorable,
+                "note": note,
+            }
+        )
+
+    if not rows:
+        return pd.DataFrame(columns=columns)
+    return pd.DataFrame(rows).sort_values(["score", "matches"], ascending=[False, False])[columns]
+
+
 def _render_deck_meta_summary(deck: str, details: pd.DataFrame, meta_rank: object = "-") -> None:
     """Show a compact matchup summary for one selected deck."""
 
@@ -1303,6 +1421,44 @@ def _meta_overview(
         )
         representatives = _representative_decklists(filtered_cards, top_target_decks["deck"].tolist())
         _show_representative_decklists(representatives)
+
+    st.subheader("Decks Worth Testing")
+    st.caption(
+        "Recommendations weight each matchup by the opponent's meta share, then adjust for favorable and "
+        "unfavorable matchup counts. Use the exclude box to hide decks you do not want to play."
+    )
+    excluded_decks = st.multiselect(
+        "Exclude decks",
+        sorted(best["deck"].dropna().astype(str).unique().tolist()),
+        key="testing_recommendation_exclusions",
+    )
+    recommendations = _build_testing_recommendations(
+        filtered_cards,
+        filtered_matches,
+        resolved_meta,
+        meta_decks,
+        best,
+        excluded_decks,
+    )
+    if recommendations.empty:
+        st.info("No deck recommendations are available after the current filters and exclusions.")
+    else:
+        recommendation_labels = {
+            "deck": "Deck",
+            "score": "Score",
+            "weighted_adjusted_win_rate": "Wtd Adj",
+            "matches": "M",
+            "favorable_matchups": "Fav MU",
+            "very_favorable_matchups": "V Fav",
+            "unfavorable_matchups": "Unfav",
+            "very_unfavorable_matchups": "V Unfav",
+            "note": "Why",
+        }
+        _show_table(
+            recommendations.head(5),
+            percent_columns=["weighted_adjusted_win_rate"],
+            column_labels=recommendation_labels,
+        )
 
 
 def _deck_detail(
