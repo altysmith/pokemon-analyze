@@ -1115,14 +1115,11 @@ def _testing_recommendation_note(
     """Write one readable sentence explaining why a deck was recommended."""
 
     if weighted_rate >= 0.50:
-        opening = (
-            f"This is worth testing because it has a {_format_percent(weighted_rate)} weighted adjusted win rate "
-            f"with {_plural(favorable, 'favorable matchup')}"
-        )
+        opening = f"Test: {_format_percent(weighted_rate)} weighted win rate and {_plural(favorable, 'favorable matchup')}"
     else:
         opening = (
-            f"This is a narrow meta call because its weighted adjusted win rate is only {_format_percent(weighted_rate)}, "
-            f"but it still has {_plural(favorable, 'favorable matchup')}"
+            f"Narrow call: {_format_percent(weighted_rate)} weighted win rate, "
+            f"but {_plural(favorable, 'favorable matchup')}"
         )
 
     if very_favorable:
@@ -1133,16 +1130,16 @@ def _testing_recommendation_note(
         opening += f", led by {best['limitless_deck']}"
 
     if very_unfavorable:
-        risk = f"the main concern is {_plural(very_unfavorable, 'very unfavorable matchup')}"
+        risk = f"{_plural(very_unfavorable, 'very unfavorable matchup')}"
     elif unfavorable:
-        risk = f"the main concern is {_plural(unfavorable, 'unfavorable matchup')}"
+        risk = f"{_plural(unfavorable, 'unfavorable matchup')}"
     elif not risky_matchups.empty:
-        risk = f"the main concern is {risky_matchups.iloc[0]['limitless_deck']}"
+        risk = f"{risky_matchups.iloc[0]['limitless_deck']}"
     else:
-        risk = "it does not show a major bad matchup in this pool"
+        risk = "no major bad matchup in this pool"
 
-    sample = " with a low sample size" if matches < 100 else ""
-    return f"{opening}; {risk}{sample}."
+    sample = " Low sample." if matches < 100 else ""
+    return f"{opening}. Risk: {risk}.{sample}"
 
 
 def _build_testing_recommendations(
