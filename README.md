@@ -141,6 +141,8 @@ very favorable matchup is over 60%. An unfavorable matchup is under 45%, and a
 very unfavorable matchup is under 40%. The overview sorts by favorable
 matchups, then very favorable matchups, then fewer unfavorable matchups, then
 fewer very unfavorable matchups, then aggregate tie-adjusted win rate.
+Recommendation scores use the full current Top 25 meta list and weight each
+opponent by its meta share.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and

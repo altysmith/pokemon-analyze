@@ -20,8 +20,7 @@ DEFAULT_META_COUNT = 25
 MAX_META_COUNT = 35
 FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
-META_OVERVIEW_MAX_RANK = 15
-META_OVERVIEW_MIN_SHARE = 0.01
+META_OVERVIEW_MAX_RANK = 25
 META_OVERVIEW_LIST_SIZE = 10
 CARD_SUBTYPES_CSV = Path("outputs/card_subtypes.csv")
 MAJOR_WINDOW_OPTIONS = {
@@ -1008,19 +1007,15 @@ def _best_meta_kwargs(
 
 
 def _meta_overview_target_decks(limitless_meta_decks: pd.DataFrame) -> pd.DataFrame:
-    """Use only the highest-share meta decks for overview recommendation tables."""
+    """Use the full current top-25 for overview recommendation tables."""
 
     if limitless_meta_decks.empty:
         return limitless_meta_decks.copy()
 
     meta_decks = limitless_meta_decks.copy()
     meta_decks["rank_sort"] = pd.to_numeric(meta_decks.get("rank"), errors="coerce")
-    meta_decks["share_sort"] = pd.to_numeric(meta_decks.get("share"), errors="coerce").fillna(0)
-    meta_decks = meta_decks[
-        (meta_decks["rank_sort"] <= META_OVERVIEW_MAX_RANK)
-        & (meta_decks["share_sort"] >= META_OVERVIEW_MIN_SHARE)
-    ].copy()
-    return meta_decks.sort_values("rank_sort").drop(columns=["rank_sort", "share_sort"])
+    meta_decks = meta_decks[meta_decks["rank_sort"] <= META_OVERVIEW_MAX_RANK].copy()
+    return meta_decks.sort_values("rank_sort").drop(columns=["rank_sort"])
 
 
 def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, meta_decks: pd.DataFrame) -> pd.DataFrame:
@@ -1509,9 +1504,9 @@ def _meta_overview(
     meta_count = len(meta_decks)
     resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
 
-    st.subheader(f"Best Decks Against 1%+ Meta Decks")
+    st.subheader(f"Best Decks Against Top {META_OVERVIEW_MAX_RANK} Meta Decks")
     if resolved_meta.empty:
-        st.info("No 1%+ Limitless meta decks could be matched to the current card data.")
+        st.info("No Top 25 Limitless meta decks could be matched to the current card data.")
         return
 
     best = deck_analysis.best_decks_against_meta(
@@ -1536,8 +1531,8 @@ def _meta_overview(
         "Very favorable means over 60%. "
         "Unfavorable means under 45%, and very unfavorable means under 40%. "
         f"Candidates and targets both come from the current Limitless split-variant meta list, "
-        f"limited to top {META_OVERVIEW_MAX_RANK} decks with at least "
-        f"{META_OVERVIEW_MIN_SHARE:.0%} share."
+        f"limited to the top {META_OVERVIEW_MAX_RANK}. Matchup scores still weight each opponent "
+        "by its meta share."
     )
 
     most_favorable = best.head(META_OVERVIEW_LIST_SIZE).copy()
