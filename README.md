@@ -152,6 +152,8 @@ visible unless a user chooses to filter the table. Run
 Matchup coverage is weighted by each opponent's meta share. Conversion below
 the selected major-field average uses a squared penalty, while above-average
 conversion remains linear.
+Major matchup calculations use the archetypes attached to the full Limitless
+Labs pairing data, with the published decklist map retained as a fallback.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and

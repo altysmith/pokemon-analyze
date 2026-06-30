@@ -1714,7 +1714,8 @@ def _meta_overview(
     st.caption(
         "Scores combine confidence-adjusted matchup win rate, sample-adjusted Day 2 conversion, "
         "and meta-share-weighted matchup coverage. Below-average conversion receives a steeper "
-        "penalty. Major finishes affect evidence labels, not the score."
+        "penalty. Major matchup rates use the full Limitless Labs pairing field. Major finishes "
+        "affect evidence labels, not the score."
     )
     with st.expander("Score Lab", expanded=True):
         weight_columns = st.columns(3)

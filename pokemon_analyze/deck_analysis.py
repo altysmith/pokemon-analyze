@@ -1071,7 +1071,22 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
         on=["tournament_id", "player2"],
         how="left",
     )
+    local_decks = sorted(deck_map["deck"].dropna().astype(str).unique())
+    if {"player1_deck", "player2_deck"}.issubset(player_one.columns):
+        embedded_deck = player_one["player1_deck"].map(
+            lambda value: _local_name_for_match_deck(value, local_decks)
+        )
+        embedded_opponent = player_one["player2_deck"].map(
+            lambda value: _local_name_for_match_deck(value, local_decks)
+        )
+        player_one["deck"] = embedded_deck.where(embedded_deck.ne(""), player_one["deck"])
+        player_one["opponent_deck"] = embedded_opponent.where(
+            embedded_opponent.ne(""), player_one["opponent_deck"]
+        )
     player_one["player"] = player_one["player1"]
+    player_one["list_key"] = player_one["list_key"].fillna(
+        player_one["tournament_id"] + "::" + player_one["player1"]
+    )
 
     player_two = match_rows.merge(
         deck_map.rename(columns={"player_id": "player2", "deck": "deck", "list_key": "list_key"}),
@@ -1082,13 +1097,53 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
         on=["tournament_id", "player1"],
         how="left",
     )
+    if {"player1_deck", "player2_deck"}.issubset(player_two.columns):
+        embedded_deck = player_two["player2_deck"].map(
+            lambda value: _local_name_for_match_deck(value, local_decks)
+        )
+        embedded_opponent = player_two["player1_deck"].map(
+            lambda value: _local_name_for_match_deck(value, local_decks)
+        )
+        player_two["deck"] = embedded_deck.where(embedded_deck.ne(""), player_two["deck"])
+        player_two["opponent_deck"] = embedded_opponent.where(
+            embedded_opponent.ne(""), player_two["opponent_deck"]
+        )
     player_two["player"] = player_two["player2"]
+    player_two["list_key"] = player_two["list_key"].fillna(
+        player_two["tournament_id"] + "::" + player_two["player2"]
+    )
 
     combined = pd.concat([player_one, player_two], ignore_index=True, sort=False)
     combined = combined.dropna(subset=["deck", "opponent_deck"])
     combined = combined[(combined["player"] != "") & (combined["opponent_deck"] != "")]
     combined["result"] = combined.apply(_match_result, axis=1)
     return combined[["tournament_id", "player", "list_key", "deck", "opponent_deck", "result"]]
+
+
+def _local_name_for_match_deck(value: object, local_decks: list[str]) -> str:
+    """Map a Labs pairing archetype to the local split-variant deck name."""
+
+    source_name = str(value).strip()
+    if not source_name or source_name.lower() == "nan":
+        return ""
+
+    aliases = {
+        "basic box": "Ogerpon Box",
+        "ogerpon meganium hydrapple": "Hydrapple",
+    }
+    alias = aliases.get(source_name.lower())
+    if alias in local_decks:
+        return alias
+
+    source_tokens = _deck_match_tokens(source_name)
+    exact = [deck for deck in local_decks if _deck_match_tokens(deck) == source_tokens]
+    if len(exact) == 1:
+        return exact[0]
+
+    loose = _matching_local_decks(source_name, local_decks)
+    if len(loose) == 1:
+        return loose[0]
+    return source_name
 
 
 def _match_result(row: pd.Series) -> str:
