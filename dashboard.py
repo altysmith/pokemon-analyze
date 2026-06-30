@@ -1275,6 +1275,41 @@ def _build_testing_recommendations(
     return pd.DataFrame(rows).sort_values(["score", "matches"], ascending=[False, False])[columns]
 
 
+def _build_decks_to_avoid(recommendations: pd.DataFrame) -> pd.DataFrame:
+    """Return the three weakest weighted performers with a direct warning."""
+
+    columns = [
+        "deck",
+        "weighted_adjusted_win_rate",
+        "matches",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+        "why",
+    ]
+    if recommendations.empty:
+        return pd.DataFrame(columns=columns)
+
+    avoid = recommendations[recommendations["weighted_adjusted_win_rate"] < 0.50].copy()
+    avoid = avoid.sort_values(
+        [
+            "weighted_adjusted_win_rate",
+            "very_unfavorable_matchups",
+            "unfavorable_matchups",
+            "matches",
+        ],
+        ascending=[True, False, False, False],
+    ).head(3)
+    avoid["why"] = avoid.apply(
+        lambda row: (
+            f"Avoid for now: {_format_percent(row['weighted_adjusted_win_rate'])} weighted win rate with "
+            f"{_plural(int(row['unfavorable_matchups']), 'unfavorable matchup')}, including "
+            f"{_plural(int(row['very_unfavorable_matchups']), 'very unfavorable matchup')}."
+        ),
+        axis=1,
+    )
+    return avoid[columns]
+
+
 def _render_deck_meta_summary(deck: str, details: pd.DataFrame, meta_rank: object = "-") -> None:
     """Show a compact matchup summary for one selected deck."""
 
@@ -1469,14 +1504,17 @@ def _meta_overview(
             set(excluded_decks)
             | {deck for deck in recommendation_decks if "dragapult" in deck.lower()}
         )
-    recommendations = _build_testing_recommendations(
+    all_recommendations = _build_testing_recommendations(
         filtered_cards,
         filtered_matches,
         resolved_meta,
         meta_decks,
         best,
-        excluded_decks,
+        [],
     )
+    recommendations = all_recommendations[
+        ~all_recommendations["deck"].isin(excluded_decks)
+    ].copy()
     if recommendations.empty:
         st.info("No deck recommendations are available after the current filters and exclusions.")
     else:
@@ -1502,6 +1540,25 @@ def _meta_overview(
                 percent_columns=["weighted_adjusted_win_rate"],
                 column_labels=recommendation_labels,
             )
+
+    st.subheader("Top 3 Decks to Avoid Right Now")
+    avoid_decks = _build_decks_to_avoid(all_recommendations)
+    if avoid_decks.empty:
+        st.info("No decks in the current pool have a weighted adjusted win rate below 50%.")
+    else:
+        avoid_labels = {
+            "deck": "Deck",
+            "weighted_adjusted_win_rate": "Wtd Adj",
+            "matches": "M",
+            "unfavorable_matchups": "Unfav",
+            "very_unfavorable_matchups": "V Unfav",
+            "why": "Why",
+        }
+        _show_table(
+            avoid_decks,
+            percent_columns=["weighted_adjusted_win_rate"],
+            column_labels=avoid_labels,
+        )
 
 
 def _deck_detail(
