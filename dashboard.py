@@ -1134,17 +1134,47 @@ def _overall_deck_performance(
         ]["tournament_id"].astype(str)
     )
 
-    deck_map = deck_analysis._deck_map_from_cards(cards)
-    match_rows = deck_analysis._matches_with_decks(matches, deck_map)
-    pairing_rows = match_rows[~match_rows["tournament_id"].astype(str).isin(official_ids)].copy()
+    # Overall records only need the selected player's deck and the winner.
+    # Avoid resolving both archetypes for every match, which is much slower.
+    pairing_matches = matches[
+        ~matches["tournament_id"].astype(str).isin(official_ids)
+    ].copy()
+    eligible_cards = cards[cards["deck"].isin(eligible_decks)]
+    deck_map = (
+        deck_analysis._deck_map_from_cards(eligible_cards)
+        [["tournament_id", "player_id", "deck"]]
+        .drop_duplicates(["tournament_id", "player_id"])
+    )
+    player_rows = []
+    for player_column in ["player1", "player2"]:
+        side = pairing_matches[
+            ["tournament_id", player_column, "winner"]
+        ].rename(columns={player_column: "player"})
+        side["tournament_id"] = side["tournament_id"].astype(str)
+        side["player"] = side["player"].astype(str)
+        side = side.merge(
+            deck_map.rename(columns={"player_id": "player"}),
+            on=["tournament_id", "player"],
+            how="inner",
+        )
+        winner = side["winner"].astype(str).str.strip().replace(
+            {"0.0": "0", "-0.0": "0", "-1.0": "-1"}
+        )
+        side["result"] = "loss"
+        side.loc[winner.eq("0"), "result"] = "tie"
+        side.loc[winner.eq(side["player"]), "result"] = "win"
+        player_rows.append(side[["deck", "result"]])
+
+    pairing_rows = pd.concat(player_rows, ignore_index=True) if player_rows else pd.DataFrame()
     pairing_summary = (
-        pairing_rows[pairing_rows["deck"].isin(eligible_decks)]
-        .groupby("deck", as_index=False)
+        pairing_rows.groupby("deck", as_index=False)
         .agg(
             wins=("result", lambda values: (values == "win").sum()),
             losses=("result", lambda values: (values == "loss").sum()),
             ties=("result", lambda values: (values == "tie").sum()),
         )
+        if not pairing_rows.empty
+        else pd.DataFrame(columns=["deck", "wins", "losses", "ties"])
     )
     pairing_lookup = pairing_summary.set_index("deck").to_dict("index") if not pairing_summary.empty else {}
 
