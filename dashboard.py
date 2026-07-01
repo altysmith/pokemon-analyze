@@ -1303,20 +1303,20 @@ def _recommendation_label(
 ) -> str:
     """Describe the evidence without forcing a deck into an avoid category."""
 
-    if best_major_finish <= 32 and conversion_baseline and adjusted_conversion < conversion_baseline * 0.85:
-        return "Spike result"
-    if recent_breakout:
-        return "Breakout watch"
     if trusted_rate >= 0.50 and adjusted_conversion >= conversion_baseline:
         return "Accessible pick"
     if conversion_baseline and adjusted_conversion >= conversion_baseline * 1.10:
         return "Strong converter"
+    if best_major_finish <= 32 and conversion_baseline and adjusted_conversion < conversion_baseline * 0.85:
+        return "Top-finish outlier"
     if best_major_finish <= 32 and trusted_rate < 0.50:
         return "Expert pick"
     if day1 < 30:
         return "Limited evidence"
     if conversion_baseline and adjusted_conversion < conversion_baseline * 0.80:
         return "Conversion concern"
+    if recent_breakout:
+        return "Recent top finish"
     return "Day 2 contender"
 
 
@@ -1806,20 +1806,21 @@ def _testing_recommendations_page(
     receive values of +2, +1, 0, -1, and -2. Each value is weighted by that opponent's meta share.
 
     Major matchup rates use the full Labs pairing field. Exceptional finishes affect evidence labels
-    such as **Expert pick**, **Breakout watch**, and **Spike result**, but do not directly add score.
+    such as **Expert pick**, **Recent top finish**, and **Top-finish outlier**, but do not directly add score.
 
     **Label meanings**
 
-    - **Accessible pick:** At least a 50% trusted win rate and conversion at or above the major-field average.
-    - **Strong converter:** Day 2 conversion is at least 10% better than the field average, even if its matchup win rate is lower.
-    - **Day 2 contender:** Conversion is reasonably close to the field average without another stronger label applying.
-    - **Expert pick:** A Top 32 major finish exists despite a trusted win rate below 50%, suggesting stronger results from top pilots.
-    - **Breakout watch:** A recent Top 32 finish appeared without an older Top 32 in the selected major window.
-    - **Spike result:** A Top 32 finish exists, but adjusted conversion is at least 15% below the field average.
-    - **Conversion concern:** Adjusted conversion is more than 20% below the field average.
-    - **Limited evidence:** Fewer than 30 Day 1 entries are available across the selected majors.
+    - **Accessible pick:** Strong general results and at least average conversion make this a lower-risk deck to begin testing.
+    - **Strong converter:** This deck reaches Day 2 at least 10% more often than the field average, even if its matchup rate is lower.
+    - **Day 2 contender:** The deck has credible Day 2 evidence but does not clearly fit a stronger or more cautionary category.
+    - **Expert pick:** A Top 32 exists despite a trusted win rate below 50%, suggesting that practiced pilots may outperform the field.
+    - **Recent top finish:** A Top 32 occurred in the two newest selected majors without an older Top 32 in this window; it does not mean the deck itself is new.
+    - **Top-finish outlier:** A Top 32 exists, but conversion is at least 15% below average, so the finish is stronger than the broader results.
+    - **Conversion concern:** Conversion is more than 20% below average, making Day 2 less consistent than the matchup data alone suggests.
+    - **Limited evidence:** Fewer than 30 Day 1 entries are available, so the current rates remain uncertain.
 
-    Labels describe the evidence pattern. They do not automatically include, exclude, or change the score of a deck.
+    Only the strongest applicable label is shown, with repeatable performance taking priority over a recent finish.
+    Labels describe the evidence pattern; they do not automatically include, exclude, or change a deck's score.
                 """
             )
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
