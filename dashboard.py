@@ -1047,8 +1047,9 @@ def _show_full_meta_performance(
     cards: pd.DataFrame,
     matches: pd.DataFrame,
     limitless_meta_decks: pd.DataFrame,
+    labs_conversion: pd.DataFrame,
 ) -> None:
-    """Show the current top-25 meta list with matchup performance columns."""
+    """Show complete W-L-T performance for the current top-25 decks."""
 
     full_columns = [
         "meta_rank",
@@ -1059,11 +1060,9 @@ def _show_full_meta_performance(
         "losses",
         "ties",
         "win_rate",
+        "loss_rate",
+        "tie_rate",
         "tie_adjusted_win_rate",
-        "favorable_matchups",
-        "very_favorable_matchups",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
     ]
     full_labels = {
         "meta_rank": "Rank",
@@ -1074,33 +1073,110 @@ def _show_full_meta_performance(
         "losses": "L",
         "ties": "T",
         "win_rate": "Win",
+        "loss_rate": "Loss",
+        "tie_rate": "Tie",
         "tie_adjusted_win_rate": "Adj",
-        "favorable_matchups": "Fav MU",
-        "very_favorable_matchups": "V Fav MU",
-        "unfavorable_matchups": "Unfav MU",
-        "very_unfavorable_matchups": "V Unfav MU",
     }
 
-    st.subheader(f"Full Top-{FULL_META_COUNT} Meta Performance Table")
+    st.subheader(f"Top-{FULL_META_COUNT} Overall Performance")
+    st.caption(
+        "W-L-T and percentages include every known opponent in the selected data. "
+        "Adjusted win rate counts each tie as one-third of a win."
+    )
     full_meta_decks = limitless_meta_decks.head(FULL_META_COUNT).copy()
     full_resolved_meta = deck_analysis.resolve_meta_decks(cards, full_meta_decks, limit=FULL_META_COUNT)
     if full_resolved_meta.empty:
         st.info("No Limitless top-25 meta decks could be matched to the current source/date filters.")
         return
 
-    full_best = deck_analysis.best_decks_against_meta(
+    full_best = _overall_deck_performance(
         cards,
         matches,
-        **_best_meta_kwargs(FULL_META_COUNT, set(full_resolved_meta["local_deck"]), full_resolved_meta),
+        set(full_resolved_meta["local_deck"]),
+        labs_conversion,
     )
     full_best = _add_meta_rank_columns(full_best, full_resolved_meta, full_meta_decks)
     best_display = _ensure_columns(full_best, full_columns)
     best_display = best_display.sort_values("meta_rank", ascending=True)
     _show_table(
         best_display[full_columns],
-        percent_columns=["meta_share", "win_rate", "tie_adjusted_win_rate"],
+        percent_columns=["meta_share", "win_rate", "loss_rate", "tie_rate", "tie_adjusted_win_rate"],
         column_labels=full_labels,
     )
+
+
+def _overall_deck_performance(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    eligible_decks: set[str],
+    labs_conversion: pd.DataFrame,
+) -> pd.DataFrame:
+    """Aggregate each deck against every opponent in the selected data."""
+
+    columns = [
+        "deck",
+        "matches",
+        "wins",
+        "losses",
+        "ties",
+        "win_rate",
+        "loss_rate",
+        "tie_rate",
+        "tie_adjusted_win_rate",
+    ]
+    if cards.empty or not eligible_decks:
+        return pd.DataFrame(columns=columns)
+
+    selected_ids = set(cards["tournament_id"].dropna().astype(str))
+    official_ids = set(
+        labs_conversion[
+            labs_conversion["tournament_id"].astype(str).isin(selected_ids)
+        ]["tournament_id"].astype(str)
+    )
+
+    deck_map = deck_analysis._deck_map_from_cards(cards)
+    match_rows = deck_analysis._matches_with_decks(matches, deck_map)
+    pairing_rows = match_rows[~match_rows["tournament_id"].astype(str).isin(official_ids)].copy()
+    pairing_summary = (
+        pairing_rows[pairing_rows["deck"].isin(eligible_decks)]
+        .groupby("deck", as_index=False)
+        .agg(
+            wins=("result", lambda values: (values == "win").sum()),
+            losses=("result", lambda values: (values == "loss").sum()),
+            ties=("result", lambda values: (values == "tie").sum()),
+        )
+    )
+    pairing_lookup = pairing_summary.set_index("deck").to_dict("index") if not pairing_summary.empty else {}
+
+    major_profiles, _ = _conversion_profiles(
+        labs_conversion,
+        cards,
+        sorted(eligible_decks),
+    )
+    rows: list[dict[str, object]] = []
+    for deck in sorted(eligible_decks):
+        pairing = pairing_lookup.get(deck, {})
+        major = major_profiles.get(deck, {})
+        wins = int(pairing.get("wins", 0)) + int(major.get("major_wins", 0))
+        losses = int(pairing.get("losses", 0)) + int(major.get("major_losses", 0))
+        ties = int(pairing.get("ties", 0)) + int(major.get("major_ties", 0))
+        total = wins + losses + ties
+        rows.append(
+            {
+                "deck": deck,
+                "matches": total,
+                "wins": wins,
+                "losses": losses,
+                "ties": ties,
+                "win_rate": wins / total if total else 0,
+                "loss_rate": losses / total if total else 0,
+                "tie_rate": ties / total if total else 0,
+                "tie_adjusted_win_rate": (wins + (deck_analysis.TIE_WIN_VALUE * ties)) / total
+                if total
+                else 0,
+            }
+        )
+    return pd.DataFrame(rows, columns=columns)
 
 
 def _testing_recommendation_note(
@@ -1614,7 +1690,7 @@ def _meta_overview(
     limitless_meta_decks: pd.DataFrame,
     labs_conversion: pd.DataFrame,
 ) -> None:
-    """Opening page: top meta list and best performers into that meta."""
+    """Show the top meta decks with their complete, all-opponent records."""
 
     st.header("Meta Overview")
 
@@ -1644,100 +1720,11 @@ def _meta_overview(
     )
     st.caption(filter_caption)
 
-    _show_full_meta_performance(filtered_cards, filtered_matches, limitless_meta_decks)
-
-    meta_decks = _meta_overview_target_decks(limitless_meta_decks)
-    meta_count = len(meta_decks)
-    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
-
-    st.subheader(f"Best Decks Against Top {META_OVERVIEW_MAX_RANK} Meta Decks")
-    if resolved_meta.empty:
-        st.info("No Top 25 Limitless meta decks could be matched to the current card data.")
-        return
-
-    best = deck_analysis.best_decks_against_meta(
+    _show_full_meta_performance(
         filtered_cards,
         filtered_matches,
-        **_best_meta_kwargs(meta_count, set(resolved_meta["local_deck"]), resolved_meta),
-    )
-    best = _add_meta_rank_columns(best, resolved_meta, meta_decks)
-    if best.empty:
-        st.info("No matchup rows are available for the current source/date filters.")
-        return
-
-    total_matches = int(best["matches"].sum())
-    top_favorable = int(best["favorable_matchups"].max())
-    metric_one, metric_two, metric_three = st.columns(3)
-    metric_one.metric("Meta Decks", len(resolved_meta))
-    metric_two.metric("Top Favorable Count", top_favorable)
-    metric_three.metric("Recorded Match Rows", total_matches)
-
-    st.caption(
-        "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
-        "Very favorable means over 60%. "
-        "Unfavorable means under 45%, and very unfavorable means under 40%. "
-        f"Candidates and targets both come from the current Limitless split-variant meta list, "
-        f"limited to the top {META_OVERVIEW_MAX_RANK}. Matchup scores still weight each opponent "
-        "by its meta share."
-    )
-
-    most_favorable = best.head(META_OVERVIEW_LIST_SIZE).copy()
-    highest_win_rate = best.sort_values(
-        ["tie_adjusted_win_rate", "matches"],
-        ascending=[False, False],
-    ).head(META_OVERVIEW_LIST_SIZE)
-    highest_non_dragapult = (
-        best[~best["deck"].astype(str).str.contains("Dragapult", case=False, na=False)]
-        .sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
-        .head(META_OVERVIEW_LIST_SIZE)
-    )
-    matchup_columns = [
-        "deck",
-        "matches",
-        "favorable_matchups",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
-        "win_rate",
-        "tie_adjusted_win_rate",
-    ]
-    win_rate_columns = [
-        "deck",
-        "matches",
-        "win_rate",
-        "tie_adjusted_win_rate",
-        "favorable_matchups",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
-    ]
-    compact_labels = {
-        "deck": "Deck",
-        "matches": "M",
-        "win_rate": "Win",
-        "tie_adjusted_win_rate": "Adj",
-        "favorable_matchups": "Fav MU",
-        "unfavorable_matchups": "Unfav MU",
-        "very_unfavorable_matchups": "V Unfav MU",
-    }
-    win_col, non_dragapult_col = st.columns(2)
-    with win_col:
-        st.markdown("#### Highest Adjusted Win %")
-        _show_table(
-            highest_win_rate[win_rate_columns],
-            percent_columns=["win_rate", "tie_adjusted_win_rate"],
-            column_labels=compact_labels,
-        )
-    with non_dragapult_col:
-        st.markdown("#### Highest Adjusted Win % Non Dragapult")
-        _show_table(
-            highest_non_dragapult[win_rate_columns],
-            percent_columns=["win_rate", "tie_adjusted_win_rate"],
-            column_labels=compact_labels,
-        )
-    st.markdown("#### Most Favorable Matchups")
-    _show_table(
-        most_favorable[matchup_columns],
-        percent_columns=["win_rate", "tie_adjusted_win_rate"],
-        column_labels=compact_labels,
+        limitless_meta_decks,
+        labs_conversion,
     )
 
 def _testing_recommendations_page(

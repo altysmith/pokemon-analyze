@@ -118,9 +118,9 @@ The dashboard reads `outputs/cards.csv` and includes:
 
 - a Meta Overview opening page
 - a Deck Detail page with a deck dropdown
+- a Testing Recommendations page for Top 25 matchup analysis
 - an All, Online, or Majors source filter
-- a top-5 best decks list against a selectable top meta range, defaulting to top 10 and expanding up to top 25
-- a target-deck dropdown that shows the top 5 decks into one selected meta deck
+- a Meta Overview table with complete W-L-T records against all known opponents
 - representative decklists from the newest available Major, using best placement within that event
 - copyable representative decklists formatted with section totals and card set/number identifiers when available
 - side-by-side top-5 lists for most favorable matchups, highest overall win percentage, and highest non-Dragapult win percentage
@@ -132,18 +132,21 @@ The dashboard reads `outputs/cards.csv` and includes:
 - trending up and trending down cards
 - best average placement tech and flex cards, with a minimum deck count filter
 
-The "Best Decks Against Top Meta Decks" overview uses
+The Meta Overview shows the current top decks with their complete win, loss,
+and tie records against every known opponent in the selected data. It does not
+limit those records to games against other meta decks. Top-25-specific matchup
+calculations are used only on Testing Recommendations and Deck Detail.
+
+Testing Recommendations uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
 ranking page with deck variants split and the "Past month" time filter.
-Candidates and targets both come from the selected top meta list. A favorable
+Candidates and targets come from the selected top meta list. A favorable
 matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
 very favorable matchup is over 60%. An unfavorable matchup is under 45%, and a
-very unfavorable matchup is under 40%. The overview sorts by favorable
-matchups, then very favorable matchups, then fewer unfavorable matchups, then
-fewer very unfavorable matchups, then aggregate tie-adjusted win rate.
+very unfavorable matchup is under 40%.
 Recommendation scores use the full current Top 25 meta list and weight each
 opponent by its meta share.
-The Meta Overview Score Lab can rebalance confidence-adjusted matchup win rate,
+The Testing Recommendations Score Lab can rebalance confidence-adjusted matchup win rate,
 Limitless Labs Day 2 conversion, and matchup coverage without changing code.
 Its optional conversion benchmark is off by default, so every scored deck stays
 visible unless a user chooses to filter the table. Run
