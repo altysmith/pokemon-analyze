@@ -1,4 +1,4 @@
-"""Streamlit dashboard for Pokemon deck analysis."""
+﻿"""Streamlit dashboard for Pokemon deck analysis."""
 
 from __future__ import annotations
 
@@ -529,7 +529,7 @@ def _format_importable_decklist(cards: pd.DataFrame, metadata: dict[str, dict[st
     """Format a decklist for copy/paste into deck building tools."""
 
     sections = [
-        ("pokemon", "Pokémon"),
+        ("pokemon", "PokÃ©mon"),
         ("trainer", "Trainer"),
         ("energy", "Energy"),
     ]
@@ -674,7 +674,7 @@ def _cards_for_section(
 
     categories = cards.apply(normalized_category, axis=1)
     if category_key == "pokemon":
-        mask = categories.str.contains("pokemon|pokémon", regex=True, na=False)
+        mask = categories.str.contains("pokemon|pokÃ©mon", regex=True, na=False)
     elif category_key == "trainer":
         mask = categories.str.contains("trainer", regex=False, na=False)
     else:
@@ -1711,6 +1711,59 @@ def _meta_overview(
         column_labels=compact_labels,
     )
 
+def _testing_recommendations_page(
+    cards: pd.DataFrame,
+    matches: pd.DataFrame,
+    limitless_meta_decks: pd.DataFrame,
+    labs_conversion: pd.DataFrame,
+) -> None:
+    """Help a player prioritize proven decks for limited testing time."""
+
+    st.header("Testing Recommendations")
+
+    today = pd.Timestamp.today().normalize()
+    default_start = today - pd.Timedelta(days=31)
+    source_col, start_col, end_col, major_col = st.columns([1, 1, 1, 1])
+    with source_col:
+        selected_source = st.selectbox("Source", ["Both", "Online", "Majors"], key="recommendation_source")
+    with start_col:
+        start_date = st.date_input("Online start", value=default_start.date(), key="recommendation_start")
+    with end_col:
+        end_date = st.date_input("Online end", value=today.date(), key="recommendation_end")
+    with major_col:
+        major_window_label = st.selectbox(
+            "Major window",
+            list(MAJOR_WINDOW_OPTIONS.keys()),
+            index=1,
+            key="recommendation_major_window",
+        )
+
+    filtered_cards, filtered_matches, filter_caption = _filter_meta_overview_data(
+        cards,
+        matches,
+        selected_source,
+        start_date,
+        end_date,
+        MAJOR_WINDOW_OPTIONS[major_window_label],
+    )
+    st.caption(filter_caption)
+
+    meta_decks = _meta_overview_target_decks(limitless_meta_decks)
+    meta_count = len(meta_decks)
+    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
+    if resolved_meta.empty:
+        st.info("No Top 25 Limitless meta decks could be matched to the current data.")
+        return
+
+    best = deck_analysis.best_decks_against_meta(
+        filtered_cards,
+        filtered_matches,
+        **_best_meta_kwargs(meta_count, set(resolved_meta["local_deck"]), resolved_meta),
+    )
+    best = _add_meta_rank_columns(best, resolved_meta, meta_decks)
+    if best.empty:
+        st.info("No matchup rows are available for the current source/date filters.")
+        return
     st.subheader("Decks Worth Testing")
     st.caption(
         "Scores combine confidence-adjusted matchup win rate, sample-adjusted Day 2 conversion, "
@@ -1740,31 +1793,31 @@ def _meta_overview(
         with st.expander("How scoring works"):
             st.markdown(
                 """
-**Trusted win rate:** Matchup win rates are weighted by each opponent's meta share. Ties count as
-one-third of a win, and 50 prior matches at 50% pull small samples toward an even record.
+    **Trusted win rate:** Matchup win rates are weighted by each opponent's meta share. Ties count as
+    one-third of a win, and 50 prior matches at 50% pull small samples toward an even record.
 
-**Day 2 conversion:** Limitless Labs Day 1 and Day 2 counts are combined across the selected majors.
-Fifty prior entrants at the overall field conversion rate stabilize small archetypes. Below-average
-conversion receives a squared penalty; above-average conversion remains linear.
+    **Day 2 conversion:** Limitless Labs Day 1 and Day 2 counts are combined across the selected majors.
+    Fifty prior entrants at the overall field conversion rate stabilize small archetypes. Below-average
+    conversion receives a squared penalty; above-average conversion remains linear.
 
-**Matchup coverage:** Very favorable, favorable, even, unfavorable, and very unfavorable matchups
-receive values of +2, +1, 0, -1, and -2. Each value is weighted by that opponent's meta share.
+    **Matchup coverage:** Very favorable, favorable, even, unfavorable, and very unfavorable matchups
+    receive values of +2, +1, 0, -1, and -2. Each value is weighted by that opponent's meta share.
 
-Major matchup rates use the full Labs pairing field. Exceptional finishes affect evidence labels
-such as **Expert pick**, **Breakout watch**, and **Spike result**, but do not directly add score.
+    Major matchup rates use the full Labs pairing field. Exceptional finishes affect evidence labels
+    such as **Expert pick**, **Breakout watch**, and **Spike result**, but do not directly add score.
 
-**Label meanings**
+    **Label meanings**
 
-- **Accessible pick:** At least a 50% trusted win rate and conversion at or above the major-field average.
-- **Strong converter:** Day 2 conversion is at least 10% better than the field average, even if its matchup win rate is lower.
-- **Day 2 contender:** Conversion is reasonably close to the field average without another stronger label applying.
-- **Expert pick:** A Top 32 major finish exists despite a trusted win rate below 50%, suggesting stronger results from top pilots.
-- **Breakout watch:** A recent Top 32 finish appeared without an older Top 32 in the selected major window.
-- **Spike result:** A Top 32 finish exists, but adjusted conversion is at least 15% below the field average.
-- **Conversion concern:** Adjusted conversion is more than 20% below the field average.
-- **Limited evidence:** Fewer than 30 Day 1 entries are available across the selected majors.
+    - **Accessible pick:** At least a 50% trusted win rate and conversion at or above the major-field average.
+    - **Strong converter:** Day 2 conversion is at least 10% better than the field average, even if its matchup win rate is lower.
+    - **Day 2 contender:** Conversion is reasonably close to the field average without another stronger label applying.
+    - **Expert pick:** A Top 32 major finish exists despite a trusted win rate below 50%, suggesting stronger results from top pilots.
+    - **Breakout watch:** A recent Top 32 finish appeared without an older Top 32 in the selected major window.
+    - **Spike result:** A Top 32 finish exists, but adjusted conversion is at least 15% below the field average.
+    - **Conversion concern:** Adjusted conversion is more than 20% below the field average.
+    - **Limited evidence:** Fewer than 30 Day 1 entries are available across the selected majors.
 
-Labels describe the evidence pattern. They do not automatically include, exclude, or change the score of a deck.
+    Labels describe the evidence pattern. They do not automatically include, exclude, or change the score of a deck.
                 """
             )
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
@@ -1884,6 +1937,8 @@ Labels describe the evidence pattern. They do not automatically include, exclude
         )
         for row in lowest_evidence.itertuples():
             st.write(f"**{row.deck}:** {row.why}")
+
+
 
 
 def _deck_detail(
@@ -2161,9 +2216,11 @@ matches = deck_analysis.read_matches()
 limitless_meta_decks = deck_analysis.read_limitless_meta_decks()
 labs_conversion = deck_analysis.read_labs_conversion()
 
-page = st.sidebar.radio("Page", ["Meta Overview", "Deck Detail"])
+page = st.sidebar.radio("Page", ["Meta Overview", "Testing Recommendations", "Deck Detail"])
 if page == "Meta Overview":
     _meta_overview(cards, matches, limitless_meta_decks, labs_conversion)
+elif page == "Testing Recommendations":
+    _testing_recommendations_page(cards, matches, limitless_meta_decks, labs_conversion)
 else:
     meta_count = st.sidebar.slider(
         "Meta deck count",

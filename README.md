@@ -157,6 +157,8 @@ Labs pairing data, with the published decklist map retained as a fallback.
 The dashboard's collapsed "How scoring works" panel documents these calculations
 next to the adjustable Score Lab controls, including explicit definitions for
 every recommendation label.
+Testing Recommendations has its own dashboard page so the Meta Overview remains
+focused on factual metagame and matchup tables.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and
