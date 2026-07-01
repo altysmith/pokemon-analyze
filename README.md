@@ -134,8 +134,10 @@ The dashboard reads `outputs/cards.csv` and includes:
 
 The Meta Overview shows the current top decks with their complete win, loss,
 and tie records against every known opponent in the selected data. It does not
-limit those records to games against other meta decks. Top-25-specific matchup
-calculations are used only on Testing Recommendations and Deck Detail.
+limit those records to games against other meta decks. The overview also keeps
+the Top-25 matchup comparison tables. Recommendation scores, labels, exclusions,
+and explanations live on Testing Recommendations, while one-deck matchup
+analysis lives on Deck Detail.
 
 Testing Recommendations uses
 `outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame

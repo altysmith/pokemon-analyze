@@ -1757,6 +1757,100 @@ def _meta_overview(
         labs_conversion,
     )
 
+    meta_decks = _meta_overview_target_decks(limitless_meta_decks)
+    meta_count = len(meta_decks)
+    resolved_meta = deck_analysis.resolve_meta_decks(filtered_cards, meta_decks, limit=meta_count)
+
+    st.subheader(f"Best Decks Against Top {META_OVERVIEW_MAX_RANK} Meta Decks")
+    if resolved_meta.empty:
+        st.info("No Top 25 Limitless meta decks could be matched to the current card data.")
+        return
+
+    best = deck_analysis.best_decks_against_meta(
+        filtered_cards,
+        filtered_matches,
+        **_best_meta_kwargs(meta_count, set(resolved_meta["local_deck"]), resolved_meta),
+    )
+    best = _add_meta_rank_columns(best, resolved_meta, meta_decks)
+    if best.empty:
+        st.info("No matchup rows are available for the current source/date filters.")
+        return
+
+    total_matches = int(best["matches"].sum())
+    top_favorable = int(best["favorable_matchups"].max())
+    metric_one, metric_two, metric_three = st.columns(3)
+    metric_one.metric("Meta Decks", len(resolved_meta))
+    metric_two.metric("Top Favorable Count", top_favorable)
+    metric_three.metric("Recorded Match Rows", total_matches)
+
+    st.caption(
+        "Favorable means 55%+ tie-adjusted win rate, with ties counted as one-third of a win. "
+        "Very favorable means over 60%. "
+        "Unfavorable means under 45%, and very unfavorable means under 40%. "
+        f"Candidates and targets both come from the current Limitless split-variant meta list, "
+        f"limited to the top {META_OVERVIEW_MAX_RANK}. Matchup scores weight each opponent "
+        "by its meta share."
+    )
+
+    most_favorable = best.head(META_OVERVIEW_LIST_SIZE).copy()
+    highest_win_rate = best.sort_values(
+        ["tie_adjusted_win_rate", "matches"],
+        ascending=[False, False],
+    ).head(META_OVERVIEW_LIST_SIZE)
+    highest_non_dragapult = (
+        best[~best["deck"].astype(str).str.contains("Dragapult", case=False, na=False)]
+        .sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
+        .head(META_OVERVIEW_LIST_SIZE)
+    )
+    matchup_columns = [
+        "deck",
+        "matches",
+        "favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+        "win_rate",
+        "tie_adjusted_win_rate",
+    ]
+    win_rate_columns = [
+        "deck",
+        "matches",
+        "win_rate",
+        "tie_adjusted_win_rate",
+        "favorable_matchups",
+        "unfavorable_matchups",
+        "very_unfavorable_matchups",
+    ]
+    compact_labels = {
+        "deck": "Deck",
+        "matches": "M",
+        "win_rate": "Win",
+        "tie_adjusted_win_rate": "Adj",
+        "favorable_matchups": "Fav MU",
+        "unfavorable_matchups": "Unfav MU",
+        "very_unfavorable_matchups": "V Unfav MU",
+    }
+    win_col, non_dragapult_col = st.columns(2)
+    with win_col:
+        st.markdown("#### Highest Adjusted Win %")
+        _show_table(
+            highest_win_rate[win_rate_columns],
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+            column_labels=compact_labels,
+        )
+    with non_dragapult_col:
+        st.markdown("#### Highest Adjusted Win % Non Dragapult")
+        _show_table(
+            highest_non_dragapult[win_rate_columns],
+            percent_columns=["win_rate", "tie_adjusted_win_rate"],
+            column_labels=compact_labels,
+        )
+    st.markdown("#### Most Favorable Matchups")
+    _show_table(
+        most_favorable[matchup_columns],
+        percent_columns=["win_rate", "tie_adjusted_win_rate"],
+        column_labels=compact_labels,
+    )
+
 def _testing_recommendations_page(
     cards: pd.DataFrame,
     matches: pd.DataFrame,

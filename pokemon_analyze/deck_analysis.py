@@ -1077,12 +1077,8 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
     )
     local_decks = sorted(deck_map["deck"].dropna().astype(str).unique())
     if {"player1_deck", "player2_deck"}.issubset(player_one.columns):
-        embedded_deck = player_one["player1_deck"].map(
-            lambda value: _local_name_for_match_deck(value, local_decks)
-        )
-        embedded_opponent = player_one["player2_deck"].map(
-            lambda value: _local_name_for_match_deck(value, local_decks)
-        )
+        embedded_deck = _map_match_deck_names(player_one["player1_deck"], local_decks)
+        embedded_opponent = _map_match_deck_names(player_one["player2_deck"], local_decks)
         player_one["deck"] = embedded_deck.where(embedded_deck.ne(""), player_one["deck"])
         player_one["opponent_deck"] = embedded_opponent.where(
             embedded_opponent.ne(""), player_one["opponent_deck"]
@@ -1102,12 +1098,8 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
         how="left",
     )
     if {"player1_deck", "player2_deck"}.issubset(player_two.columns):
-        embedded_deck = player_two["player2_deck"].map(
-            lambda value: _local_name_for_match_deck(value, local_decks)
-        )
-        embedded_opponent = player_two["player1_deck"].map(
-            lambda value: _local_name_for_match_deck(value, local_decks)
-        )
+        embedded_deck = _map_match_deck_names(player_two["player2_deck"], local_decks)
+        embedded_opponent = _map_match_deck_names(player_two["player1_deck"], local_decks)
         player_two["deck"] = embedded_deck.where(embedded_deck.ne(""), player_two["deck"])
         player_two["opponent_deck"] = embedded_opponent.where(
             embedded_opponent.ne(""), player_two["opponent_deck"]
@@ -1120,8 +1112,26 @@ def _matches_with_decks(matches: pd.DataFrame, deck_map: pd.DataFrame) -> pd.Dat
     combined = pd.concat([player_one, player_two], ignore_index=True, sort=False)
     combined = combined.dropna(subset=["deck", "opponent_deck"])
     combined = combined[(combined["player"] != "") & (combined["opponent_deck"] != "")]
-    combined["result"] = combined.apply(_match_result, axis=1)
+    winner = combined["winner"].astype(str).str.strip().replace(
+        {"0.0": "0", "-0.0": "0", "-1.0": "-1"}
+    )
+    tie_mask = winner.eq("0")
+    win_mask = ~tie_mask & winner.eq(combined["player"].astype(str))
+    combined["result"] = "loss"
+    combined.loc[tie_mask, "result"] = "tie"
+    combined.loc[win_mask, "result"] = "win"
     return combined[["tournament_id", "player", "list_key", "deck", "opponent_deck", "result"]]
+
+
+def _map_match_deck_names(values: pd.Series, local_decks: list[str]) -> pd.Series:
+    """Normalize each distinct embedded archetype only once."""
+
+    unique_values = values.dropna().unique()
+    name_map = {
+        value: _local_name_for_match_deck(value, local_decks)
+        for value in unique_values
+    }
+    return values.map(name_map).fillna("")
 
 
 def _local_name_for_match_deck(value: object, local_decks: list[str]) -> str:
