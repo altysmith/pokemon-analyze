@@ -1516,6 +1516,7 @@ def _build_lowest_evidence(recommendations: pd.DataFrame) -> pd.DataFrame:
 
     columns = [
         "deck",
+        "score",
         "trusted_win_rate",
         "adjusted_conversion_rate",
         "label",
@@ -1717,7 +1718,8 @@ def _meta_overview(
         "penalty. Major matchup rates use the full Limitless Labs pairing field. Major finishes "
         "affect evidence labels, not the score."
     )
-    with st.expander("Score Lab", expanded=True):
+    with st.container(border=True):
+        st.markdown("#### Score Lab")
         weight_columns = st.columns(3)
         with weight_columns[0]:
             win_weight = st.slider("Win rate weight", 0, 100, 70, 5)
@@ -1831,26 +1833,27 @@ Labels describe the evidence pattern. They do not automatically include, exclude
             "deck": "Deck",
             "label": "Label",
             "score": "Score",
-            "trusted_win_rate": "Trusted Win",
-            "adjusted_conversion_rate": "Adj Conv",
-            "day1": "D1",
-            "day2": "D2",
-            "coverage_score": "Coverage",
-            "matches": "M",
-            "favorable_matchups": "Fav MU",
-            "very_favorable_matchups": "V Fav",
-            "unfavorable_matchups": "Unfav",
-            "very_unfavorable_matchups": "V Unfav",
-            "note": "Why",
+            "trusted_win_rate": "Win",
+            "adjusted_conversion_rate": "Conv",
         }
+        recommendation_columns = [
+            "deck",
+            "score",
+            "trusted_win_rate",
+            "adjusted_conversion_rate",
+        ]
+        full_recommendation_columns = ["deck", "label", *recommendation_columns[1:]]
+        visible_recommendations = recommendations.head(5)
         _show_table(
-            recommendations.head(5),
+            visible_recommendations[recommendation_columns],
             percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
             column_labels=recommendation_labels,
         )
+        for row in visible_recommendations.itertuples():
+            st.write(f"**{row.deck}:** {row.note}")
         with st.expander("Show full recommendation score list"):
             _show_table(
-                recommendations,
+                recommendations[full_recommendation_columns],
                 percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
                 column_labels=recommendation_labels,
             )
@@ -1862,16 +1865,25 @@ Labels describe the evidence pattern. They do not automatically include, exclude
     else:
         evidence_labels = {
             "deck": "Deck",
-            "trusted_win_rate": "Trusted Win",
-            "adjusted_conversion_rate": "Adj Conv",
+            "score": "Score",
+            "trusted_win_rate": "Win",
+            "adjusted_conversion_rate": "Conv",
             "label": "Label",
-            "why": "Why",
         }
+        evidence_columns = [
+            "deck",
+            "label",
+            "score",
+            "trusted_win_rate",
+            "adjusted_conversion_rate",
+        ]
         _show_table(
-            lowest_evidence,
+            lowest_evidence[evidence_columns],
             percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
             column_labels=evidence_labels,
         )
+        for row in lowest_evidence.itertuples():
+            st.write(f"**{row.deck}:** {row.why}")
 
 
 def _deck_detail(
