@@ -1750,6 +1750,19 @@ receive values of +2, +1, 0, -1, and -2. Each value is weighted by that opponent
 
 Major matchup rates use the full Labs pairing field. Exceptional finishes affect evidence labels
 such as **Expert pick**, **Breakout watch**, and **Spike result**, but do not directly add score.
+
+**Label meanings**
+
+- **Accessible pick:** At least a 50% trusted win rate and conversion at or above the major-field average.
+- **Strong converter:** Day 2 conversion is at least 10% better than the field average, even if its matchup win rate is lower.
+- **Day 2 contender:** Conversion is reasonably close to the field average without another stronger label applying.
+- **Expert pick:** A Top 32 major finish exists despite a trusted win rate below 50%, suggesting stronger results from top pilots.
+- **Breakout watch:** A recent Top 32 finish appeared without an older Top 32 in the selected major window.
+- **Spike result:** A Top 32 finish exists, but adjusted conversion is at least 15% below the field average.
+- **Conversion concern:** Adjusted conversion is more than 20% below the field average.
+- **Limited evidence:** Fewer than 30 Day 1 entries are available across the selected majors.
+
+Labels describe the evidence pattern. They do not automatically include, exclude, or change the score of a deck.
                 """
             )
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
