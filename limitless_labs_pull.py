@@ -59,6 +59,10 @@ def main() -> None:
             "day1",
             "day2",
             "conversion_rate",
+            "wins",
+            "losses",
+            "ties",
+            "tie_adjusted_win_rate",
         ],
     ).to_csv(LABS_CONVERSION_CSV, index=False)
     print(f"Wrote {LABS_CONVERSION_CSV} with {len(rows)} event-archetype rows.")
@@ -88,6 +92,17 @@ def fetch_conversion_rows(tournament: pd.Series, labs_id: str) -> list[dict[str,
         print(f"  Conversion table was not available for {tournament.get('name')}.")
         return []
 
+    overall_html = get_html(f"https://labs.limitlesstcg.com/{labs_id}/decks")
+    overall_tables = pd.read_html(StringIO(overall_html))
+    records: dict[str, tuple[int, int, int]] = {}
+    if overall_tables and {"Deck", "Record"}.issubset(overall_tables[0].columns):
+        for overall in overall_tables[0].to_dict("records"):
+            record_match = re.match(r"\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*", str(overall.get("Record", "")))
+            if record_match:
+                records[str(overall.get("Deck", "")).strip()] = tuple(
+                    int(value) for value in record_match.groups()
+                )
+
     rows: list[dict[str, object]] = []
     for record in conversion.to_dict("records"):
         day1 = safe_int(record.get("Day 1"))
@@ -95,6 +110,8 @@ def fetch_conversion_rows(tournament: pd.Series, labs_id: str) -> list[dict[str,
         deck = str(record.get("Deck", "")).strip()
         if not deck or day1 <= 0:
             continue
+        wins, losses, ties = records.get(deck, (0, 0, 0))
+        matches = wins + losses + ties
         rows.append(
             {
                 "source": "major",
@@ -106,6 +123,10 @@ def fetch_conversion_rows(tournament: pd.Series, labs_id: str) -> list[dict[str,
                 "day1": day1,
                 "day2": day2,
                 "conversion_rate": day2 / day1,
+                "wins": wins,
+                "losses": losses,
+                "ties": ties,
+                "tie_adjusted_win_rate": (wins + (ties / 3)) / matches if matches else 0,
             }
         )
     return rows

@@ -46,7 +46,8 @@ jobs:
           python limitless_major_pull.py
           --format standard
           --min-players 50
-          --days 31
+          --days 180
+          --max-events 10
 
       - name: Pull Limitless Labs conversion data
         run: python limitless_labs_pull.py

@@ -11,7 +11,7 @@ python pull_limitless_meta.py --format TEF-CRI --time 1months --limit 50
 if errorlevel 1 goto failed
 
 echo Pulling Limitless major events...
-python limitless_major_pull.py --format standard --min-players 50 --days 31
+python limitless_major_pull.py --format standard --min-players 50 --days 180 --max-events 10
 if errorlevel 1 goto failed
 
 echo Pulling Limitless Labs Day 2 conversion data...

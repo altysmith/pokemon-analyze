@@ -196,6 +196,12 @@ def _format_percent(value: float) -> str:
     return f"{value * 100:.1f}%"
 
 
+def _format_precise_percent(value: float) -> str:
+    """Show enough precision for audited rates without trailing zero noise."""
+
+    return f"{value * 100:.2f}".rstrip("0").rstrip(".") + "%"
+
+
 def _plural(count: int, word: str) -> str:
     """Return a simple count phrase with readable pluralization."""
 
@@ -1100,6 +1106,7 @@ def _show_full_meta_performance(
 def _testing_recommendation_note(
     label: str,
     trusted_rate: float,
+    major_win_rate: float,
     adjusted_conversion: float,
     day1: int,
     day2: int,
@@ -1114,8 +1121,9 @@ def _testing_recommendation_note(
     """Write one readable sentence explaining why a deck was recommended."""
 
     evidence = (
-        f"a {_format_percent(trusted_rate)} trusted win rate, "
-        f"{_format_percent(adjusted_conversion)} adjusted Day 2 conversion "
+        f"a {_format_precise_percent(trusted_rate)} trusted Top 25 matchup rate, "
+        f"{_format_precise_percent(major_win_rate)} overall major win rate, "
+        f"{_format_precise_percent(adjusted_conversion)} adjusted Day 2 conversion "
         f"({day2} of {day1} players), and {_plural(favorable, 'favorable matchup')}"
     )
     if very_favorable:
@@ -1163,7 +1171,14 @@ def _conversion_profiles(
 
     total_day1 = float(selected["day1"].sum())
     baseline = float(selected["day2"].sum() / total_day1) if total_day1 else 0
-    aggregate = selected.groupby("deck", as_index=False).agg(day1=("day1", "sum"), day2=("day2", "sum"))
+    aggregate_columns = {
+        "day1": ("day1", "sum"),
+        "day2": ("day2", "sum"),
+    }
+    for column in ["wins", "losses", "ties"]:
+        if column in selected.columns:
+            aggregate_columns[column] = (column, "sum")
+    aggregate = selected.groupby("deck", as_index=False).agg(**aggregate_columns)
     labs_decks = aggregate["deck"].dropna().astype(str).tolist()
     aggregate_lookup = aggregate.set_index("deck").to_dict("index")
     aliases = {
@@ -1188,6 +1203,10 @@ def _conversion_profiles(
 
         day1 = int(values["day1"])
         day2 = int(values["day2"])
+        wins = int(values.get("wins", 0))
+        losses = int(values.get("losses", 0))
+        ties = int(values.get("ties", 0))
+        major_matches = wins + losses + ties
         adjusted_rate = (
             (day2 + (baseline * prior_entries)) / (day1 + prior_entries)
             if day1 + prior_entries
@@ -1210,6 +1229,10 @@ def _conversion_profiles(
             "raw_conversion_rate": day2 / day1 if day1 else 0,
             "adjusted_conversion_rate": adjusted_rate,
             "conversion_score": conversion_score,
+            "major_win_rate": (wins + (ties / 3)) / major_matches if major_matches else 0,
+            "major_wins": wins,
+            "major_losses": losses,
+            "major_ties": ties,
         }
     return profiles, baseline
 
@@ -1342,6 +1365,7 @@ def _build_testing_recommendations(
         "trusted_win_rate",
         "adjusted_conversion_rate",
         "raw_conversion_rate",
+        "major_win_rate",
         "day1",
         "day2",
         "coverage_score",
@@ -1439,6 +1463,7 @@ def _build_testing_recommendations(
         raw_conversion = float(conversion_profile.get("raw_conversion_rate", 0))
         adjusted_conversion = float(conversion_profile.get("adjusted_conversion_rate", conversion_baseline))
         conversion_score = float(conversion_profile.get("conversion_score", 50))
+        major_win_rate = float(conversion_profile.get("major_win_rate", 0))
         def coverage_value(rate: float) -> int:
             if rate > 0.60:
                 return 2
@@ -1476,6 +1501,7 @@ def _build_testing_recommendations(
         note = _testing_recommendation_note(
             label,
             trusted_rate,
+            major_win_rate,
             adjusted_conversion,
             day1,
             day2,
@@ -1496,6 +1522,7 @@ def _build_testing_recommendations(
                 "trusted_win_rate": trusted_rate,
                 "adjusted_conversion_rate": adjusted_conversion,
                 "raw_conversion_rate": raw_conversion,
+                "major_win_rate": major_win_rate,
                 "day1": day1,
                 "day2": day2,
                 "coverage_score": coverage_score,
@@ -1797,6 +1824,10 @@ def _testing_recommendations_page(
                 """
     **Trusted win rate:** Matchup win rates are weighted by each opponent's meta share. Ties count as
     one-third of a win, and 50 prior matches at 50% pull small samples toward an even record.
+    This is a Top 25 matchup measure, not the deck's overall major win rate.
+
+    **Major win rate:** Official Labs W-L-T records across the selected majors, with ties worth
+    one-third of a win. This is shown for context and does not currently add separate score points.
 
     **Day 2 conversion:** Limitless Labs Day 1 and Day 2 counts are combined across the selected majors.
     Fifty prior entrants at the overall field conversion rate stabilize small archetypes. Below-average
@@ -1889,20 +1920,22 @@ def _testing_recommendations_page(
             "deck": "Deck",
             "label": "Label",
             "score": "Score",
-            "trusted_win_rate": "Win",
+            "trusted_win_rate": "Meta Win",
+            "major_win_rate": "Major Win",
             "adjusted_conversion_rate": "Conv",
         }
         recommendation_columns = [
             "deck",
             "score",
             "trusted_win_rate",
+            "major_win_rate",
             "adjusted_conversion_rate",
         ]
         full_recommendation_columns = ["deck", "label", *recommendation_columns[1:]]
         visible_recommendations = recommendations.head(5)
         _show_table(
             visible_recommendations[recommendation_columns],
-            percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
+            percent_columns=["trusted_win_rate", "major_win_rate", "adjusted_conversion_rate"],
             column_labels=recommendation_labels,
         )
         st.markdown("#### Why these decks")
@@ -1911,7 +1944,7 @@ def _testing_recommendations_page(
         with st.expander("Show full recommendation score list"):
             _show_table(
                 recommendations[full_recommendation_columns],
-                percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
+                percent_columns=["trusted_win_rate", "major_win_rate", "adjusted_conversion_rate"],
                 column_labels=recommendation_labels,
             )
 

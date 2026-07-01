@@ -102,12 +102,16 @@ def read_labs_conversion(path: str | Path = LABS_CONVERSION_CSV) -> pd.DataFrame
         "day1",
         "day2",
         "conversion_rate",
+        "wins",
+        "losses",
+        "ties",
+        "tie_adjusted_win_rate",
     ]
     if not csv_path.exists():
         return pd.DataFrame(columns=columns)
 
     conversion = _normalize_columns(pd.read_csv(csv_path, low_memory=False))
-    for column in ["day1", "day2", "conversion_rate"]:
+    for column in ["day1", "day2", "conversion_rate", "wins", "losses", "ties", "tie_adjusted_win_rate"]:
         if column not in conversion.columns:
             conversion[column] = 0
         conversion[column] = pd.to_numeric(conversion[column], errors="coerce").fillna(0)

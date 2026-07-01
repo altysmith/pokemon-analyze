@@ -159,6 +159,9 @@ next to the adjustable Score Lab controls, including explicit definitions for
 every recommendation label.
 Testing Recommendations has its own dashboard page so the Meta Overview remains
 focused on factual metagame and matchup tables.
+The automated major pull retains the latest ten events, independent of the
+31-day online window, so the dashboard's Last 3/5/8/10 Major filters use the
+number of events shown.
 For meta matchup percentages, ties count as one-third of a win, matching the
 TrainerHill formula.
 The Deck Detail page keeps the card trends, individual matchup table, and
