@@ -1735,6 +1735,23 @@ def _meta_overview(
             )
         else:
             st.warning("Set at least one score weight above zero.")
+        with st.expander("How scoring works"):
+            st.markdown(
+                """
+**Trusted win rate:** Matchup win rates are weighted by each opponent's meta share. Ties count as
+one-third of a win, and 50 prior matches at 50% pull small samples toward an even record.
+
+**Day 2 conversion:** Limitless Labs Day 1 and Day 2 counts are combined across the selected majors.
+Fifty prior entrants at the overall field conversion rate stabilize small archetypes. Below-average
+conversion receives a squared penalty; above-average conversion remains linear.
+
+**Matchup coverage:** Very favorable, favorable, even, unfavorable, and very unfavorable matchups
+receive values of +2, +1, 0, -1, and -2. Each value is weighted by that opponent's meta share.
+
+Major matchup rates use the full Labs pairing field. Exceptional finishes affect evidence labels
+such as **Expert pick**, **Breakout watch**, and **Spike result**, but do not directly add score.
+                """
+            )
     recommendation_decks = sorted(best["deck"].dropna().astype(str).unique().tolist())
     exclude_dragapult = st.checkbox(
         "Exclude all Dragapult variants",
