@@ -1113,30 +1113,32 @@ def _testing_recommendation_note(
 ) -> str:
     """Write one readable sentence explaining why a deck was recommended."""
 
-    opening = (
-        f"{label}: {_format_percent(trusted_rate)} trusted win rate, "
+    evidence = (
+        f"a {_format_percent(trusted_rate)} trusted win rate, "
         f"{_format_percent(adjusted_conversion)} adjusted Day 2 conversion "
-        f"({day2} of {day1}), and {_plural(favorable, 'favorable matchup')}"
+        f"({day2} of {day1} players), and {_plural(favorable, 'favorable matchup')}"
     )
-
     if very_favorable:
-        opening += f", including {_plural(very_favorable, 'very favorable matchup')}"
-
+        evidence += f", including {_plural(very_favorable, 'very favorable matchup')}"
     if not best_matchups.empty:
         best = best_matchups.iloc[0]
-        opening += f", led by {best['limitless_deck']}"
+        evidence += f", with {best['limitless_deck']} as a standout"
 
     if very_unfavorable:
-        risk = f"{_plural(very_unfavorable, 'very unfavorable matchup')}"
+        risk = f"the main concern is {_plural(very_unfavorable, 'very unfavorable matchup')}"
+        connector = "although"
     elif unfavorable:
-        risk = f"{_plural(unfavorable, 'unfavorable matchup')}"
+        risk = f"the main concern is {_plural(unfavorable, 'unfavorable matchup')}"
+        connector = "although"
     elif not risky_matchups.empty:
-        risk = f"{risky_matchups.iloc[0]['limitless_deck']}"
+        risk = f"the main concern is {risky_matchups.iloc[0]['limitless_deck']}"
+        connector = "although"
     else:
-        risk = "no major bad matchup in this pool"
+        risk = "there is no major bad matchup in this pool"
+        connector = "and"
 
-    sample = " Low sample." if matches < 100 else ""
-    return f"{opening}. Risk: {risk}.{sample}"
+    sample = " The matchup sample is still small." if matches < 100 else ""
+    return f"This currently looks like a **{label.lower()}** because it combines {evidence}, {connector} {risk}.{sample}"
 
 
 def _conversion_profiles(
@@ -1902,6 +1904,7 @@ def _testing_recommendations_page(
             percent_columns=["trusted_win_rate", "adjusted_conversion_rate"],
             column_labels=recommendation_labels,
         )
+        st.markdown("#### Why these decks")
         for row in visible_recommendations.itertuples():
             st.write(f"**{row.deck}:** {row.note}")
         with st.expander("Show full recommendation score list"):
