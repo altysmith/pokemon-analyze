@@ -1,4 +1,4 @@
-﻿"""Streamlit dashboard for Pokemon deck analysis."""
+"""Streamlit dashboard for Pokemon deck analysis."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ FULL_META_COUNT = 25
 DETAIL_DEFAULT_META_COUNT = 25
 META_OVERVIEW_MAX_RANK = 25
 META_OVERVIEW_LIST_SIZE = 10
+EXPECTED_ANALYSIS_API_VERSION = 3
+REQUIRED_BEST_META_ARGS = {"meta_n", "min_matches", "eligible_decks", "meta_deck_map"}
 CARD_SUBTYPES_CSV = Path("outputs/card_subtypes.csv")
 MAJOR_WINDOW_OPTIONS = {
     "Last 3 majors": 3,
@@ -39,6 +41,28 @@ DECKLIST_SUBTYPE_ORDER = {
     "Energy": 5,
     "Special Energy": 6,
 }
+
+
+def _verify_analysis_api() -> None:
+    """Stop early if Streamlit deployed mismatched dashboard and analysis files."""
+
+    actual_version = getattr(deck_analysis, "ANALYSIS_API_VERSION", None)
+    if actual_version != EXPECTED_ANALYSIS_API_VERSION:
+        st.error(
+            "Dashboard and analysis module versions do not match. "
+            "Redeploy the latest GitHub commit so dashboard.py and "
+            "pokemon_analyze/deck_analysis.py ship together."
+        )
+        st.stop()
+
+    accepted_args = set(inspect.signature(deck_analysis.best_decks_against_meta).parameters)
+    missing_args = REQUIRED_BEST_META_ARGS - accepted_args
+    if missing_args:
+        st.error(
+            "The deployed analysis module is missing expected matchup arguments: "
+            f"{', '.join(sorted(missing_args))}. Redeploy the latest GitHub commit."
+        )
+        st.stop()
 
 
 def _filter_by_date(data: pd.DataFrame, start_date: date, end_date: date) -> pd.DataFrame:
@@ -1024,6 +1048,28 @@ def _meta_overview_target_decks(limitless_meta_decks: pd.DataFrame) -> pd.DataFr
     return meta_decks.sort_values("rank_sort").drop(columns=["rank_sort"])
 
 
+def _top_meta_deck_name(meta_decks: pd.DataFrame) -> str | None:
+    """Return the current #1 meta deck so alternate tables do not hardcode an archetype."""
+
+    if meta_decks.empty or "deck" not in meta_decks.columns:
+        return None
+
+    ranked = meta_decks.copy()
+    ranked["rank_sort"] = pd.to_numeric(ranked.get("rank"), errors="coerce")
+    ranked["share_sort"] = pd.to_numeric(ranked.get("share"), errors="coerce")
+    ranked["points_sort"] = pd.to_numeric(ranked.get("points"), errors="coerce")
+    ranked = ranked.sort_values(
+        ["rank_sort", "share_sort", "points_sort"],
+        ascending=[True, False, False],
+        na_position="last",
+    )
+    top_deck = ranked["deck"].dropna().astype(str).str.strip()
+    top_deck = top_deck[top_deck != ""]
+    if top_deck.empty:
+        return None
+    return top_deck.iloc[0]
+
+
 def _add_meta_rank_columns(report: pd.DataFrame, resolved_meta: pd.DataFrame, meta_decks: pd.DataFrame) -> pd.DataFrame:
     """Attach Limitless rank/share to the matchup report."""
 
@@ -1797,11 +1843,22 @@ def _meta_overview(
         ["tie_adjusted_win_rate", "matches"],
         ascending=[False, False],
     ).head(META_OVERVIEW_LIST_SIZE)
-    highest_non_dragapult = (
-        best[~best["deck"].astype(str).str.contains("Dragapult", case=False, na=False)]
-        .sort_values(["tie_adjusted_win_rate", "matches"], ascending=[False, False])
-        .head(META_OVERVIEW_LIST_SIZE)
-    )
+    top_meta_deck = _top_meta_deck_name(meta_decks)
+    if top_meta_deck:
+        top_deck_pattern = re.escape(top_meta_deck)
+        highest_without_top_deck = best[
+            ~best["deck"].astype(str).str.contains(top_deck_pattern, case=False, na=False)
+        ]
+        alternate_heading = "Highest Adjusted Win % Non #1 Meta Deck"
+        alternate_caption = f"Excludes decks whose name includes {top_meta_deck}."
+    else:
+        highest_without_top_deck = best.iloc[0:0].copy()
+        alternate_heading = "Highest Adjusted Win % Without #1 Meta Deck"
+        alternate_caption = "No #1 meta deck could be identified from the current Limitless data."
+    highest_without_top_deck = highest_without_top_deck.sort_values(
+        ["tie_adjusted_win_rate", "matches"],
+        ascending=[False, False],
+    ).head(META_OVERVIEW_LIST_SIZE)
     matchup_columns = [
         "deck",
         "matches",
@@ -1829,7 +1886,7 @@ def _meta_overview(
         "unfavorable_matchups": "Unfav MU",
         "very_unfavorable_matchups": "V Unfav MU",
     }
-    win_col, non_dragapult_col = st.columns(2)
+    win_col, without_top_col = st.columns(2)
     with win_col:
         st.markdown("#### Highest Adjusted Win %")
         _show_table(
@@ -1837,10 +1894,11 @@ def _meta_overview(
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
             column_labels=compact_labels,
         )
-    with non_dragapult_col:
-        st.markdown("#### Highest Adjusted Win % Non Dragapult")
+    with without_top_col:
+        st.markdown(f"#### {alternate_heading}")
+        st.caption(alternate_caption)
         _show_table(
-            highest_non_dragapult[win_rate_columns],
+            highest_without_top_deck[win_rate_columns],
             percent_columns=["win_rate", "tie_adjusted_win_rate"],
             column_labels=compact_labels,
         )
@@ -2352,6 +2410,7 @@ def _deck_detail(
 
 
 st.set_page_config(page_title="Pokemon Analyze", layout="wide")
+_verify_analysis_api()
 st.title("Pokemon Analyze")
 
 try:

@@ -22,12 +22,34 @@ from pokemon_analyze.deck_analysis import (
 
 
 OUTPUT_PATH = Path("outputs") / "best_decks_against_top25_meta.csv"
+REPORT_COLUMNS = [
+    "meta_rank",
+    "deck",
+    "meta_points",
+    "meta_share",
+    "favorable_matchups",
+    "very_favorable_matchups",
+    "unfavorable_matchups",
+    "very_unfavorable_matchups",
+    "meta_opponents_faced",
+    "matches",
+    "wins",
+    "losses",
+    "ties",
+    "win_rate",
+    "tie_adjusted_win_rate",
+]
 
 
 def main() -> None:
     cards = read_cards()
     matches = read_matches()
     meta_decks = read_limitless_meta_decks().head(25)
+    if meta_decks.empty:
+        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(columns=REPORT_COLUMNS).to_csv(OUTPUT_PATH, index=False)
+        print(f"Wrote {OUTPUT_PATH} with 0 rows because the Limitless meta list is empty.")
+        return
 
     # Map Limitless names like "Dragapult ex" to the deck names used in our
     # card and match CSVs. Candidate decks and target decks both come from this
@@ -71,24 +93,7 @@ def _add_limitless_meta_columns(
     )
 
     with_meta = report.merge(meta_details, on="deck", how="left")
-    columns = [
-        "meta_rank",
-        "deck",
-        "meta_points",
-        "meta_share",
-        "favorable_matchups",
-        "very_favorable_matchups",
-        "unfavorable_matchups",
-        "very_unfavorable_matchups",
-        "meta_opponents_faced",
-        "matches",
-        "wins",
-        "losses",
-        "ties",
-        "win_rate",
-        "tie_adjusted_win_rate",
-    ]
-    return with_meta[columns].sort_values(
+    return with_meta[REPORT_COLUMNS].sort_values(
         ["favorable_matchups", "very_favorable_matchups", "tie_adjusted_win_rate", "matches"],
         ascending=[False, False, False, False],
     )

@@ -20,6 +20,7 @@ import requests
 BASE_URL = "https://limitlesstcg.com"
 OUTPUTS_DIR = Path("outputs")
 META_CSV = OUTPUTS_DIR / "limitless_meta_decks.csv"
+META_COLUMNS = ["rank", "deck", "points", "share"]
 
 
 def main() -> None:
@@ -45,7 +46,7 @@ def main() -> None:
         split_variants=not args.combined_decks,
         time_filter=args.time,
     )
-    pd.DataFrame(rows).to_csv(META_CSV, index=False)
+    pd.DataFrame(rows, columns=META_COLUMNS).to_csv(META_CSV, index=False)
     print(f"Wrote {META_CSV} with {len(rows)} Limitless meta deck rows.")
 
 

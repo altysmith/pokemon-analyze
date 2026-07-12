@@ -13,6 +13,8 @@ from typing import Iterable
 import re
 
 import pandas as pd
+from pandas.errors import EmptyDataError
+import streamlit as st
 
 
 OUTPUTS_DIR = Path("outputs")
@@ -21,12 +23,22 @@ MATCHES_CSV = OUTPUTS_DIR / "matches.csv"
 DECK_SUMMARY_CSV = OUTPUTS_DIR / "deck_summary.csv"
 LIMITLESS_META_CSV = OUTPUTS_DIR / "limitless_meta_decks.csv"
 LABS_CONVERSION_CSV = OUTPUTS_DIR / "labs_conversion.csv"
+ANALYSIS_API_VERSION = 3
 
 
 CORE_THRESHOLD = 0.65
 COMMON_THRESHOLD = 0.35
 FLEX_THRESHOLD = 0.12
 TIE_WIN_VALUE = 1 / 3
+
+
+def _file_cache_token(path: Path) -> int:
+    """Return a value that changes when a source CSV is regenerated."""
+
+    try:
+        return path.stat().st_mtime_ns
+    except FileNotFoundError:
+        return 0
 
 
 @dataclass
@@ -43,6 +55,14 @@ class DeckAnalysis:
 
 def read_matches(path: str | Path = MATCHES_CSV) -> pd.DataFrame:
     """Read matches.csv if it exists, returning an empty table otherwise."""
+
+    csv_path = Path(path)
+    return _read_matches_cached(str(csv_path), _file_cache_token(csv_path))
+
+
+@st.cache_data(show_spinner=False)
+def _read_matches_cached(path: str, modified_ns: int) -> pd.DataFrame:
+    """Cached CSV reader keyed by path and modification time."""
 
     csv_path = Path(path)
     if not csv_path.exists():
@@ -72,10 +92,21 @@ def read_limitless_meta_decks(path: str | Path = LIMITLESS_META_CSV) -> pd.DataF
     """Read the Limitless metagame ranking if it has been pulled."""
 
     csv_path = Path(path)
+    return _read_limitless_meta_decks_cached(str(csv_path), _file_cache_token(csv_path))
+
+
+@st.cache_data(show_spinner=False)
+def _read_limitless_meta_decks_cached(path: str, modified_ns: int) -> pd.DataFrame:
+    """Cached meta ranking reader keyed by path and modification time."""
+
+    csv_path = Path(path)
     if not csv_path.exists():
         return pd.DataFrame(columns=["rank", "deck", "points", "share"])
 
-    meta_decks = pd.read_csv(csv_path)
+    try:
+        meta_decks = pd.read_csv(csv_path)
+    except EmptyDataError:
+        return pd.DataFrame(columns=["rank", "deck", "points", "share"])
     meta_decks = _normalize_columns(meta_decks)
     if "rank" not in meta_decks.columns and "placement" in meta_decks.columns:
         meta_decks = meta_decks.rename(columns={"placement": "rank"})
@@ -107,6 +138,14 @@ def read_labs_conversion(path: str | Path = LABS_CONVERSION_CSV) -> pd.DataFrame
         "ties",
         "tie_adjusted_win_rate",
     ]
+    return _read_labs_conversion_cached(str(csv_path), _file_cache_token(csv_path), columns)
+
+
+@st.cache_data(show_spinner=False)
+def _read_labs_conversion_cached(path: str, modified_ns: int, columns: list[str]) -> pd.DataFrame:
+    """Cached Labs conversion reader keyed by path and modification time."""
+
+    csv_path = Path(path)
     if not csv_path.exists():
         return pd.DataFrame(columns=columns)
 
@@ -126,6 +165,14 @@ def read_labs_conversion(path: str | Path = LABS_CONVERSION_CSV) -> pd.DataFrame
 
 def read_cards(path: str | Path = CARDS_CSV) -> pd.DataFrame:
     """Read cards.csv and normalize the columns used by reports."""
+
+    csv_path = Path(path)
+    return _read_cards_cached(str(csv_path), _file_cache_token(csv_path))
+
+
+@st.cache_data(show_spinner=False)
+def _read_cards_cached(path: str, modified_ns: int) -> pd.DataFrame:
+    """Cached cards reader keyed by path and modification time."""
 
     csv_path = Path(path)
     if not csv_path.exists():
