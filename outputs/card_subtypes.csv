@@ -1,176 +1,254 @@
 set,number,card,supertype,subtype
-BLK,172,Zekrom ex,Pokémon,Pokémon
-BLK,1,Snivy,Pokémon,Pokémon
-BLK,2,Servine,Pokémon,Pokémon
-BLK,3,Serperior ex,Pokémon,Pokémon
-BLK,4,Pansage,Pokémon,Pokémon
-BLK,5,Simisage,Pokémon,Pokémon
-BLK,6,Petilil,Pokémon,Pokémon
-BLK,7,Lilligant,Pokémon,Pokémon
-BLK,8,Maractus,Pokémon,Pokémon
-BLK,9,Karrablast,Pokémon,Pokémon
-BLK,10,Foongus,Pokémon,Pokémon
-BLK,12,Victini,Pokémon,Pokémon
-BLK,11,Amoonguss,Pokémon,Pokémon
-BLK,13,Darumaka,Pokémon,Pokémon
-BLK,14,Darmanitan,Pokémon,Pokémon
-BLK,15,Larvesta,Pokémon,Pokémon
-BLK,16,Volcarona,Pokémon,Pokémon
-BLK,21,Seismitoad,Pokémon,Pokémon
-BLK,22,Tirtouga,Pokémon,Pokémon
-BLK,27,Cryogonal,Pokémon,Pokémon
-BLK,19,Tympole,Pokémon,Pokémon
-BLK,25,Cubchoo,Pokémon,Pokémon
-BLK,26,Beartic,Pokémon,Pokémon
-BLK,17,Panpour,Pokémon,Pokémon
-BLK,20,Palpitoad,Pokémon,Pokémon
-BLK,23,Carracosta,Pokémon,Pokémon
-BLK,18,Simipour,Pokémon,Pokémon
-BLK,24,Alomomola,Pokémon,Pokémon
-BLK,29,Emolga,Pokémon,Pokémon
-BLK,28,Kyurem ex,Pokémon,Pokémon
-BLK,32,Eelektross,Pokémon,Pokémon
-BLK,31,Eelektrik,Pokémon,Pokémon
-BLK,35,Munna,Pokémon,Pokémon
-BLK,36,Musharna,Pokémon,Pokémon
-BLK,39,Reuniclus,Pokémon,Pokémon
-BLK,37,Solosis,Pokémon,Pokémon
-BLK,38,Duosion,Pokémon,Pokémon
-BLK,30,Tynamo,Pokémon,Pokémon
-BLK,33,Thundurus,Pokémon,Pokémon
-BLK,34,Zekrom ex,Pokémon,Pokémon
-BLK,48,Gurdurr,Pokémon,Pokémon
-BLK,40,Elgyem,Pokémon,Pokémon
-BLK,42,Golett,Pokémon,Pokémon
-BLK,43,Golurk,Pokémon,Pokémon
-BLK,45,Drilbur,Pokémon,Pokémon
-BLK,41,Beheeyem,Pokémon,Pokémon
-BLK,46,Excadrill ex,Pokémon,Pokémon
-BLK,51,Dwebble,Pokémon,Pokémon
-BLK,44,Meloetta ex,Pokémon,Pokémon
-BLK,47,Timburr,Pokémon,Pokémon
-BLK,52,Crustle,Pokémon,Pokémon
-BLK,49,Conkeldurr,Pokémon,Pokémon
-BLK,50,Throh,Pokémon,Pokémon
-BLK,53,Landorus,Pokémon,Pokémon
-BLK,64,Pawniard,Pokémon,Pokémon
-BLK,55,Whirlipede,Pokémon,Pokémon
-BLK,54,Venipede,Pokémon,Pokémon
-BLK,58,Krokorok,Pokémon,Pokémon
-BLK,59,Krookodile,Pokémon,Pokémon
-BLK,60,Escavalier,Pokémon,Pokémon
-BLK,62,Klang,Pokémon,Pokémon
-BLK,61,Klink,Pokémon,Pokémon
-BLK,56,Scolipede,Pokémon,Pokémon
-BLK,57,Sandile,Pokémon,Pokémon
-BLK,63,Klinklang,Pokémon,Pokémon
-BLK,67,Genesect ex,Pokémon,Pokémon
-BLK,68,Axew,Pokémon,Pokémon
-BLK,70,Haxorus,Pokémon,Pokémon
-BLK,71,Pidove,Pokémon,Pokémon
-BLK,65,Bisharp,Pokémon,Pokémon
-BLK,72,Tranquill,Pokémon,Pokémon
-BLK,69,Fraxure,Pokémon,Pokémon
-BLK,73,Unfezant,Pokémon,Pokémon
-BLK,66,Cobalion,Pokémon,Pokémon
-BLK,82,Fennel,Trainer,Supporter
-BLK,78,Braviary,Pokémon,Pokémon
-BLK,83,N's Plan,Trainer,Supporter
-BLK,81,Energy Coin,Trainer,Item
-BLK,75,Minccino,Pokémon,Pokémon
-BLK,76,Cinccino,Pokémon,Pokémon
-BLK,79,Air Balloon,Trainer,Tool
-BLK,74,Audino,Pokémon,Pokémon
-BLK,77,Rufflet,Pokémon,Pokémon
-BLK,60,Antique Cover Fossil,Trainer,Item
-BLK,84,Pokégear 3.0,Trainer,Item
-BLK,85,Professor's Research,Trainer,Supporter
-BLK,86,Prism Energy,Energy,Special Energy
-BLK,92,Lilligant,Pokémon,Pokémon
-BLK,113,Tynamo,Pokémon,Pokémon
-BLK,115,Eelektross,Pokémon,Pokémon
-BLK,117,Musharna,Pokémon,Pokémon
-BLK,90,Simisage,Pokémon,Pokémon
-BLK,93,Maractus,Pokémon,Pokémon
-BLK,96,Amoonguss,Pokémon,Pokémon
-BLK,102,Simipour,Pokémon,Pokémon
-BLK,105,Seismitoad,Pokémon,Pokémon
-BLK,88,Servine,Pokémon,Pokémon
-BLK,97,Darumaka,Pokémon,Pokémon
-BLK,99,Larvesta,Pokémon,Pokémon
-BLK,101,Panpour,Pokémon,Pokémon
-BLK,108,Alomomola,Pokémon,Pokémon
-BLK,110,Beartic,Pokémon,Pokémon
-BLK,112,Emolga,Pokémon,Pokémon
-BLK,114,Eelektrik,Pokémon,Pokémon
-BLK,87,Snivy,Pokémon,Pokémon
-BLK,94,Karrablast,Pokémon,Pokémon
-BLK,98,Darmanitan,Pokémon,Pokémon
-BLK,100,Volcarona,Pokémon,Pokémon
-BLK,109,Cubchoo,Pokémon,Pokémon
-BLK,91,Petilil,Pokémon,Pokémon
-BLK,104,Palpitoad,Pokémon,Pokémon
-BLK,106,Tirtouga,Pokémon,Pokémon
-BLK,95,Foongus,Pokémon,Pokémon
-BLK,89,Pansage,Pokémon,Pokémon
-BLK,107,Carracosta,Pokémon,Pokémon
-BLK,116,Munna,Pokémon,Pokémon
-BLK,103,Tympole,Pokémon,Pokémon
-BLK,111,Cryogonal,Pokémon,Pokémon
-BLK,118,Solosis,Pokémon,Pokémon
-BLK,121,Beheeyem,Pokémon,Pokémon
-BLK,122,Golett,Pokémon,Pokémon
-BLK,119,Duosion,Pokémon,Pokémon
-BLK,120,Elgyem,Pokémon,Pokémon
-BLK,124,Drilbur,Pokémon,Pokémon
-BLK,126,Gurdurr,Pokémon,Pokémon
-BLK,123,Golurk,Pokémon,Pokémon
-BLK,125,Timburr,Pokémon,Pokémon
-BLK,127,Conkeldurr,Pokémon,Pokémon
-BLK,128,Throh,Pokémon,Pokémon
-BLK,129,Dwebble,Pokémon,Pokémon
-BLK,130,Crustle,Pokémon,Pokémon
-BLK,132,Venipede,Pokémon,Pokémon
-BLK,134,Scolipede,Pokémon,Pokémon
-BLK,135,Sandile,Pokémon,Pokémon
-BLK,131,Landorus,Pokémon,Pokémon
-BLK,133,Whirlipede,Pokémon,Pokémon
-BLK,136,Krokorok,Pokémon,Pokémon
-BLK,138,Escavalier,Pokémon,Pokémon
-BLK,143,Bisharp,Pokémon,Pokémon
-BLK,148,Pidove,Pokémon,Pokémon
-BLK,156,Serperior ex,Pokémon,Pokémon
-BLK,137,Krookodile,Pokémon,Pokémon
-BLK,144,Cobalion,Pokémon,Pokémon
-BLK,147,Haxorus,Pokémon,Pokémon
-BLK,149,Tranquill,Pokémon,Pokémon
-BLK,139,Klink,Pokémon,Pokémon
-BLK,141,Klinklang,Pokémon,Pokémon
-BLK,145,Axew,Pokémon,Pokémon
-BLK,146,Fraxure,Pokémon,Pokémon
-BLK,150,Unfezant,Pokémon,Pokémon
-BLK,153,Cinccino,Pokémon,Pokémon
-BLK,152,Minccino,Pokémon,Pokémon
-BLK,154,Rufflet,Pokémon,Pokémon
-BLK,155,Braviary,Pokémon,Pokémon
-BLK,157,Kyurem ex,Pokémon,Pokémon
-BLK,140,Klang,Pokémon,Pokémon
-BLK,142,Pawniard,Pokémon,Pokémon
-BLK,151,Audino,Pokémon,Pokémon
-BLK,159,Meloetta ex,Pokémon,Pokémon
-BLK,158,Zekrom ex,Pokémon,Pokémon
-BLK,162,Fennel,Trainer,Supporter
-BLK,161,Genesect ex,Pokémon,Pokémon
-BLK,165,Kyurem ex,Pokémon,Pokémon
-BLK,163,N's Plan,Trainer,Supporter
-BLK,164,Serperior ex,Pokémon,Pokémon
-BLK,160,Excadrill ex,Pokémon,Pokémon
-BLK,166,Zekrom ex,Pokémon,Pokémon
-BLK,167,Meloetta ex,Pokémon,Pokémon
-BLK,168,Excadrill ex,Pokémon,Pokémon
-BLK,169,Genesect ex,Pokémon,Pokémon
-BLK,170,N's Plan,Trainer,Supporter
-BLK,171,Victini,Pokémon,Pokémon
+ASC,1,Erika's Oddish,Pokémon,Pokémon
+ASC,2,Erika's Gloom,Pokémon,Pokémon
+ASC,3,Erika's Vileplume ex,Pokémon,Pokémon
+ASC,4,Erika's Bellsprout,Pokémon,Pokémon
+ASC,5,Erika's Weepinbell,Pokémon,Pokémon
+ASC,6,Erika's Victreebel,Pokémon,Pokémon
+ASC,7,Erika's Tangela,Pokémon,Pokémon
+ASC,8,Chikorita,Pokémon,Pokémon
+ASC,9,Bayleef,Pokémon,Pokémon
+ASC,10,Mega Meganium ex,Pokémon,Pokémon
+ASC,11,Wurmple,Pokémon,Pokémon
+ASC,12,Silcoon,Pokémon,Pokémon
+ASC,13,Beautifly,Pokémon,Pokémon
+ASC,14,Cascoon,Pokémon,Pokémon
+ASC,15,Dustox,Pokémon,Pokémon
+ASC,16,Budew,Pokémon,Pokémon
+ASC,17,Grubbin,Pokémon,Pokémon
+ASC,18,Team Rocket's Tarountula,Pokémon,Pokémon
+ASC,19,Team Rocket's Spidops,Pokémon,Pokémon
+ASC,20,Charmander,Pokémon,Pokémon
+ASC,21,Charmeleon,Pokémon,Pokémon
+ASC,22,Mega Charizard Y ex,Pokémon,Pokémon
+ASC,23,Ethan's Slugma,Pokémon,Pokémon
+ASC,24,Ethan's Magcargo,Pokémon,Pokémon
+ASC,25,Entei,Pokémon,Pokémon
+ASC,26,Ethan's Ho-Oh ex,Pokémon,Pokémon
+ASC,27,Numel,Pokémon,Pokémon
+ASC,28,Camerupt,Pokémon,Pokémon
+ASC,29,Tepig,Pokémon,Pokémon
+ASC,30,Pignite,Pokémon,Pokémon
+ASC,31,Mega Emboar ex,Pokémon,Pokémon
+ASC,32,N's Darumaka,Pokémon,Pokémon
+ASC,33,N's Darmanitan,Pokémon,Pokémon
+ASC,34,Salandit,Pokémon,Pokémon
+ASC,35,Salazzle,Pokémon,Pokémon
+ASC,36,Scorbunny,Pokémon,Pokémon
+ASC,37,Raboot,Pokémon,Pokémon
+ASC,38,Cinderace ex,Pokémon,Pokémon
+ASC,39,Psyduck,Pokémon,Pokémon
+ASC,40,Golduck,Pokémon,Pokémon
+ASC,41,Totodile,Pokémon,Pokémon
+ASC,42,Croconaw,Pokémon,Pokémon
+ASC,43,Mega Feraligatr ex,Pokémon,Pokémon
+ASC,44,Sneasel,Pokémon,Pokémon
+ASC,45,Weavile,Pokémon,Pokémon
+ASC,46,Snorunt,Pokémon,Pokémon
+ASC,47,Mega Froslass ex,Pokémon,Pokémon
+ASC,48,Regice ex,Pokémon,Pokémon
+ASC,49,N's Vanillite,Pokémon,Pokémon
+ASC,50,N's Vanillish,Pokémon,Pokémon
+ASC,51,N's Vanilluxe,Pokémon,Pokémon
+ASC,52,Snom,Pokémon,Pokémon
+ASC,53,Frosmoth,Pokémon,Pokémon
+ASC,54,Glastrier,Pokémon,Pokémon
+ASC,55,Pikachu,Pokémon,Pokémon
+ASC,56,Raichu,Pokémon,Pokémon
+ASC,57,Pikachu ex,Pokémon,Pokémon
+ASC,58,Voltorb ex,Pokémon,Pokémon
+ASC,59,Tynamo,Pokémon,Pokémon
+ASC,60,Eelektrik,Pokémon,Pokémon
+ASC,61,Mega Eelektross ex,Pokémon,Pokémon
+ASC,62,Stunfisk,Pokémon,Pokémon
+ASC,63,Helioptile,Pokémon,Pokémon
+ASC,64,Heliolisk,Pokémon,Pokémon
+ASC,65,Charjabug,Pokémon,Pokémon
+ASC,66,Vikavolt,Pokémon,Pokémon
+ASC,67,Tapu Koko,Pokémon,Pokémon
+ASC,68,Hop's Pincurchin ex,Pokémon,Pokémon
+ASC,69,Iono's Tadbulb,Pokémon,Pokémon
+ASC,70,Iono's Bellibolt ex,Pokémon,Pokémon
+ASC,71,Iono's Wattrel,Pokémon,Pokémon
+ASC,72,Iono's Kilowattrel,Pokémon,Pokémon
+ASC,73,Miraidon ex,Pokémon,Pokémon
+ASC,74,Clefairy,Pokémon,Pokémon
+ASC,75,Clefable,Pokémon,Pokémon
+ASC,76,Lillie's Clefairy ex,Pokémon,Pokémon
+ASC,77,Team Rocket's Exeggcute,Pokémon,Pokémon
+ASC,78,Team Rocket's Exeggutor,Pokémon,Pokémon
+ASC,79,Team Rocket's Mewtwo ex,Pokémon,Pokémon
+ASC,80,Togepi,Pokémon,Pokémon
+ASC,81,Togetic,Pokémon,Pokémon
+ASC,82,Togekiss,Pokémon,Pokémon
+ASC,83,Marill,Pokémon,Pokémon
+ASC,84,Azumarill ex,Pokémon,Pokémon
+ASC,85,Misdreavus,Pokémon,Pokémon
+ASC,86,Mismagius,Pokémon,Pokémon
+ASC,87,Ralts,Pokémon,Pokémon
+ASC,88,Kirlia,Pokémon,Pokémon
+ASC,89,Mega Gardevoir ex,Pokémon,Pokémon
+ASC,90,Shuppet,Pokémon,Pokémon
+ASC,91,Banette,Pokémon,Pokémon
+ASC,92,Rotom,Pokémon,Pokémon
+ASC,93,Swirlix,Pokémon,Pokémon
+ASC,94,Slurpuff,Pokémon,Pokémon
+ASC,95,Hop's Phantump,Pokémon,Pokémon
+ASC,96,Hop's Trevenant,Pokémon,Pokémon
+ASC,97,Team Rocket's Mimikyu,Pokémon,Pokémon
+ASC,98,Spectrier,Pokémon,Pokémon
+ASC,99,Munkidori,Pokémon,Pokémon
+ASC,100,Team Rocket's Diglett,Pokémon,Pokémon
+ASC,101,Team Rocket's Dugtrio,Pokémon,Pokémon
+ASC,102,Hitmontop,Pokémon,Pokémon
+ASC,103,Meditite,Pokémon,Pokémon
+ASC,104,Medicham,Pokémon,Pokémon
+ASC,105,Lunatone,Pokémon,Pokémon
+ASC,106,Solrock,Pokémon,Pokémon
+ASC,107,Regirock ex,Pokémon,Pokémon
+ASC,108,Groudon,Pokémon,Pokémon
+ASC,109,Cynthia's Gible,Pokémon,Pokémon
+ASC,110,Cynthia's Gabite,Pokémon,Pokémon
+ASC,111,Cynthia's Garchomp ex,Pokémon,Pokémon
+ASC,112,Riolu,Pokémon,Pokémon
+ASC,113,Mega Lucario ex,Pokémon,Pokémon
+ASC,114,Stunfisk ex,Pokémon,Pokémon
+ASC,115,Pancham,Pokémon,Pokémon
+ASC,116,Mega Hawlucha ex,Pokémon,Pokémon
+ASC,117,Carbink,Pokémon,Pokémon
+ASC,118,Rolycoly,Pokémon,Pokémon
+ASC,119,Carkol,Pokémon,Pokémon
+ASC,120,Coalossal,Pokémon,Pokémon
+ASC,121,Koraidon ex,Pokémon,Pokémon
+ASC,122,Okidogi,Pokémon,Pokémon
+ASC,123,Gastly,Pokémon,Pokémon
+ASC,124,Haunter,Pokémon,Pokémon
+ASC,125,Mega Gengar ex,Pokémon,Pokémon
+ASC,126,Team Rocket's Murkrow,Pokémon,Pokémon
+ASC,127,Team Rocket's Honchkrow,Pokémon,Pokémon
+ASC,128,Poochyena,Pokémon,Pokémon
+ASC,129,Mightyena,Pokémon,Pokémon
+ASC,130,Galarian Zigzagoon,Pokémon,Pokémon
+ASC,131,Galarian Linoone,Pokémon,Pokémon
+ASC,132,Galarian Obstagoon,Pokémon,Pokémon
+ASC,133,Cynthia's Spiritomb,Pokémon,Pokémon
+ASC,134,Scraggy,Pokémon,Pokémon
+ASC,135,Mega Scrafty ex,Pokémon,Pokémon
+ASC,136,N's Zorua,Pokémon,Pokémon
+ASC,137,N's Zoroark ex,Pokémon,Pokémon
+ASC,138,Vullaby,Pokémon,Pokémon
+ASC,139,Mandibuzz ex,Pokémon,Pokémon
+ASC,140,Pangoro,Pokémon,Pokémon
+ASC,141,Hoopa,Pokémon,Pokémon
+ASC,142,Fezandipiti ex,Pokémon,Pokémon
+ASC,143,Pecharunt,Pokémon,Pokémon
+ASC,144,Mawile,Pokémon,Pokémon
+ASC,145,Registeel ex,Pokémon,Pokémon
+ASC,146,Pawniard,Pokémon,Pokémon
+ASC,147,Bisharp,Pokémon,Pokémon
+ASC,148,Kingambit,Pokémon,Pokémon
+ASC,149,Togedemaru ex,Pokémon,Pokémon
+ASC,150,Dratini,Pokémon,Pokémon
+ASC,151,Dragonair,Pokémon,Pokémon
+ASC,152,Mega Dragonite ex,Pokémon,Pokémon
+ASC,153,Rayquaza,Pokémon,Pokémon
+ASC,154,N's Reshiram,Pokémon,Pokémon
+ASC,155,N's Zekrom,Pokémon,Pokémon
+ASC,156,Noibat,Pokémon,Pokémon
+ASC,157,Noivern,Pokémon,Pokémon
+ASC,158,Dreepy,Pokémon,Pokémon
+ASC,159,Drakloak,Pokémon,Pokémon
+ASC,160,Dragapult ex,Pokémon,Pokémon
+ASC,161,Team Rocket's Meowth,Pokémon,Pokémon
+ASC,162,Team Rocket's Kangaskhan ex,Pokémon,Pokémon
+ASC,163,Larry's Dunsparce,Pokémon,Pokémon
+ASC,164,Larry's Dudunsparce ex,Pokémon,Pokémon
+ASC,165,Skitty,Pokémon,Pokémon
+ASC,166,Delcatty,Pokémon,Pokémon
+ASC,167,Zangoose ex,Pokémon,Pokémon
+ASC,168,Larry's Starly,Pokémon,Pokémon
+ASC,169,Larry's Staravia,Pokémon,Pokémon
+ASC,170,Larry's Staraptor,Pokémon,Pokémon
+ASC,171,Fan Rotom,Pokémon,Pokémon
+ASC,172,Mega Audino ex,Pokémon,Pokémon
+ASC,173,Larry's Rufflet,Pokémon,Pokémon
+ASC,174,Larry's Braviary,Pokémon,Pokémon
+ASC,175,Larry's Komala,Pokémon,Pokémon
+ASC,176,Drampa,Pokémon,Pokémon
+ASC,177,Hop's Cramorant,Pokémon,Pokémon
+ASC,178,Terapagos,Pokémon,Pokémon
+ASC,179,Terapagos ex,Pokémon,Pokémon
+ASC,180,Acerola's Mischief,Trainer,Supporter
+ASC,181,Air Balloon,Trainer,Tool
+ASC,182,Anthea & Concordia,Trainer,Supporter
+ASC,183,Boss's Orders,Trainer,Supporter
+ASC,184,Buddy-Buddy Poffin,Trainer,Item
+ASC,185,Canari,Trainer,Supporter
+ASC,186,Counter Gain,Trainer,Tool
+ASC,187,Fighting Gong,Trainer,Item
+ASC,188,Forest of Vitality,Trainer,Stadium
+ASC,189,Glass Trumpet,Trainer,Item
+ASC,190,Iris's Fighting Spirit,Trainer,Supporter
+ASC,191,Light Ball,Trainer,Tool
+ASC,192,Lillie's Determination,Trainer,Supporter
+ASC,193,Mega Signal,Trainer,Item
+ASC,194,Mystery Garden,Trainer,Stadium
+ASC,195,N's PP Up,Trainer,Item
+ASC,196,Night Stretcher,Trainer,Item
+ASC,197,Nighttime Mine,Trainer,Stadium
+ASC,198,Poké Pad,Trainer,Item
+ASC,199,Premium Power Pro,Trainer,Item
+ASC,200,Surfer,Trainer,Supporter
+ASC,201,Team Rocket's Archer,Trainer,Supporter
+ASC,202,Team Rocket's Ariana,Trainer,Supporter
+ASC,203,Team Rocket's Factory,Trainer,Stadium
+ASC,204,Team Rocket's Giovanni,Trainer,Supporter
+ASC,205,Team Rocket's Great Ball,Trainer,Item
+ASC,206,Team Rocket's Hypnotizer,Trainer,Tool
+ASC,207,Team Rocket's Petrel,Trainer,Supporter
+ASC,208,Team Rocket's Proton,Trainer,Supporter
+ASC,209,Team Rocket's Transceiver,Trainer,Item
+ASC,210,Team Rocket's Watchtower,Trainer,Stadium
+ASC,211,Thick Scale,Trainer,Tool
+ASC,212,Tool Scrapper,Trainer,Item
+ASC,213,Ultra Ball,Trainer,Item
+ASC,214,Urbain,Trainer,Supporter
+ASC,215,Waitress,Trainer,Supporter
+ASC,216,Prism Energy,Energy,Special Energy
+ASC,217,Team Rocket's Energy,Energy,Special Energy
+ASC,218,Erika's Tangela,Pokémon,Pokémon
+ASC,219,Beautifly,Pokémon,Pokémon
+ASC,220,Dustox,Pokémon,Pokémon
+ASC,221,Budew,Pokémon,Pokémon
+ASC,222,Ethan's Magcargo,Pokémon,Pokémon
+ASC,223,Numel,Pokémon,Pokémon
+ASC,224,Salazzle,Pokémon,Pokémon
+ASC,225,Scorbunny,Pokémon,Pokémon
+ASC,226,Psyduck,Pokémon,Pokémon
+ASC,227,Snorunt,Pokémon,Pokémon
+ASC,228,Weavile,Pokémon,Pokémon
+ASC,229,Heliolisk,Pokémon,Pokémon
+ASC,230,Vikavolt,Pokémon,Pokémon
+ASC,231,Iono's Wattrel,Pokémon,Pokémon
+ASC,232,Marill,Pokémon,Pokémon
+ASC,233,Misdreavus,Pokémon,Pokémon
+ASC,234,Banette,Pokémon,Pokémon
+ASC,235,Togekiss,Pokémon,Pokémon
+ASC,236,Slurpuff,Pokémon,Pokémon
+ASC,237,Hop's Trevenant,Pokémon,Pokémon
+ASC,238,Team Rocket's Mimikyu,Pokémon,Pokémon
+ASC,239,Team Rocket's Dugtrio,Pokémon,Pokémon
+ASC,240,Hitmontop,Pokémon,Pokémon
+ASC,241,Medicham,Pokémon,Pokémon
+ASC,242,Carbink,Pokémon,Pokémon
+ASC,243,Mightyena,Pokémon,Pokémon
+ASC,244,Cynthia's Spiritomb,Pokémon,Pokémon
+ASC,245,Galarian Obstagoon,Pokémon,Pokémon
+ASC,246,Mawile,Pokémon,Pokémon
+ASC,247,Dreepy,Pokémon,Pokémon
+ASC,248,Drakloak,Pokémon,Pokémon
+ASC,249,Larry's Staraptor,Pokémon,Pokémon
+ASC,250,Fan Rotom,Pokémon,Pokémon
 CRI,2,Kakuna,Pokémon,Pokémon
 CRI,3,Beedrill ex,Pokémon,Pokémon
 CRI,1,Weedle,Pokémon,Pokémon
@@ -293,194 +371,440 @@ CRI,116,Mega Greninja ex,Pokémon,Pokémon
 CRI,121,Roxie's Performance,Trainer,Supporter
 CRI,111,Prism Tower,Trainer,Stadium
 CRI,122,Mega Greninja ex,Pokémon,Pokémon
-MEG,1,Bulbasaur,Pokémon,Pokémon
-MEG,2,Ivysaur,Pokémon,Pokémon
-MEG,3,Mega Venusaur ex,Pokémon,Pokémon
-MEG,5,Exeggutor,Pokémon,Pokémon
-MEG,4,Exeggcute,Pokémon,Pokémon
-MEG,6,Tangela,Pokémon,Pokémon
-MEG,7,Tangrowth,Pokémon,Pokémon
-MEG,8,Chikorita,Pokémon,Pokémon
-MEG,9,Bayleef,Pokémon,Pokémon
-MEG,10,Meganium,Pokémon,Pokémon
-MEG,11,Shuckle,Pokémon,Pokémon
-MEG,12,Celebi,Pokémon,Pokémon
-MEG,13,Seedot,Pokémon,Pokémon
-MEG,14,Nuzleaf,Pokémon,Pokémon
-MEG,15,Shiftry,Pokémon,Pokémon
-MEG,16,Nincada,Pokémon,Pokémon
-MEG,18,Dhelmise,Pokémon,Pokémon
-MEG,24,Pyroar,Pokémon,Pokémon
-MEG,26,Scorbunny,Pokémon,Pokémon
-MEG,28,Cinderace,Pokémon,Pokémon
-MEG,29,Sizzlipede,Pokémon,Pokémon
-MEG,19,Vulpix,Pokémon,Pokémon
-MEG,21,Numel,Pokémon,Pokémon
-MEG,22,Mega Camerupt ex,Pokémon,Pokémon
-MEG,27,Raboot,Pokémon,Pokémon
-MEG,23,Litleo,Pokémon,Pokémon
-MEG,17,Ninjask,Pokémon,Pokémon
-MEG,20,Ninetales,Pokémon,Pokémon
-MEG,25,Volcanion,Pokémon,Pokémon
-MEG,30,Centiskorch,Pokémon,Pokémon
-MEG,33,Corphish,Pokémon,Pokémon
-MEG,34,Kyogre,Pokémon,Pokémon
-MEG,31,Chi-Yu,Pokémon,Pokémon
-MEG,32,Mantine,Pokémon,Pokémon
-MEG,35,Snover,Pokémon,Pokémon
-MEG,37,Clauncher,Pokémon,Pokémon
-MEG,36,Mega Abomasnow ex,Pokémon,Pokémon
-MEG,38,Clawitzer,Pokémon,Pokémon
-MEG,41,Inteleon,Pokémon,Pokémon
-MEG,39,Sobble,Pokémon,Pokémon
-MEG,40,Drizzile,Pokémon,Pokémon
-MEG,43,Frosmoth,Pokémon,Pokémon
-MEG,44,Eiscue,Pokémon,Pokémon
-MEG,46,Magneton,Pokémon,Pokémon
-MEG,42,Snom,Pokémon,Pokémon
-MEG,45,Magnemite,Pokémon,Pokémon
-MEG,47,Magnezone,Pokémon,Pokémon
-MEG,48,Raikou,Pokémon,Pokémon
-MEG,50,Mega Manectric ex,Pokémon,Pokémon
-MEG,53,Heliolisk,Pokémon,Pokémon
-MEG,55,Kadabra,Pokémon,Pokémon
-MEG,49,Electrike,Pokémon,Pokémon
-MEG,52,Helioptile,Pokémon,Pokémon
-MEG,51,Pachirisu,Pokémon,Pokémon
-MEG,54,Abra,Pokémon,Pokémon
-MEG,56,Alakazam,Pokémon,Pokémon
-MEG,57,Jynx,Pokémon,Pokémon
-MEG,58,Ralts,Pokémon,Pokémon
-MEG,59,Kirlia,Pokémon,Pokémon
-MEG,60,Mega Gardevoir ex,Pokémon,Pokémon
-MEG,61,Shedinja,Pokémon,Pokémon
-MEG,62,Spoink,Pokémon,Pokémon
-MEG,63,Grumpig,Pokémon,Pokémon
-MEG,64,Xerneas,Pokémon,Pokémon
-MEG,65,Greavard,Pokémon,Pokémon
-MEG,67,Gimmighoul,Pokémon,Pokémon
-MEG,66,Houndstone,Pokémon,Pokémon
-MEG,68,Sandshrew,Pokémon,Pokémon
-MEG,72,Makuhita,Pokémon,Pokémon
-MEG,69,Sandslash,Pokémon,Pokémon
-MEG,70,Onix,Pokémon,Pokémon
-MEG,71,Tyrogue,Pokémon,Pokémon
-MEG,73,Hariyama,Pokémon,Pokémon
-MEG,74,Lunatone,Pokémon,Pokémon
-MEG,76,Riolu,Pokémon,Pokémon
-MEG,80,Marshadow,Pokémon,Pokémon
-MEG,78,Croagunk,Pokémon,Pokémon
-MEG,77,Mega Lucario ex,Pokémon,Pokémon
-MEG,75,Solrock,Pokémon,Pokémon
-MEG,79,Toxicroak,Pokémon,Pokémon
-MEG,81,Stonjourner,Pokémon,Pokémon
-MEG,82,Nacli,Pokémon,Pokémon
-MEG,83,Naclstack,Pokémon,Pokémon
-MEG,84,Garganacl,Pokémon,Pokémon
-MEG,85,Crawdaunt,Pokémon,Pokémon
-MEG,86,Mega Absol ex,Pokémon,Pokémon
-MEG,87,Spiritomb,Pokémon,Pokémon
-MEG,88,Yveltal,Pokémon,Pokémon
-MEG,89,Nickit,Pokémon,Pokémon
-MEG,90,Thievul,Pokémon,Pokémon
-MEG,91,Shroodle,Pokémon,Pokémon
-MEG,92,Grafaiai,Pokémon,Pokémon
-MEG,93,Steelix,Pokémon,Pokémon
-MEG,94,Mega Mawile ex,Pokémon,Pokémon
-MEG,95,Dialga,Pokémon,Pokémon
-MEG,96,Tinkatink,Pokémon,Pokémon
-MEG,97,Tinkatuff,Pokémon,Pokémon
-MEG,98,Tinkaton,Pokémon,Pokémon
-MEG,99,Gholdengo,Pokémon,Pokémon
-MEG,100,Mega Latias ex,Pokémon,Pokémon
-MEG,101,Latios,Pokémon,Pokémon
-MEG,102,Spearow,Pokémon,Pokémon
-MEG,103,Fearow,Pokémon,Pokémon
-MEG,104,Mega Kangaskhan ex,Pokémon,Pokémon
-MEG,105,Delibird,Pokémon,Pokémon
-MEG,106,Miltank,Pokémon,Pokémon
-MEG,107,Buneary,Pokémon,Pokémon
-MEG,108,Lopunny,Pokémon,Pokémon
-MEG,109,Yungoos,Pokémon,Pokémon
-MEG,110,Gumshoos,Pokémon,Pokémon
-MEG,111,Stufful,Pokémon,Pokémon
-MEG,112,Bewear,Pokémon,Pokémon
-MEG,113,Acerola's Mischief,Trainer,Supporter
-MEG,114,Boss's Orders,Trainer,Supporter
-MEG,115,Energy Switch,Trainer,Item
-MEG,116,Fighting Gong,Trainer,Item
-MEG,117,Forest of Vitality,Trainer,Stadium
-MEG,118,Iron Defender,Trainer,Item
-MEG,119,Lillie's Determination,Trainer,Supporter
-MEG,120,Lt. Surge's Bargain,Trainer,Supporter
-MEG,121,Mega Signal,Trainer,Item
-MEG,122,Mystery Garden,Trainer,Stadium
-MEG,123,Pokémon Center Lady,Trainer,Supporter
-MEG,124,Premium Power Pro,Trainer,Item
-MEG,125,Rare Candy,Trainer,Item
-MEG,126,Repel,Trainer,Item
-MEG,127,Risky Ruins,Trainer,Stadium
-MEG,128,Strange Timepiece,Trainer,Item
-MEG,129,Surfing Beach,Trainer,Stadium
-MEG,130,Switch,Trainer,Item
-MEG,131,Ultra Ball,Trainer,Item
-MEG,132,Wally's Compassion,Trainer,Supporter
-MEG,133,Bulbasaur,Pokémon,Pokémon
-MEG,134,Ivysaur,Pokémon,Pokémon
-MEG,135,Exeggutor,Pokémon,Pokémon
-MEG,136,Shuckle,Pokémon,Pokémon
-MEG,137,Ninjask,Pokémon,Pokémon
-MEG,138,Vulpix,Pokémon,Pokémon
-MEG,139,Litleo,Pokémon,Pokémon
-MEG,140,Snover,Pokémon,Pokémon
-MEG,141,Clawitzer,Pokémon,Pokémon
-MEG,142,Inteleon,Pokémon,Pokémon
-MEG,143,Helioptile,Pokémon,Pokémon
-MEG,144,Shedinja,Pokémon,Pokémon
-MEG,145,Houndstone,Pokémon,Pokémon
-MEG,146,Marshadow,Pokémon,Pokémon
-MEG,147,Garganacl,Pokémon,Pokémon
-MEG,148,Spiritomb,Pokémon,Pokémon
-MEG,149,Shroodle,Pokémon,Pokémon
-MEG,150,Steelix,Pokémon,Pokémon
-MEG,151,Spearow,Pokémon,Pokémon
-MEG,152,Delibird,Pokémon,Pokémon
-MEG,153,Gumshoos,Pokémon,Pokémon
-MEG,154,Stufful,Pokémon,Pokémon
-MEG,155,Mega Venusaur ex,Pokémon,Pokémon
-MEG,156,Mega Camerupt ex,Pokémon,Pokémon
-MEG,159,Mega Gardevoir ex,Pokémon,Pokémon
-MEG,160,Mega Lucario ex,Pokémon,Pokémon
-MEG,157,Mega Abomasnow ex,Pokémon,Pokémon
-MEG,161,Mega Absol ex,Pokémon,Pokémon
-MEG,158,Mega Manectric ex,Pokémon,Pokémon
-MEG,162,Mega Mawile ex,Pokémon,Pokémon
-MEG,165,Acerola's Mischief,Trainer,Supporter
-MEG,166,Air Balloon,Trainer,Tool
-MEG,167,Buddy-Buddy Poffin,Trainer,Item
-MEG,163,Mega Latias ex,Pokémon,Pokémon
-MEG,164,Mega Kangaskhan ex,Pokémon,Pokémon
-MEG,168,Fighting Gong,Trainer,Item
-MEG,169,Lillie's Determination,Trainer,Supporter
-MEG,170,Lt. Surge's Bargain,Trainer,Supporter
-MEG,171,Mega Signal,Trainer,Item
-MEG,172,Mystery Garden,Trainer,Stadium
-MEG,173,Night Stretcher,Trainer,Item
-MEG,175,Rare Candy,Trainer,Item
-MEG,180,Mega Absol ex,Pokémon,Pokémon
-MEG,184,Lillie's Determination,Trainer,Supporter
-MEG,187,Mega Gardevoir ex,Pokémon,Pokémon
-MEG,181,Mega Latias ex,Pokémon,Pokémon
-MEG,186,Wally's Compassion,Trainer,Supporter
-MEG,174,Premium Power Pro,Trainer,Item
-MEG,176,Wally's Compassion,Trainer,Supporter
-MEG,177,Mega Venusaur ex,Pokémon,Pokémon
-MEG,178,Mega Gardevoir ex,Pokémon,Pokémon
-MEG,182,Mega Kangaskhan ex,Pokémon,Pokémon
-MEG,179,Mega Lucario ex,Pokémon,Pokémon
-MEG,183,Acerola's Mischief,Trainer,Supporter
-MEG,185,Lt. Surge's Bargain,Trainer,Supporter
-MEG,188,Mega Lucario ex,Pokémon,Pokémon
+DRI,1,Ethan's Pinsir,Pokémon,Pokémon
+DRI,2,Yanma,Pokémon,Pokémon
+DRI,3,Yanmega ex,Pokémon,Pokémon
+DRI,4,Pineco,Pokémon,Pokémon
+DRI,5,Shroomish,Pokémon,Pokémon
+DRI,6,Breloom,Pokémon,Pokémon
+DRI,7,Cynthia's Roselia,Pokémon,Pokémon
+DRI,8,Cynthia's Roserade,Pokémon,Pokémon
+DRI,9,Mow Rotom,Pokémon,Pokémon
+DRI,10,Shaymin,Pokémon,Pokémon
+DRI,11,Dwebble,Pokémon,Pokémon
+DRI,12,Crustle,Pokémon,Pokémon
+DRI,13,Fomantis,Pokémon,Pokémon
+DRI,14,Lurantis,Pokémon,Pokémon
+DRI,15,Team Rocket's Blipbug,Pokémon,Pokémon
+DRI,16,Applin,Pokémon,Pokémon
+DRI,17,Dipplin,Pokémon,Pokémon
+DRI,18,Hydrapple,Pokémon,Pokémon
+DRI,19,Team Rocket's Tarountula,Pokémon,Pokémon
+DRI,20,Team Rocket's Spidops,Pokémon,Pokémon
+DRI,21,Smoliv,Pokémon,Pokémon
+DRI,22,Dolliv,Pokémon,Pokémon
+DRI,23,Arboliva ex,Pokémon,Pokémon
+DRI,24,Rellor,Pokémon,Pokémon
+DRI,25,Rabsca ex,Pokémon,Pokémon
+DRI,26,Teal Mask Ogerpon,Pokémon,Pokémon
+DRI,27,Growlithe,Pokémon,Pokémon
+DRI,28,Arcanine,Pokémon,Pokémon
+DRI,29,Ponyta,Pokémon,Pokémon
+DRI,30,Rapidash,Pokémon,Pokémon
+DRI,31,Team Rocket's Moltres ex,Pokémon,Pokémon
+DRI,32,Ethan's Cyndaquil,Pokémon,Pokémon
+DRI,33,Ethan's Quilava,Pokémon,Pokémon
+DRI,34,Ethan's Typhlosion,Pokémon,Pokémon
+DRI,35,Ethan's Slugma,Pokémon,Pokémon
+DRI,36,Ethan's Magcargo,Pokémon,Pokémon
+DRI,37,Team Rocket's Houndour,Pokémon,Pokémon
+DRI,38,Team Rocket's Houndoom,Pokémon,Pokémon
+DRI,39,Ethan's Ho-Oh ex,Pokémon,Pokémon
+DRI,40,Torchic,Pokémon,Pokémon
+DRI,41,Combusken,Pokémon,Pokémon
+DRI,42,Blaziken,Pokémon,Pokémon
+DRI,43,Heat Rotom,Pokémon,Pokémon
+DRI,44,Hearthflame Mask Ogerpon,Pokémon,Pokémon
+DRI,45,Misty's Psyduck,Pokémon,Pokémon
+DRI,46,Misty's Staryu,Pokémon,Pokémon
+DRI,47,Misty's Starmie,Pokémon,Pokémon
+DRI,48,Misty's Magikarp,Pokémon,Pokémon
+DRI,49,Misty's Gyarados,Pokémon,Pokémon
+DRI,50,Misty's Lapras,Pokémon,Pokémon
+DRI,51,Team Rocket's Articuno,Pokémon,Pokémon
+DRI,52,Cynthia's Feebas,Pokémon,Pokémon
+DRI,53,Cynthia's Milotic,Pokémon,Pokémon
+DRI,54,Clamperl,Pokémon,Pokémon
+DRI,55,Huntail,Pokémon,Pokémon
+DRI,56,Gorebyss,Pokémon,Pokémon
+DRI,57,Buizel,Pokémon,Pokémon
+DRI,58,Floatzel,Pokémon,Pokémon
+DRI,59,Snover,Pokémon,Pokémon
+DRI,60,Abomasnow,Pokémon,Pokémon
+DRI,61,Wash Rotom,Pokémon,Pokémon
+DRI,62,Arrokuda,Pokémon,Pokémon
+DRI,63,Barraskewda,Pokémon,Pokémon
+DRI,64,Cetoddle,Pokémon,Pokémon
+DRI,65,Cetitan ex,Pokémon,Pokémon
+DRI,66,Dondozo ex,Pokémon,Pokémon
+DRI,67,Wellspring Mask Ogerpon,Pokémon,Pokémon
+DRI,68,Electabuzz,Pokémon,Pokémon
+DRI,69,Electivire ex,Pokémon,Pokémon
+DRI,70,Team Rocket's Zapdos,Pokémon,Pokémon
+DRI,71,Ethan's Pichu,Pokémon,Pokémon
+DRI,72,Team Rocket's Mareep,Pokémon,Pokémon
+DRI,73,Team Rocket's Flaaffy,Pokémon,Pokémon
+DRI,74,Team Rocket's Ampharos,Pokémon,Pokémon
+DRI,75,Electrike,Pokémon,Pokémon
+DRI,76,Manectric,Pokémon,Pokémon
+DRI,77,Rotom,Pokémon,Pokémon
+DRI,78,Zeraora,Pokémon,Pokémon
+DRI,79,Team Rocket's Drowzee,Pokémon,Pokémon
+DRI,80,Team Rocket's Hypno,Pokémon,Pokémon
+DRI,81,Team Rocket's Mewtwo ex,Pokémon,Pokémon
+DRI,82,Team Rocket's Wobbuffet,Pokémon,Pokémon
+DRI,83,Steven's Baltoy,Pokémon,Pokémon
+DRI,84,Steven's Claydol,Pokémon,Pokémon
+DRI,85,Team Rocket's Chingling,Pokémon,Pokémon
+DRI,86,Steven's Carbink,Pokémon,Pokémon
+DRI,87,Team Rocket's Mimikyu,Pokémon,Pokémon
+DRI,88,Team Rocket's Dottler,Pokémon,Pokémon
+DRI,89,Team Rocket's Orbeetle,Pokémon,Pokémon
+DRI,90,Mankey,Pokémon,Pokémon
+DRI,91,Primeape,Pokémon,Pokémon
+DRI,92,Annihilape,Pokémon,Pokémon
+DRI,93,Ethan's Sudowoodo,Pokémon,Pokémon
+DRI,94,Team Rocket's Larvitar,Pokémon,Pokémon
+DRI,95,Team Rocket's Pupitar,Pokémon,Pokémon
+DRI,96,Team Rocket's Tyranitar,Pokémon,Pokémon
+DRI,97,Nosepass,Pokémon,Pokémon
+DRI,98,Probopass,Pokémon,Pokémon
+DRI,99,Meditite,Pokémon,Pokémon
+DRI,100,Medicham,Pokémon,Pokémon
+DRI,101,Regirock ex,Pokémon,Pokémon
+DRI,102,Cynthia's Gible,Pokémon,Pokémon
+DRI,103,Cynthia's Gabite,Pokémon,Pokémon
+DRI,104,Cynthia's Garchomp ex,Pokémon,Pokémon
+DRI,105,Hippopotas,Pokémon,Pokémon
+DRI,106,Hippowdon,Pokémon,Pokémon
+DRI,107,Mudbray,Pokémon,Pokémon
+DRI,108,Mudsdale,Pokémon,Pokémon
+DRI,109,Arven's Toedscool,Pokémon,Pokémon
+DRI,110,Arven's Toedscruel,Pokémon,Pokémon
+DRI,111,Cornerstone Mask Ogerpon,Pokémon,Pokémon
+DRI,112,Team Rocket's Ekans,Pokémon,Pokémon
+DRI,113,Team Rocket's Arbok,Pokémon,Pokémon
+DRI,114,Team Rocket's Nidoran♀,Pokémon,Pokémon
+DRI,115,Team Rocket's Nidorina,Pokémon,Pokémon
+DRI,116,Team Rocket's Nidoqueen,Pokémon,Pokémon
+DRI,117,Team Rocket's Nidoran♂,Pokémon,Pokémon
+DRI,118,Team Rocket's Nidorino,Pokémon,Pokémon
+DRI,119,Team Rocket's Nidoking ex,Pokémon,Pokémon
+DRI,120,Team Rocket's Zubat,Pokémon,Pokémon
+DRI,121,Team Rocket's Golbat,Pokémon,Pokémon
+DRI,122,Team Rocket's Crobat ex,Pokémon,Pokémon
+DRI,123,Team Rocket's Grimer,Pokémon,Pokémon
+DRI,124,Team Rocket's Muk,Pokémon,Pokémon
+DRI,125,Team Rocket's Koffing,Pokémon,Pokémon
+DRI,126,Team Rocket's Weezing,Pokémon,Pokémon
+DRI,127,Team Rocket's Murkrow,Pokémon,Pokémon
+DRI,128,Team Rocket's Sneasel,Pokémon,Pokémon
+DRI,129,Cynthia's Spiritomb,Pokémon,Pokémon
+DRI,130,Marnie's Purrloin,Pokémon,Pokémon
+DRI,131,Marnie's Liepard,Pokémon,Pokémon
+DRI,132,Marnie's Scraggy,Pokémon,Pokémon
+DRI,133,Marnie's Scrafty,Pokémon,Pokémon
+DRI,134,Marnie's Impidimp,Pokémon,Pokémon
+DRI,135,Marnie's Morgrem,Pokémon,Pokémon
+DRI,136,Marnie's Grimmsnarl ex,Pokémon,Pokémon
+DRI,137,Marnie's Morpeko,Pokémon,Pokémon
+DRI,138,Arven's Maschiff,Pokémon,Pokémon
+DRI,139,Arven's Mabosstiff ex,Pokémon,Pokémon
+DRI,140,Forretress,Pokémon,Pokémon
+DRI,141,Skarmory,Pokémon,Pokémon
+DRI,142,Steven's Skarmory,Pokémon,Pokémon
+DRI,143,Steven's Beldum,Pokémon,Pokémon
+DRI,144,Steven's Metang,Pokémon,Pokémon
+DRI,145,Steven's Metagross ex,Pokémon,Pokémon
+DRI,146,Zamazenta,Pokémon,Pokémon
+DRI,147,Team Rocket's Rattata,Pokémon,Pokémon
+DRI,148,Team Rocket's Raticate,Pokémon,Pokémon
+DRI,149,Team Rocket's Meowth,Pokémon,Pokémon
+DRI,150,Team Rocket's Persian ex,Pokémon,Pokémon
+DRI,151,Kangaskhan,Pokémon,Pokémon
+DRI,152,Tauros,Pokémon,Pokémon
+DRI,153,Team Rocket's Porygon,Pokémon,Pokémon
+DRI,154,Team Rocket's Porygon2,Pokémon,Pokémon
+DRI,155,Team Rocket's Porygon-Z,Pokémon,Pokémon
+DRI,156,Taillow,Pokémon,Pokémon
+DRI,157,Swellow,Pokémon,Pokémon
+DRI,158,Arven's Skwovet,Pokémon,Pokémon
+DRI,159,Arven's Greedent,Pokémon,Pokémon
+DRI,160,Squawkabilly,Pokémon,Pokémon
+DRI,161,Arven's Sandwich,Trainer,Item
+DRI,162,Cynthia's Power Weight,Trainer,Tool
+DRI,163,Emcee's Hype,Trainer,Supporter
+DRI,164,Energy Recycler,Trainer,Item
+DRI,165,Ethan's Adventure,Trainer,Supporter
+DRI,166,Granite Cave,Trainer,Stadium
+DRI,167,Judge,Trainer,Supporter
+DRI,168,Sacred Ash,Trainer,Item
+DRI,169,Spikemuth Gym,Trainer,Stadium
+DRI,170,Team Rocket's Archer,Trainer,Supporter
+DRI,171,Team Rocket's Ariana,Trainer,Supporter
+DRI,172,Team Rocket's Bother-Bot,Trainer,Item
+DRI,173,Team Rocket's Factory,Trainer,Stadium
+DRI,174,Team Rocket's Giovanni,Trainer,Supporter
+DRI,175,Team Rocket's Great Ball,Trainer,Item
+DRI,176,Team Rocket's Petrel,Trainer,Supporter
+DRI,177,Team Rocket's Proton,Trainer,Supporter
+DRI,178,Team Rocket's Transceiver,Trainer,Item
+DRI,179,Team Rocket's Venture Bomb,Trainer,Item
+DRI,180,Team Rocket's Watchtower,Trainer,Stadium
+DRI,181,TM Machine,Trainer,Item
+DRI,182,Team Rocket's Energy,Energy,Special Energy
+DRI,183,Yanma,Pokémon,Pokémon
+DRI,184,Cynthia's Roserade,Pokémon,Pokémon
+DRI,185,Shaymin,Pokémon,Pokémon
+DRI,186,Crustle,Pokémon,Pokémon
+DRI,187,Team Rocket's Spidops,Pokémon,Pokémon
+DRI,188,Hydrapple,Pokémon,Pokémon
+DRI,189,Rapidash,Pokémon,Pokémon
+DRI,190,Ethan's Typhlosion,Pokémon,Pokémon
+DRI,191,Team Rocket's Houndoom,Pokémon,Pokémon
+DRI,192,Blaziken,Pokémon,Pokémon
+DRI,193,Misty's Psyduck,Pokémon,Pokémon
+DRI,194,Misty's Lapras,Pokémon,Pokémon
+DRI,195,Clamperl,Pokémon,Pokémon
+DRI,196,Electrike,Pokémon,Pokémon
+DRI,197,Rotom,Pokémon,Pokémon
+DRI,198,Team Rocket's Orbeetle,Pokémon,Pokémon
+DRI,199,Team Rocket's Weezing,Pokémon,Pokémon
+DRI,200,Team Rocket's Murkrow,Pokémon,Pokémon
+DRI,201,Zamazenta,Pokémon,Pokémon
+DRI,202,Team Rocket's Raticate,Pokémon,Pokémon
+DRI,203,Team Rocket's Meowth,Pokémon,Pokémon
+DRI,204,Kangaskhan,Pokémon,Pokémon
+DRI,205,Arven's Greedent,Pokémon,Pokémon
+DRI,206,Yanmega ex,Pokémon,Pokémon
+DRI,207,Arboliva ex,Pokémon,Pokémon
+DRI,208,Team Rocket's Moltres ex,Pokémon,Pokémon
+DRI,209,Ethan's Ho-Oh ex,Pokémon,Pokémon
+DRI,210,Cetitan ex,Pokémon,Pokémon
+DRI,211,Dondozo ex,Pokémon,Pokémon
+DRI,212,Electivire ex,Pokémon,Pokémon
+DRI,213,Team Rocket's Mewtwo ex,Pokémon,Pokémon
+DRI,214,Regirock ex,Pokémon,Pokémon
+DRI,215,Cynthia's Garchomp ex,Pokémon,Pokémon
+DRI,216,Team Rocket's Nidoking ex,Pokémon,Pokémon
+DRI,217,Team Rocket's Crobat ex,Pokémon,Pokémon
+DRI,218,Arven's Mabosstiff ex,Pokémon,Pokémon
+DRI,219,Team Rocket's Persian ex,Pokémon,Pokémon
+DRI,220,Emcee's Hype,Trainer,Supporter
+DRI,221,Ethan's Adventure,Trainer,Supporter
+DRI,222,Judge,Trainer,Supporter
+DRI,223,Team Rocket's Archer,Trainer,Supporter
+DRI,224,Team Rocket's Ariana,Trainer,Supporter
+DRI,225,Team Rocket's Giovanni,Trainer,Supporter
+DRI,226,Team Rocket's Petrel,Trainer,Supporter
+DRI,227,Team Rocket's Proton,Trainer,Supporter
+DRI,228,Yanmega ex,Pokémon,Pokémon
+DRI,229,Team Rocket's Moltres ex,Pokémon,Pokémon
+DRI,230,Ethan's Ho-Oh ex,Pokémon,Pokémon
+DRI,231,Team Rocket's Mewtwo ex,Pokémon,Pokémon
+DRI,232,Cynthia's Garchomp ex,Pokémon,Pokémon
+DRI,233,Team Rocket's Nidoking ex,Pokémon,Pokémon
+DRI,234,Team Rocket's Crobat ex,Pokémon,Pokémon
+DRI,235,Arven's Mabosstiff ex,Pokémon,Pokémon
+DRI,236,Ethan's Adventure,Trainer,Supporter
+DRI,237,Team Rocket's Ariana,Trainer,Supporter
+DRI,238,Team Rocket's Giovanni,Trainer,Supporter
+DRI,239,Ethan's Ho-Oh ex,Pokémon,Pokémon
+DRI,240,Team Rocket's Mewtwo ex,Pokémon,Pokémon
+DRI,241,Cynthia's Garchomp ex,Pokémon,Pokémon
+DRI,242,Team Rocket's Crobat ex,Pokémon,Pokémon
+DRI,243,Jamming Tower,Trainer,Stadium
+DRI,244,Levincia,Trainer,Stadium
+JTG,1,Caterpie,Pokémon,Pokémon
+JTG,2,Metapod,Pokémon,Pokémon
+JTG,3,Butterfree,Pokémon,Pokémon
+JTG,4,Paras,Pokémon,Pokémon
+JTG,5,Parasect,Pokémon,Pokémon
+JTG,6,Petilil,Pokémon,Pokémon
+JTG,7,Lilligant,Pokémon,Pokémon
+JTG,8,Maractus,Pokémon,Pokémon
+JTG,9,Karrablast,Pokémon,Pokémon
+JTG,10,Foongus,Pokémon,Pokémon
+JTG,11,Amoonguss ex,Pokémon,Pokémon
+JTG,12,Shelmet,Pokémon,Pokémon
+JTG,13,Accelgor,Pokémon,Pokémon
+JTG,14,Durant,Pokémon,Pokémon
+JTG,15,Virizion,Pokémon,Pokémon
+JTG,16,Sprigatito,Pokémon,Pokémon
+JTG,17,Floragato,Pokémon,Pokémon
+JTG,18,Meowscarada,Pokémon,Pokémon
+JTG,19,Nymble,Pokémon,Pokémon
+JTG,20,Magmar,Pokémon,Pokémon
+JTG,21,Magmortar,Pokémon,Pokémon
+JTG,22,Torchic,Pokémon,Pokémon
+JTG,23,Combusken,Pokémon,Pokémon
+JTG,24,Blaziken ex,Pokémon,Pokémon
+JTG,25,Torkoal,Pokémon,Pokémon
+JTG,26,N's Darumaka,Pokémon,Pokémon
+JTG,27,N's Darmanitan,Pokémon,Pokémon
+JTG,28,Larvesta,Pokémon,Pokémon
+JTG,29,Volcarona,Pokémon,Pokémon
+JTG,30,Reshiram ex,Pokémon,Pokémon
+JTG,31,Volcanion ex,Pokémon,Pokémon
+JTG,32,Articuno,Pokémon,Pokémon
+JTG,33,Remoraid,Pokémon,Pokémon
+JTG,34,Octillery,Pokémon,Pokémon
+JTG,35,Lotad,Pokémon,Pokémon
+JTG,36,Lombre,Pokémon,Pokémon
+JTG,37,Ludicolo,Pokémon,Pokémon
+JTG,38,Wingull,Pokémon,Pokémon
+JTG,39,Pelipper,Pokémon,Pokémon
+JTG,40,Wailmer,Pokémon,Pokémon
+JTG,41,Wailord,Pokémon,Pokémon
+JTG,42,Regice,Pokémon,Pokémon
+JTG,43,Veluza ex,Pokémon,Pokémon
+JTG,44,Alolan Geodude,Pokémon,Pokémon
+JTG,45,Alolan Graveler,Pokémon,Pokémon
+JTG,46,Alolan Golem,Pokémon,Pokémon
+JTG,47,Iono's Voltorb,Pokémon,Pokémon
+JTG,48,Iono's Electrode,Pokémon,Pokémon
+JTG,49,N's Joltik,Pokémon,Pokémon
+JTG,50,Togedemaru,Pokémon,Pokémon
+JTG,51,Tapu Koko ex,Pokémon,Pokémon
+JTG,52,Iono's Tadbulb,Pokémon,Pokémon
+JTG,53,Iono's Bellibolt ex,Pokémon,Pokémon
+JTG,54,Iono's Wattrel,Pokémon,Pokémon
+JTG,55,Iono's Kilowattrel,Pokémon,Pokémon
+JTG,56,Lillie's Clefairy ex,Pokémon,Pokémon
+JTG,57,Alolan Marowak,Pokémon,Pokémon
+JTG,58,Mr. Mime,Pokémon,Pokémon
+JTG,59,Shuppet,Pokémon,Pokémon
+JTG,60,Banette,Pokémon,Pokémon
+JTG,61,Beldum,Pokémon,Pokémon
+JTG,62,Metang,Pokémon,Pokémon
+JTG,63,Metagross,Pokémon,Pokémon
+JTG,64,N's Sigilyph,Pokémon,Pokémon
+JTG,65,Oricorio,Pokémon,Pokémon
+JTG,66,Lillie's Cutiefly,Pokémon,Pokémon
+JTG,67,Lillie's Ribombee,Pokémon,Pokémon
+JTG,68,Lillie's Comfey,Pokémon,Pokémon
+JTG,69,Mimikyu ex,Pokémon,Pokémon
+JTG,70,Dhelmise,Pokémon,Pokémon
+JTG,71,Impidimp,Pokémon,Pokémon
+JTG,72,Morgrem,Pokémon,Pokémon
+JTG,73,Grimmsnarl,Pokémon,Pokémon
+JTG,74,Milcery,Pokémon,Pokémon
+JTG,75,Alcremie ex,Pokémon,Pokémon
+JTG,76,Cubone,Pokémon,Pokémon
+JTG,77,Swinub,Pokémon,Pokémon
+JTG,78,Piloswine,Pokémon,Pokémon
+JTG,79,Mamoswine ex,Pokémon,Pokémon
+JTG,80,Larvitar,Pokémon,Pokémon
+JTG,81,Pupitar,Pokémon,Pokémon
+JTG,82,Regirock,Pokémon,Pokémon
+JTG,83,Pancham,Pokémon,Pokémon
+JTG,84,Rockruff,Pokémon,Pokémon
+JTG,85,Lycanroc,Pokémon,Pokémon
+JTG,86,Hop's Silicobra,Pokémon,Pokémon
+JTG,87,Hop's Sandaconda,Pokémon,Pokémon
+JTG,88,Toedscool,Pokémon,Pokémon
+JTG,89,Toedscruel,Pokémon,Pokémon
+JTG,90,Klawf,Pokémon,Pokémon
+JTG,91,Koffing,Pokémon,Pokémon
+JTG,92,Weezing,Pokémon,Pokémon
+JTG,93,Paldean Wooper,Pokémon,Pokémon
+JTG,94,Paldean Clodsire ex,Pokémon,Pokémon
+JTG,95,Tyranitar,Pokémon,Pokémon
+JTG,96,N's Purrloin,Pokémon,Pokémon
+JTG,97,N's Zorua,Pokémon,Pokémon
+JTG,98,N's Zoroark ex,Pokémon,Pokémon
+JTG,99,Pangoro,Pokémon,Pokémon
+JTG,100,Lokix,Pokémon,Pokémon
+JTG,101,Bombirdier,Pokémon,Pokémon
+JTG,102,Escavalier,Pokémon,Pokémon
+JTG,103,N's Klink,Pokémon,Pokémon
+JTG,104,N's Klang,Pokémon,Pokémon
+JTG,105,N's Klinklang,Pokémon,Pokémon
+JTG,106,Galarian Stunfisk,Pokémon,Pokémon
+JTG,107,Magearna,Pokémon,Pokémon
+JTG,108,Hop's Corviknight,Pokémon,Pokémon
+JTG,109,Cufant,Pokémon,Pokémon
+JTG,110,Copperajah,Pokémon,Pokémon
+JTG,111,Hop's Zacian ex,Pokémon,Pokémon
+JTG,112,Bagon,Pokémon,Pokémon
+JTG,113,Shelgon,Pokémon,Pokémon
+JTG,114,Salamence ex,Pokémon,Pokémon
+JTG,115,Druddigon,Pokémon,Pokémon
+JTG,116,N's Reshiram,Pokémon,Pokémon
+JTG,117,Hop's Snorlax,Pokémon,Pokémon
+JTG,118,Sentret,Pokémon,Pokémon
+JTG,119,Furret,Pokémon,Pokémon
+JTG,120,Dunsparce,Pokémon,Pokémon
+JTG,121,Dudunsparce ex,Pokémon,Pokémon
+JTG,122,Kecleon,Pokémon,Pokémon
+JTG,123,Tropius,Pokémon,Pokémon
+JTG,124,Audino,Pokémon,Pokémon
+JTG,125,Minccino,Pokémon,Pokémon
+JTG,126,Cinccino,Pokémon,Pokémon
+JTG,127,Noibat,Pokémon,Pokémon
+JTG,128,Noivern,Pokémon,Pokémon
+JTG,129,Komala,Pokémon,Pokémon
+JTG,130,Drampa,Pokémon,Pokémon
+JTG,131,Skwovet,Pokémon,Pokémon
+JTG,132,Greedent,Pokémon,Pokémon
+JTG,133,Hop's Rookidee,Pokémon,Pokémon
+JTG,134,Hop's Corvisquire,Pokémon,Pokémon
+JTG,135,Hop's Wooloo,Pokémon,Pokémon
+JTG,136,Hop's Dubwool,Pokémon,Pokémon
+JTG,137,Cramorant,Pokémon,Pokémon
+JTG,138,Hop's Cramorant,Pokémon,Pokémon
+JTG,139,Lechonk,Pokémon,Pokémon
+JTG,140,Oinkologne,Pokémon,Pokémon
+JTG,141,Squawkabilly,Pokémon,Pokémon
+JTG,142,Billy & O'Nare,Trainer,Supporter
+JTG,143,Black Belt's Training,Trainer,Supporter
+JTG,144,Black Belt's Training,Trainer,Supporter
+JTG,145,Black Belt's Training,Trainer,Supporter
+JTG,146,Brock's Scouting,Trainer,Supporter
+JTG,147,Hop's Bag,Trainer,Item
+JTG,148,Hop's Choice Band,Trainer,Tool
+JTG,149,Iris's Fighting Spirit,Trainer,Supporter
+JTG,150,Levincia,Trainer,Stadium
+JTG,151,Lillie's Pearl,Trainer,Tool
+JTG,152,N's Castle,Trainer,Stadium
+JTG,153,N's PP Up,Trainer,Item
+JTG,154,Postwick,Trainer,Stadium
+JTG,155,Professor's Research,Trainer,Supporter
+JTG,156,Redeemable Ticket,Trainer,Item
+JTG,157,Ruffian,Trainer,Supporter
+JTG,158,Super Potion,Trainer,Item
+JTG,159,Spiky Energy,Energy,Special Energy
+JTG,160,Maractus,Pokémon,Pokémon
+JTG,161,Articuno,Pokémon,Pokémon
+JTG,162,Wailord,Pokémon,Pokémon
+JTG,163,Iono's Kilowattrel,Pokémon,Pokémon
+JTG,164,Lillie's Ribombee,Pokémon,Pokémon
+JTG,165,Swinub,Pokémon,Pokémon
+JTG,166,Lycanroc,Pokémon,Pokémon
+JTG,167,N's Reshiram,Pokémon,Pokémon
+JTG,168,Furret,Pokémon,Pokémon
+JTG,169,Noibat,Pokémon,Pokémon
+JTG,170,Hop's Wooloo,Pokémon,Pokémon
+JTG,171,Volcanion ex,Pokémon,Pokémon
+JTG,172,Iono's Bellibolt ex,Pokémon,Pokémon
+JTG,173,Lillie's Clefairy ex,Pokémon,Pokémon
+JTG,174,Mamoswine ex,Pokémon,Pokémon
+JTG,175,N's Zoroark ex,Pokémon,Pokémon
+JTG,176,Hop's Zacian ex,Pokémon,Pokémon
+JTG,177,Salamence ex,Pokémon,Pokémon
+JTG,178,Dudunsparce ex,Pokémon,Pokémon
+JTG,179,Brock's Scouting,Trainer,Supporter
+JTG,180,Iris's Fighting Spirit,Trainer,Supporter
+JTG,181,Ruffian,Trainer,Supporter
+JTG,182,Volcanion ex,Pokémon,Pokémon
+JTG,183,Iono's Bellibolt ex,Pokémon,Pokémon
+JTG,184,Lillie's Clefairy ex,Pokémon,Pokémon
+JTG,185,N's Zoroark ex,Pokémon,Pokémon
+JTG,186,Hop's Zacian ex,Pokémon,Pokémon
+JTG,187,Salamence ex,Pokémon,Pokémon
+JTG,188,Iono's Bellibolt ex,Pokémon,Pokémon
+JTG,189,N's Zoroark ex,Pokémon,Pokémon
+JTG,190,Spiky Energy,Energy,Special Energy
 PBL,1,Tropius,Pokémon,Pokémon
 PBL,2,Grubbin,Pokémon,Pokémon
 PBL,3,Fomantis,Pokémon,Pokémon
@@ -731,130 +1055,6 @@ PFL,127,Mega Sharpedo ex,Pokémon,Pokémon
 PFL,128,Mega Lopunny ex,Pokémon,Pokémon
 PFL,129,Dawn,Trainer,Supporter
 PFL,130,Mega Charizard X ex,Pokémon,Pokémon
-POR,1,Spinarak,Pokémon,Pokémon
-POR,7,Scatterbug,Pokémon,Pokémon
-POR,8,Spewpa,Pokémon,Pokémon
-POR,15,Salandit,Pokémon,Pokémon
-POR,16,Salazzle ex,Pokémon,Pokémon
-POR,17,Turtonator,Pokémon,Pokémon
-POR,20,Staryu,Pokémon,Pokémon
-POR,21,Mega Starmie ex,Pokémon,Pokémon
-POR,27,Luxio,Pokémon,Pokémon
-POR,28,Luxray,Pokémon,Pokémon
-POR,32,Mawile,Pokémon,Pokémon
-POR,33,Espurr,Pokémon,Pokémon
-POR,34,Meowstic,Pokémon,Pokémon
-POR,36,Aromatisse,Pokémon,Pokémon
-POR,37,Nosepass,Pokémon,Pokémon
-POR,3,Shaymin,Pokémon,Pokémon
-POR,5,Servine,Pokémon,Pokémon
-POR,10,Rowlet,Pokémon,Pokémon
-POR,13,Fletchinder,Pokémon,Pokémon
-POR,14,Talonflame,Pokémon,Pokémon
-POR,18,Seel,Pokémon,Pokémon
-POR,26,Shinx,Pokémon,Pokémon
-POR,35,Spritzee,Pokémon,Pokémon
-POR,9,Vivillon,Pokémon,Pokémon
-POR,19,Dewgong,Pokémon,Pokémon
-POR,22,Lapras ex,Pokémon,Pokémon
-POR,24,Aurorus,Pokémon,Pokémon
-POR,25,Volcanion,Pokémon,Pokémon
-POR,29,Dedenne,Pokémon,Pokémon
-POR,30,Clefairy,Pokémon,Pokémon
-POR,2,Ariados,Pokémon,Pokémon
-POR,4,Snivy,Pokémon,Pokémon
-POR,6,Serperior,Pokémon,Pokémon
-POR,11,Dartrix,Pokémon,Pokémon
-POR,12,Decidueye ex,Pokémon,Pokémon
-POR,23,Amaura,Pokémon,Pokémon
-POR,31,Mega Clefable ex,Pokémon,Pokémon
-POR,38,Probopass,Pokémon,Pokémon
-POR,39,Hippopotas,Pokémon,Pokémon
-POR,40,Hippowdon,Pokémon,Pokémon
-POR,41,Landorus,Pokémon,Pokémon
-POR,42,Binacle,Pokémon,Pokémon
-POR,43,Barbaracle,Pokémon,Pokémon
-POR,44,Tyrunt,Pokémon,Pokémon
-POR,45,Tyrantrum,Pokémon,Pokémon
-POR,46,Hawlucha,Pokémon,Pokémon
-POR,47,Mega Zygarde ex,Pokémon,Pokémon
-POR,51,Skorupi,Pokémon,Pokémon
-POR,53,Yveltal ex,Pokémon,Pokémon
-POR,55,Mega Skarmory ex,Pokémon,Pokémon
-POR,56,Honedge,Pokémon,Pokémon
-POR,57,Doublade,Pokémon,Pokémon
-POR,48,Gastly,Pokémon,Pokémon
-POR,49,Haunter,Pokémon,Pokémon
-POR,52,Drapion,Pokémon,Pokémon
-POR,58,Aegislash,Pokémon,Pokémon
-POR,59,Klefki,Pokémon,Pokémon
-POR,50,Gengar,Pokémon,Pokémon
-POR,54,Chien-Pao,Pokémon,Pokémon
-POR,60,Rattata,Pokémon,Pokémon
-POR,62,Meowth ex,Pokémon,Pokémon
-POR,61,Raticate,Pokémon,Pokémon
-POR,63,Snorlax,Pokémon,Pokémon
-POR,64,Bunnelby,Pokémon,Pokémon
-POR,65,Diggersby,Pokémon,Pokémon
-POR,66,Fletchling,Pokémon,Pokémon
-POR,67,Furfrou,Pokémon,Pokémon
-POR,68,Antique Jaw Fossil,Trainer,Item
-POR,69,Antique Sail Fossil,Trainer,Item
-POR,70,Core Memory,Trainer,Tool
-POR,71,Crushing Hammer,Trainer,Item
-POR,72,Energy Search,Trainer,Item
-POR,73,Energy Swatter,Trainer,Item
-POR,74,Hole-Digging Shovel,Trainer,Item
-POR,75,Jacinthe,Trainer,Supporter
-POR,76,Judge,Trainer,Supporter
-POR,77,Lumiose City,Trainer,Stadium
-POR,79,Naveen,Trainer,Supporter
-POR,78,Lumiose Galette,Trainer,Item
-POR,80,Poké Ball,Trainer,Item
-POR,81,Poké Pad,Trainer,Item
-POR,82,Pokémon Catcher,Trainer,Item
-POR,83,Potion,Trainer,Item
-POR,84,Rosa's Encouragement,Trainer,Supporter
-POR,85,Tarragon,Trainer,Supporter
-POR,86,Growing Grass Energy,Energy,Special Energy
-POR,87,Rocky Fighting Energy,Energy,Special Energy
-POR,88,Telepathic Psychic Energy,Energy,Special Energy
-POR,89,Spewpa,Pokémon,Pokémon
-POR,90,Rowlet,Pokémon,Pokémon
-POR,91,Talonflame,Pokémon,Pokémon
-POR,92,Aurorus,Pokémon,Pokémon
-POR,93,Dedenne,Pokémon,Pokémon
-POR,94,Clefairy,Pokémon,Pokémon
-POR,95,Espurr,Pokémon,Pokémon
-POR,96,Probopass,Pokémon,Pokémon
-POR,97,Drapion,Pokémon,Pokémon
-POR,98,Doublade,Pokémon,Pokémon
-POR,99,Raticate,Pokémon,Pokémon
-POR,100,Decidueye ex,Pokémon,Pokémon
-POR,101,Salazzle ex,Pokémon,Pokémon
-POR,102,Mega Starmie ex,Pokémon,Pokémon
-POR,103,Mega Clefable ex,Pokémon,Pokémon
-POR,104,Mega Zygarde ex,Pokémon,Pokémon
-POR,105,Yveltal ex,Pokémon,Pokémon
-POR,106,Mega Skarmory ex,Pokémon,Pokémon
-POR,107,Meowth ex,Pokémon,Pokémon
-POR,108,Energy Recycler,Trainer,Item
-POR,109,Forest of Vitality,Trainer,Stadium
-POR,110,Jacinthe,Trainer,Supporter
-POR,111,Lumiose City,Trainer,Stadium
-POR,112,Naveen,Trainer,Supporter
-POR,113,Poké Pad,Trainer,Item
-POR,114,Rosa's Encouragement,Trainer,Supporter
-POR,115,Sacred Ash,Trainer,Item
-POR,116,Tarragon,Trainer,Supporter
-POR,117,Wondrous Patch,Trainer,Item
-POR,118,Mega Starmie ex,Pokémon,Pokémon
-POR,119,Mega Clefable ex,Pokémon,Pokémon
-POR,120,Mega Zygarde ex,Pokémon,Pokémon
-POR,121,Meowth ex,Pokémon,Pokémon
-POR,122,Jacinthe,Trainer,Supporter
-POR,123,Rosa's Encouragement,Trainer,Supporter
-POR,124,Mega Zygarde ex,Pokémon,Pokémon
 PRE,3,Pinsir,Pokémon,Pokémon
 PRE,2,Exeggutor,Pokémon,Pokémon
 PRE,1,Exeggcute,Pokémon,Pokémon
