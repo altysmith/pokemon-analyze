@@ -1,4 +1,48 @@
 source,tournament_id,labs_id,tournament_name,date,deck,day1,day2,conversion_rate,wins,losses,ties,tie_adjusted_win_rate
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult,172,22,0.12790697674418605,541,581,155,0.4641085878360741
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dusknoir,81,8,0.09876543209876543,229,289,54,0.4318181818181818
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Blaziken,76,10,0.13157894736842105,252,261,83,0.46923937360178974
+major,major-515,0071,World Championships 2026,2026-08-28,Basic Box,73,18,0.2465753424657534,280,266,47,0.4985947161326588
+major,major-515,0071,World Championships 2026,2026-08-28,N's Zoroark,58,12,0.20689655172413793,214,215,42,0.4840764331210191
+major,major-515,0071,World Championships 2026,2026-08-28,Alakazam Dudunsparce,53,14,0.2641509433962264,218,159,70,0.5398956002982849
+major,major-515,0071,World Championships 2026,2026-08-28,Slowking,47,11,0.23404255319148937,181,164,39,0.5052083333333334
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Excadrill,32,8,0.25,112,122,20,0.4671916010498688
+major,major-515,0071,World Championships 2026,2026-08-28,Raging Bolt Ogerpon,24,3,0.125,81,88,15,0.4673913043478261
+major,major-515,0071,World Championships 2026,2026-08-28,Festival Lead,22,5,0.22727272727272727,74,78,16,0.4722222222222222
+major,major-515,0071,World Championships 2026,2026-08-28,Crustle,20,8,0.4,103,59,27,0.5925925925925926
+major,major-515,0071,World Championships 2026,2026-08-28,Ogerpon Meganium Hydrapple,12,1,0.08333333333333333,49,41,10,0.5233333333333333
+major,major-515,0071,World Championships 2026,2026-08-28,Clefairy Ogerpon,10,3,0.3,44,35,5,0.5436507936507936
+major,major-515,0071,World Championships 2026,2026-08-28,Dhelmise,8,2,0.25,27,26,9,0.4838709677419355
+major,major-515,0071,World Championships 2026,2026-08-28,Grimmsnarl Froslass,7,0,0.0,11,29,5,0.28148148148148144
+major,major-515,0071,World Championships 2026,2026-08-28,Kangaskhan Bouffalant,7,1,0.14285714285714285,19,21,8,0.4513888888888889
+major,major-515,0071,World Championships 2026,2026-08-28,Ogerpon Meganium Arboliva,6,0,0.0,16,23,5,0.40151515151515155
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Lucario,5,0,0.0,18,18,1,0.4954954954954955
+major,major-515,0071,World Championships 2026,2026-08-28,Alakazam Dusknoir,4,2,0.5,26,11,2,0.6837606837606838
+major,major-515,0071,World Championships 2026,2026-08-28,Cynthia's Garchomp,4,0,0.0,5,13,3,0.2857142857142857
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dudunsparce,4,1,0.25,16,13,3,0.53125
+major,major-515,0071,World Championships 2026,2026-08-28,Lillie's Clefairy,4,1,0.25,15,13,1,0.5287356321839081
+major,major-515,0071,World Championships 2026,2026-08-28,Other,4,0,0.0,9,8,0,0.5294117647058824
+major,major-515,0071,World Championships 2026,2026-08-28,Seaking Festival Lead,4,1,0.25,16,12,3,0.5483870967741935
+major,major-515,0071,World Championships 2026,2026-08-28,Lopunny Dudunsparce,3,2,0.6666666666666666,13,9,5,0.5432098765432098
+major,major-515,0071,World Championships 2026,2026-08-28,Lopunny Dusknoir,3,1,0.3333333333333333,9,13,2,0.40277777777777773
+major,major-515,0071,World Championships 2026,2026-08-28,Lucario Hariyama,3,2,0.6666666666666666,14,15,2,0.47311827956989244
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Venusaur,3,1,0.3333333333333333,11,14,3,0.42857142857142855
+major,major-515,0071,World Championships 2026,2026-08-28,Metagross,3,0,0.0,7,8,5,0.4333333333333333
+major,major-515,0071,World Championships 2026,2026-08-28,Ethan's Typhlosion,2,0,0.0,7,6,1,0.5238095238095238
+major,major-515,0071,World Championships 2026,2026-08-28,Froslass Munkidori,2,0,0.0,5,9,2,0.3541666666666667
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Chandelure,2,1,0.5,8,8,4,0.4666666666666667
+major,major-515,0071,World Championships 2026,2026-08-28,Rocket's Mewtwo,2,1,0.5,8,8,2,0.48148148148148145
+major,major-515,0071,World Championships 2026,2026-08-28,Starmie Froslass,2,0,0.0,4,7,0,0.36363636363636365
+major,major-515,0071,World Championships 2026,2026-08-28,Toucannon,2,0,0.0,6,9,1,0.3958333333333333
+major,major-515,0071,World Championships 2026,2026-08-28,Toxtricity Box,2,1,0.5,12,5,3,0.65
+major,major-515,0071,World Championships 2026,2026-08-28,Dudunsparce Control,1,0,0.0,5,3,0,0.625
+major,major-515,0071,World Championships 2026,2026-08-28,Greninja,1,0,0.0,4,4,0,0.5
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Absol Box,1,0,0.0,4,3,1,0.5416666666666666
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Greninja,1,0,0.0,4,4,0,0.5
+major,major-515,0071,World Championships 2026,2026-08-28,Rocket's Honchkrow,1,0,0.0,4,3,1,0.5416666666666666
+major,major-515,0071,World Championships 2026,2026-08-28,Sharpedo Toxtricity,1,1,1.0,8,3,1,0.6944444444444445
+major,major-515,0071,World Championships 2026,2026-08-28,Tera Box,1,0,0.0,3,2,3,0.5
+major,major-515,0071,World Championships 2026,2026-08-28,Toxtricity Brute Bonnet,1,0,0.0,1,3,4,0.29166666666666663
 major,major-518,0070,"NAIC 2026, New Orleans",2026-06-10,Dragapult,749,240,0.3204272363150868,3278,2466,1021,0.534860803153486
 major,major-518,0070,"NAIC 2026, New Orleans",2026-06-10,Dragapult Dusknoir,374,58,0.15508021390374332,1266,1258,316,0.4828638497652582
 major,major-518,0070,"NAIC 2026, New Orleans",2026-06-10,Ogerpon Meganium Hydrapple,232,31,0.1336206896551724,700,777,232,0.45484688901891945
@@ -215,47 +259,6 @@ major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Mega Manectric,1,0,0
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Paldean Tauros,1,0,0.0,0,2,2,0.16666666666666666
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Raging Bolt Bellibolt,1,0,0.0,2,3,1,0.3888888888888889
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Toxtricity Box,1,0,0.0,3,3,0,0.5
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult,97,16,0.16494845360824742,318,311,147,0.4729381443298969
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dudunsparce,46,11,0.2391304347826087,167,139,76,0.5034904013961606
-major,major-536,0067,Special Event Lima,2026-05-23,Raging Bolt Ogerpon,32,7,0.21875,120,113,27,0.49615384615384617
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dusknoir,28,7,0.25,108,87,39,0.5170940170940171
-major,major-536,0067,Special Event Lima,2026-05-23,N's Zoroark,28,3,0.10714285714285714,79,87,50,0.44290123456790126
-major,major-536,0067,Special Event Lima,2026-05-23,Alakazam Dudunsparce,26,5,0.19230769230769232,75,81,45,0.44776119402985076
-major,major-536,0067,Special Event Lima,2026-05-23,Lopunny Dudunsparce,25,6,0.24,73,87,37,0.43316412859560066
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Blaziken,24,4,0.16666666666666666,71,77,39,0.44919786096256686
-major,major-536,0067,Special Event Lima,2026-05-23,Basic Box,20,4,0.2,72,67,27,0.4879518072289157
-major,major-536,0067,Special Event Lima,2026-05-23,Lucario Hariyama,16,2,0.125,43,59,20,0.40710382513661203
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Mewtwo,15,2,0.13333333333333333,40,46,22,0.4382716049382716
-major,major-536,0067,Special Event Lima,2026-05-23,Cynthia's Garchomp,13,1,0.07692307692307693,40,40,19,0.46801346801346805
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Hydrapple,12,3,0.25,43,43,16,0.47385620915032683
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Honchkrow,12,2,0.16666666666666666,45,34,23,0.5163398692810457
-major,major-536,0067,Special Event Lima,2026-05-23,Festival Lead,11,3,0.2727272727272727,45,34,15,0.5319148936170213
-major,major-536,0067,Special Event Lima,2026-05-23,Starmie Froslass,11,2,0.18181818181818182,43,37,10,0.5148148148148148
-major,major-536,0067,Special Event Lima,2026-05-23,Greninja,7,2,0.2857142857142857,29,25,8,0.510752688172043
-major,major-536,0067,Special Event Lima,2026-05-23,Clefairy Ogerpon,6,1,0.16666666666666666,22,21,8,0.48366013071895425
-major,major-536,0067,Special Event Lima,2026-05-23,Grimmsnarl Froslass,6,0,0.0,12,23,11,0.34057971014492755
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Arboliva,6,2,0.3333333333333333,24,20,7,0.5163398692810457
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Lucario,5,1,0.2,17,19,7,0.44961240310077516
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Starmie,5,1,0.2,13,18,6,0.40540540540540543
-major,major-536,0067,Special Event Lima,2026-05-23,Slowking,5,1,0.2,23,12,7,0.6031746031746031
-major,major-536,0067,Special Event Lima,2026-05-23,Crustle,3,1,0.3333333333333333,14,7,4,0.6133333333333334
-major,major-536,0067,Special Event Lima,2026-05-23,Flareon Noctowl,3,0,0.0,5,11,3,0.3157894736842105
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Venusaur,3,0,0.0,7,15,2,0.3194444444444445
-major,major-536,0067,Special Event Lima,2026-05-23,Hop's Trevenant,2,0,0.0,1,12,0,0.07692307692307693
-major,major-536,0067,Special Event Lima,2026-05-23,Okidogi Barbaracle,2,1,0.5,11,5,3,0.631578947368421
-major,major-536,0067,Special Event Lima,2026-05-23,Starmie Dusknoir,2,0,0.0,8,7,1,0.5208333333333334
-major,major-536,0067,Special Event Lima,2026-05-23,Tera Box,2,0,0.0,5,5,4,0.4523809523809524
-major,major-536,0067,Special Event Lima,2026-05-23,Yanmega,2,0,0.0,4,8,3,0.3333333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Feraligatr,1,0,0.0,1,4,3,0.25
-major,major-536,0067,Special Event Lima,2026-05-23,Hop's Zacian,1,0,0.0,4,4,0,0.5
-major,major-536,0067,Special Event Lima,2026-05-23,Joltik Box,1,0,0.0,3,4,0,0.42857142857142855
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Froslass,1,0,0.0,1,7,0,0.125
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium,1,0,0.0,4,3,1,0.5416666666666666
-major,major-536,0067,Special Event Lima,2026-05-23,Other,1,0,0.0,3,5,0,0.375
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Spidops,1,0,0.0,3,3,2,0.4583333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Steven's Metagross,1,0,0.0,3,4,1,0.4166666666666667
-major,major-536,0067,Special Event Lima,2026-05-23,Toxtricity Box,1,0,0.0,3,3,2,0.4583333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Ursaluna Lunatone,1,0,0.0,2,5,1,0.2916666666666667
 major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult,96,32,0.3333333333333333,419,298,137,0.5441061670569868
 major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult Dusknoir,84,28,0.3333333333333333,362,298,67,0.5286565795506648
 major,major-550,0066,Regional Melbourne,2026-05-23,N's Zoroark,65,9,0.13846153846153847,203,237,59,0.4462257849031396
@@ -317,6 +320,47 @@ major,major-550,0066,Regional Melbourne,2026-05-23,Rocket's Spidops,1,0,0.0,2,3,
 major,major-550,0066,Regional Melbourne,2026-05-23,Steven's Metagross,1,0,0.0,3,3,2,0.4583333333333333
 major,major-550,0066,Regional Melbourne,2026-05-23,Toxtricity Box,1,1,1.0,8,2,2,0.7222222222222222
 major,major-550,0066,Regional Melbourne,2026-05-23,Zygarde Barbaracle,1,0,0.0,0,3,0,0.0
+major,major-536,0067,Special Event Lima,2026-05-23,Dragapult,97,16,0.16494845360824742,318,311,147,0.4729381443298969
+major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dudunsparce,46,11,0.2391304347826087,167,139,76,0.5034904013961606
+major,major-536,0067,Special Event Lima,2026-05-23,Raging Bolt Ogerpon,32,7,0.21875,120,113,27,0.49615384615384617
+major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dusknoir,28,7,0.25,108,87,39,0.5170940170940171
+major,major-536,0067,Special Event Lima,2026-05-23,N's Zoroark,28,3,0.10714285714285714,79,87,50,0.44290123456790126
+major,major-536,0067,Special Event Lima,2026-05-23,Alakazam Dudunsparce,26,5,0.19230769230769232,75,81,45,0.44776119402985076
+major,major-536,0067,Special Event Lima,2026-05-23,Lopunny Dudunsparce,25,6,0.24,73,87,37,0.43316412859560066
+major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Blaziken,24,4,0.16666666666666666,71,77,39,0.44919786096256686
+major,major-536,0067,Special Event Lima,2026-05-23,Basic Box,20,4,0.2,72,67,27,0.4879518072289157
+major,major-536,0067,Special Event Lima,2026-05-23,Lucario Hariyama,16,2,0.125,43,59,20,0.40710382513661203
+major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Mewtwo,15,2,0.13333333333333333,40,46,22,0.4382716049382716
+major,major-536,0067,Special Event Lima,2026-05-23,Cynthia's Garchomp,13,1,0.07692307692307693,40,40,19,0.46801346801346805
+major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Hydrapple,12,3,0.25,43,43,16,0.47385620915032683
+major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Honchkrow,12,2,0.16666666666666666,45,34,23,0.5163398692810457
+major,major-536,0067,Special Event Lima,2026-05-23,Festival Lead,11,3,0.2727272727272727,45,34,15,0.5319148936170213
+major,major-536,0067,Special Event Lima,2026-05-23,Starmie Froslass,11,2,0.18181818181818182,43,37,10,0.5148148148148148
+major,major-536,0067,Special Event Lima,2026-05-23,Greninja,7,2,0.2857142857142857,29,25,8,0.510752688172043
+major,major-536,0067,Special Event Lima,2026-05-23,Clefairy Ogerpon,6,1,0.16666666666666666,22,21,8,0.48366013071895425
+major,major-536,0067,Special Event Lima,2026-05-23,Grimmsnarl Froslass,6,0,0.0,12,23,11,0.34057971014492755
+major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Arboliva,6,2,0.3333333333333333,24,20,7,0.5163398692810457
+major,major-536,0067,Special Event Lima,2026-05-23,Mega Lucario,5,1,0.2,17,19,7,0.44961240310077516
+major,major-536,0067,Special Event Lima,2026-05-23,Mega Starmie,5,1,0.2,13,18,6,0.40540540540540543
+major,major-536,0067,Special Event Lima,2026-05-23,Slowking,5,1,0.2,23,12,7,0.6031746031746031
+major,major-536,0067,Special Event Lima,2026-05-23,Crustle,3,1,0.3333333333333333,14,7,4,0.6133333333333334
+major,major-536,0067,Special Event Lima,2026-05-23,Flareon Noctowl,3,0,0.0,5,11,3,0.3157894736842105
+major,major-536,0067,Special Event Lima,2026-05-23,Mega Venusaur,3,0,0.0,7,15,2,0.3194444444444445
+major,major-536,0067,Special Event Lima,2026-05-23,Hop's Trevenant,2,0,0.0,1,12,0,0.07692307692307693
+major,major-536,0067,Special Event Lima,2026-05-23,Okidogi Barbaracle,2,1,0.5,11,5,3,0.631578947368421
+major,major-536,0067,Special Event Lima,2026-05-23,Starmie Dusknoir,2,0,0.0,8,7,1,0.5208333333333334
+major,major-536,0067,Special Event Lima,2026-05-23,Tera Box,2,0,0.0,5,5,4,0.4523809523809524
+major,major-536,0067,Special Event Lima,2026-05-23,Yanmega,2,0,0.0,4,8,3,0.3333333333333333
+major,major-536,0067,Special Event Lima,2026-05-23,Feraligatr,1,0,0.0,1,4,3,0.25
+major,major-536,0067,Special Event Lima,2026-05-23,Hop's Zacian,1,0,0.0,4,4,0,0.5
+major,major-536,0067,Special Event Lima,2026-05-23,Joltik Box,1,0,0.0,3,4,0,0.42857142857142855
+major,major-536,0067,Special Event Lima,2026-05-23,Mega Froslass,1,0,0.0,1,7,0,0.125
+major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium,1,0,0.0,4,3,1,0.5416666666666666
+major,major-536,0067,Special Event Lima,2026-05-23,Other,1,0,0.0,3,5,0,0.375
+major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Spidops,1,0,0.0,3,3,2,0.4583333333333333
+major,major-536,0067,Special Event Lima,2026-05-23,Steven's Metagross,1,0,0.0,3,4,1,0.4166666666666667
+major,major-536,0067,Special Event Lima,2026-05-23,Toxtricity Box,1,0,0.0,3,3,2,0.4583333333333333
+major,major-536,0067,Special Event Lima,2026-05-23,Ursaluna Lunatone,1,0,0.0,2,5,1,0.2916666666666667
 major,major-535,0064,Regional Utrecht,2026-05-16,Dragapult,180,46,0.25555555555555554,745,610,266,0.5142915895537734
 major,major-535,0064,Regional Utrecht,2026-05-16,Raging Bolt Ogerpon,136,35,0.25735294117647056,592,497,141,0.5195121951219512
 major,major-535,0064,Regional Utrecht,2026-05-16,Dragapult Dusknoir,134,26,0.19402985074626866,490,487,168,0.47685589519650656
