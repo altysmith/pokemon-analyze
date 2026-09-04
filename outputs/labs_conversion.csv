@@ -1,44 +1,46 @@
 source,tournament_id,labs_id,tournament_name,date,deck,day1,day2,conversion_rate,wins,losses,ties,tie_adjusted_win_rate
-major,major-515,0071,World Championships 2026,2026-08-28,Dragapult,172,22,0.12790697674418605,541,581,155,0.4641085878360741
-major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dusknoir,81,8,0.09876543209876543,229,289,54,0.4318181818181818
-major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Blaziken,76,10,0.13157894736842105,252,261,83,0.46923937360178974
-major,major-515,0071,World Championships 2026,2026-08-28,Basic Box,73,18,0.2465753424657534,280,266,47,0.4985947161326588
-major,major-515,0071,World Championships 2026,2026-08-28,N's Zoroark,58,12,0.20689655172413793,214,215,42,0.4840764331210191
-major,major-515,0071,World Championships 2026,2026-08-28,Alakazam Dudunsparce,53,14,0.2641509433962264,218,159,70,0.5398956002982849
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult,178,22,0.12359550561797752,553,601,162,0.4612462006079027
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dusknoir,83,8,0.0963855421686747,236,297,55,0.43253968253968256
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Blaziken,78,11,0.14102564102564102,261,269,86,0.4702380952380953
+major,major-515,0071,World Championships 2026,2026-08-28,Basic Box,74,18,0.24324324324324326,284,269,48,0.49916805324459235
+major,major-515,0071,World Championships 2026,2026-08-28,N's Zoroark,60,12,0.2,221,223,43,0.4832306639288159
+major,major-515,0071,World Championships 2026,2026-08-28,Alakazam Dudunsparce,54,14,0.25925925925925924,220,165,70,0.5347985347985348
 major,major-515,0071,World Championships 2026,2026-08-28,Slowking,47,11,0.23404255319148937,181,164,39,0.5052083333333334
 major,major-515,0071,World Championships 2026,2026-08-28,Mega Excadrill,32,8,0.25,112,122,20,0.4671916010498688
-major,major-515,0071,World Championships 2026,2026-08-28,Raging Bolt Ogerpon,24,3,0.125,81,88,15,0.4673913043478261
-major,major-515,0071,World Championships 2026,2026-08-28,Festival Lead,22,5,0.22727272727272727,74,78,16,0.4722222222222222
+major,major-515,0071,World Championships 2026,2026-08-28,Raging Bolt Ogerpon,25,3,0.12,84,92,16,0.46527777777777773
+major,major-515,0071,World Championships 2026,2026-08-28,Festival Lead,23,5,0.21739130434782608,78,82,16,0.47348484848484845
 major,major-515,0071,World Championships 2026,2026-08-28,Crustle,20,8,0.4,103,59,27,0.5925925925925926
 major,major-515,0071,World Championships 2026,2026-08-28,Ogerpon Meganium Hydrapple,12,1,0.08333333333333333,49,41,10,0.5233333333333333
-major,major-515,0071,World Championships 2026,2026-08-28,Clefairy Ogerpon,10,3,0.3,44,35,5,0.5436507936507936
+major,major-515,0071,World Championships 2026,2026-08-28,Clefairy Ogerpon,11,3,0.2727272727272727,47,39,6,0.532608695652174
 major,major-515,0071,World Championships 2026,2026-08-28,Dhelmise,8,2,0.25,27,26,9,0.4838709677419355
 major,major-515,0071,World Championships 2026,2026-08-28,Grimmsnarl Froslass,7,0,0.0,11,29,5,0.28148148148148144
 major,major-515,0071,World Championships 2026,2026-08-28,Kangaskhan Bouffalant,7,1,0.14285714285714285,19,21,8,0.4513888888888889
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Lucario,6,0,0.0,22,21,2,0.5037037037037038
 major,major-515,0071,World Championships 2026,2026-08-28,Ogerpon Meganium Arboliva,6,0,0.0,16,23,5,0.40151515151515155
-major,major-515,0071,World Championships 2026,2026-08-28,Mega Lucario,5,0,0.0,18,18,1,0.4954954954954955
+major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dudunsparce,5,1,0.2,17,16,3,0.5
+major,major-515,0071,World Championships 2026,2026-08-28,Other,5,1,0.2,17,12,0,0.5862068965517241
 major,major-515,0071,World Championships 2026,2026-08-28,Alakazam Dusknoir,4,2,0.5,26,11,2,0.6837606837606838
 major,major-515,0071,World Championships 2026,2026-08-28,Cynthia's Garchomp,4,0,0.0,5,13,3,0.2857142857142857
-major,major-515,0071,World Championships 2026,2026-08-28,Dragapult Dudunsparce,4,1,0.25,16,13,3,0.53125
 major,major-515,0071,World Championships 2026,2026-08-28,Lillie's Clefairy,4,1,0.25,15,13,1,0.5287356321839081
-major,major-515,0071,World Championships 2026,2026-08-28,Other,4,0,0.0,9,8,0,0.5294117647058824
 major,major-515,0071,World Championships 2026,2026-08-28,Seaking Festival Lead,4,1,0.25,16,12,3,0.5483870967741935
 major,major-515,0071,World Championships 2026,2026-08-28,Lopunny Dudunsparce,3,2,0.6666666666666666,13,9,5,0.5432098765432098
 major,major-515,0071,World Championships 2026,2026-08-28,Lopunny Dusknoir,3,1,0.3333333333333333,9,13,2,0.40277777777777773
 major,major-515,0071,World Championships 2026,2026-08-28,Lucario Hariyama,3,2,0.6666666666666666,14,15,2,0.47311827956989244
 major,major-515,0071,World Championships 2026,2026-08-28,Mega Venusaur,3,1,0.3333333333333333,11,14,3,0.42857142857142855
 major,major-515,0071,World Championships 2026,2026-08-28,Metagross,3,0,0.0,7,8,5,0.4333333333333333
+major,major-515,0071,World Championships 2026,2026-08-28,Rocket's Mewtwo,3,1,0.3333333333333333,12,11,3,0.5
 major,major-515,0071,World Championships 2026,2026-08-28,Ethan's Typhlosion,2,0,0.0,7,6,1,0.5238095238095238
 major,major-515,0071,World Championships 2026,2026-08-28,Froslass Munkidori,2,0,0.0,5,9,2,0.3541666666666667
 major,major-515,0071,World Championships 2026,2026-08-28,Mega Chandelure,2,1,0.5,8,8,4,0.4666666666666667
-major,major-515,0071,World Championships 2026,2026-08-28,Rocket's Mewtwo,2,1,0.5,8,8,2,0.48148148148148145
 major,major-515,0071,World Championships 2026,2026-08-28,Starmie Froslass,2,0,0.0,4,7,0,0.36363636363636365
 major,major-515,0071,World Championships 2026,2026-08-28,Toucannon,2,0,0.0,6,9,1,0.3958333333333333
 major,major-515,0071,World Championships 2026,2026-08-28,Toxtricity Box,2,1,0.5,12,5,3,0.65
 major,major-515,0071,World Championships 2026,2026-08-28,Dudunsparce Control,1,0,0.0,5,3,0,0.625
 major,major-515,0071,World Championships 2026,2026-08-28,Greninja,1,0,0.0,4,4,0,0.5
 major,major-515,0071,World Championships 2026,2026-08-28,Mega Absol Box,1,0,0.0,4,3,1,0.5416666666666666
+major,major-515,0071,World Championships 2026,2026-08-28,Mega Dragonite,1,0,0.0,2,5,1,0.2916666666666667
 major,major-515,0071,World Championships 2026,2026-08-28,Mega Greninja,1,0,0.0,4,4,0,0.5
+major,major-515,0071,World Championships 2026,2026-08-28,Ogerpon Meganium,1,0,0.0,2,3,3,0.375
 major,major-515,0071,World Championships 2026,2026-08-28,Rocket's Honchkrow,1,0,0.0,4,3,1,0.5416666666666666
 major,major-515,0071,World Championships 2026,2026-08-28,Sharpedo Toxtricity,1,1,1.0,8,3,1,0.6944444444444445
 major,major-515,0071,World Championships 2026,2026-08-28,Tera Box,1,0,0.0,3,2,3,0.5
