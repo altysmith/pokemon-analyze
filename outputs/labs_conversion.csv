@@ -1,4 +1,67 @@
 source,tournament_id,labs_id,tournament_name,date,deck,day1,day2,conversion_rate,wins,losses,ties,tie_adjusted_win_rate
+major,major-580,0075,Regional Recife,2026-10-03,Dragapult,250,44,0.176,919,789,362,0.5022544283413849
+major,major-580,0075,Regional Recife,2026-10-03,N's Zoroark,79,31,0.3924050632911392,367,282,111,0.531578947368421
+major,major-580,0075,Regional Recife,2026-10-03,Alakazam Dudunsparce,66,9,0.13636363636363635,216,214,96,0.4714828897338403
+major,major-580,0075,Regional Recife,2026-10-03,Basic Box,63,15,0.23809523809523808,251,233,51,0.5009345794392523
+major,major-580,0075,Regional Recife,2026-10-03,Dragapult Dusknoir,60,6,0.1,175,219,66,0.4282608695652174
+major,major-580,0075,Regional Recife,2026-10-03,Slowking,48,15,0.3125,194,187,56,0.486651411136537
+major,major-580,0075,Regional Recife,2026-10-03,Mega Excadrill,44,9,0.20454545454545456,136,163,64,0.433425160697888
+major,major-580,0075,Regional Recife,2026-10-03,Dragapult Blaziken,43,3,0.06976744186046512,138,132,54,0.48148148148148145
+major,major-580,0075,Regional Recife,2026-10-03,Crustle,34,8,0.23529411764705882,134,118,48,0.5
+major,major-580,0075,Regional Recife,2026-10-03,Ogerpon Meganium Hydrapple,33,6,0.18181818181818182,123,114,39,0.4927536231884058
+major,major-580,0075,Regional Recife,2026-10-03,Lucario Hariyama,31,3,0.0967741935483871,74,101,29,0.4101307189542484
+major,major-580,0075,Regional Recife,2026-10-03,Alakazam Dusknoir,29,6,0.20689655172413793,100,102,25,0.47723935389133626
+major,major-580,0075,Regional Recife,2026-10-03,Festival Lead,29,8,0.27586206896551724,120,98,36,0.5196850393700787
+major,major-580,0075,Regional Recife,2026-10-03,Dhelmise,25,1,0.04,63,85,34,0.4084249084249084
+major,major-580,0075,Regional Recife,2026-10-03,Cynthia's Garchomp,22,3,0.13636363636363635,79,72,34,0.48828828828828824
+major,major-580,0075,Regional Recife,2026-10-03,Lopunny Dudunsparce,17,2,0.11764705882352941,60,59,22,0.4775413711583924
+major,major-580,0075,Regional Recife,2026-10-03,Lopunny Dusknoir,16,1,0.0625,46,63,6,0.41739130434782606
+major,major-580,0075,Regional Recife,2026-10-03,Grimmsnarl Froslass,15,0,0.0,27,55,7,0.3295880149812734
+major,major-580,0075,Regional Recife,2026-10-03,Mega Lucario,13,0,0.0,28,50,11,0.3558052434456929
+major,major-580,0075,Regional Recife,2026-10-03,Raging Bolt Ogerpon,13,1,0.07692307692307693,41,43,11,0.4701754385964912
+major,major-580,0075,Regional Recife,2026-10-03,Sharpedo Toxtricity,13,4,0.3076923076923077,50,42,27,0.4957983193277311
+major,major-580,0075,Regional Recife,2026-10-03,Rocket's Mewtwo,12,4,0.3333333333333333,42,45,19,0.4559748427672956
+major,major-580,0075,Regional Recife,2026-10-03,Rocket's Honchkrow,12,4,0.3333333333333333,48,40,18,0.5094339622641509
+major,major-580,0075,Regional Recife,2026-10-03,Other,8,0,0.0,14,33,4,0.3006535947712418
+major,major-580,0075,Regional Recife,2026-10-03,Mega Chandelure,7,1,0.14285714285714285,17,30,9,0.35714285714285715
+major,major-580,0075,Regional Recife,2026-10-03,Starmie Froslass,6,0,0.0,18,25,4,0.41134751773049644
+major,major-580,0075,Regional Recife,2026-10-03,Ceruledge,5,1,0.2,15,18,4,0.44144144144144143
+major,major-580,0075,Regional Recife,2026-10-03,Dragapult Dudunsparce,5,0,0.0,7,17,3,0.2962962962962963
+major,major-580,0075,Regional Recife,2026-10-03,Ethan's Typhlosion,5,0,0.0,11,22,2,0.3333333333333333
+major,major-580,0075,Regional Recife,2026-10-03,Greninja,5,0,0.0,12,17,4,0.40404040404040403
+major,major-580,0075,Regional Recife,2026-10-03,Mega Starmie,5,1,0.2,15,19,6,0.425
+major,major-580,0075,Regional Recife,2026-10-03,Mew Box,5,2,0.4,23,19,7,0.5170068027210885
+major,major-580,0075,Regional Recife,2026-10-03,Mega Venusaur,4,0,0.0,9,15,5,0.367816091954023
+major,major-580,0075,Regional Recife,2026-10-03,Toxtricity,4,0,0.0,4,18,3,0.2
+major,major-580,0075,Regional Recife,2026-10-03,Beedrill,3,0,0.0,8,10,5,0.42028985507246375
+major,major-580,0075,Regional Recife,2026-10-03,Hop's Zacian,3,0,0.0,6,10,6,0.36363636363636365
+major,major-580,0075,Regional Recife,2026-10-03,Kangaskhan Bouffalant,3,2,0.6666666666666666,14,13,7,0.48039215686274506
+major,major-580,0075,Regional Recife,2026-10-03,Steven's Metagross,3,1,0.3333333333333333,12,11,6,0.4827586206896552
+major,major-580,0075,Regional Recife,2026-10-03,Flareon Noctowl,2,0,0.0,2,9,2,0.20512820512820512
+major,major-580,0075,Regional Recife,2026-10-03,Hop's Trevenant,2,1,0.5,7,9,3,0.42105263157894735
+major,major-580,0075,Regional Recife,2026-10-03,Joltik Box,2,0,0.0,4,4,5,0.4358974358974359
+major,major-580,0075,Regional Recife,2026-10-03,Mega Absol Box,2,0,0.0,5,7,0,0.4166666666666667
+major,major-580,0075,Regional Recife,2026-10-03,Mega Dragonite,2,0,0.0,5,4,0,0.5555555555555556
+major,major-580,0075,Regional Recife,2026-10-03,Mega Greninja,2,0,0.0,4,7,1,0.3611111111111111
+major,major-580,0075,Regional Recife,2026-10-03,Ogerpon Meganium Arboliva,2,1,0.5,16,6,1,0.7101449275362318
+major,major-580,0075,Regional Recife,2026-10-03,Seaking Festival Lead,2,0,0.0,4,7,3,0.35714285714285715
+major,major-580,0075,Regional Recife,2026-10-03,Starmie Dusknoir,2,0,0.0,4,9,1,0.3095238095238095
+major,major-580,0075,Regional Recife,2026-10-03,Alakazam,1,0,0.0,2,6,0,0.25
+major,major-580,0075,Regional Recife,2026-10-03,Alolan Exeggutor ex,1,0,0.0,1,3,0,0.25
+major,major-580,0075,Regional Recife,2026-10-03,Cinccino,1,1,1.0,7,5,1,0.5641025641025641
+major,major-580,0075,Regional Recife,2026-10-03,Clefairy Ogerpon,1,0,0.0,4,4,0,0.5
+major,major-580,0075,Regional Recife,2026-10-03,Diancie Dusknoir,1,0,0.0,1,5,0,0.16666666666666666
+major,major-580,0075,Regional Recife,2026-10-03,Dragonite Eelektrik,1,0,0.0,1,5,1,0.19047619047619047
+major,major-580,0075,Regional Recife,2026-10-03,Lillie's Clefairy,1,0,0.0,1,3,0,0.25
+major,major-580,0075,Regional Recife,2026-10-03,Manectric Eelektrik,1,0,0.0,2,5,1,0.2916666666666667
+major,major-580,0075,Regional Recife,2026-10-03,Mega Darkrai,1,0,0.0,2,4,0,0.3333333333333333
+major,major-580,0075,Regional Recife,2026-10-03,Mega Feraligatr,1,0,0.0,1,6,1,0.16666666666666666
+major,major-580,0075,Regional Recife,2026-10-03,Metagross,1,1,1.0,6,4,3,0.5384615384615384
+major,major-580,0075,Regional Recife,2026-10-03,Misty's Gyarados,1,0,0.0,0,1,2,0.2222222222222222
+major,major-580,0075,Regional Recife,2026-10-03,Okidogi Barbaracle,1,0,0.0,1,5,0,0.16666666666666666
+major,major-580,0075,Regional Recife,2026-10-03,Rocket's Spidops,1,0,0.0,2,4,0,0.3333333333333333
+major,major-580,0075,Regional Recife,2026-10-03,Toxtricity Box,1,0,0.0,3,4,1,0.4166666666666667
+major,major-580,0075,Regional Recife,2026-10-03,Ursaluna Lunatone,1,0,0.0,1,6,0,0.14285714285714285
 major,major-579,0074,Regional Frankfurt,2026-09-26,Dragapult,427,88,0.20608899297423888,1680,1441,633,0.5037293553542888
 major,major-579,0074,Regional Frankfurt,2026-09-26,N's Zoroark,188,42,0.22340425531914893,714,654,266,0.49122807017543857
 major,major-579,0074,Regional Frankfurt,2026-09-26,Dragapult Dusknoir,176,33,0.1875,654,683,181,0.4705753184014054
@@ -14,7 +77,7 @@ major,major-579,0074,Regional Frankfurt,2026-09-26,Crustle,88,15,0.1704545454545
 major,major-579,0074,Regional Frankfurt,2026-09-26,Lopunny Dudunsparce,83,13,0.1566265060240964,274,297,114,0.4554744525547445
 major,major-579,0074,Regional Frankfurt,2026-09-26,Lucario Hariyama,69,12,0.17391304347826086,235,265,68,0.4536384976525822
 major,major-579,0074,Regional Frankfurt,2026-09-26,Rocket's Honchkrow,62,11,0.1774193548387097,214,209,88,0.4761904761904762
-major,major-579,0074,Regional Frankfurt,2026-09-26,Lopunny Dusknoir,51,13,0.2549019607843137,216,205,42,0.49676025917926564
+major,major-579,0074,Regional Frankfurt,2026-09-26,Lopunny Dusknoir,53,13,0.24528301886792453,223,213,43,0.4954766875434934
 major,major-579,0074,Regional Frankfurt,2026-09-26,Sharpedo Toxtricity,42,6,0.14285714285714285,135,164,49,0.43486590038314177
 major,major-579,0074,Regional Frankfurt,2026-09-26,Grimmsnarl Froslass,37,5,0.13513513513513514,108,126,63,0.43434343434343436
 major,major-579,0074,Regional Frankfurt,2026-09-26,Mega Lucario,35,4,0.11428571428571428,109,123,44,0.44806763285024154
@@ -31,8 +94,8 @@ major,major-579,0074,Regional Frankfurt,2026-09-26,Ethan's Typhlosion,18,1,0.055
 major,major-579,0074,Regional Frankfurt,2026-09-26,Mega Chandelure,16,1,0.0625,40,57,28,0.39466666666666667
 major,major-579,0074,Regional Frankfurt,2026-09-26,Greninja,15,2,0.13333333333333333,52,54,15,0.47107438016528924
 major,major-579,0074,Regional Frankfurt,2026-09-26,Hop's Trevenant,14,3,0.21428571428571427,53,46,26,0.4933333333333333
-major,major-579,0074,Regional Frankfurt,2026-09-26,Mew Box,14,4,0.2857142857142857,65,55,11,0.5241730279898219
 major,major-579,0074,Regional Frankfurt,2026-09-26,Mega Venusaur,12,1,0.08333333333333333,22,41,20,0.3453815261044177
+major,major-579,0074,Regional Frankfurt,2026-09-26,Mew Box,12,4,0.3333333333333333,58,47,10,0.5333333333333333
 major,major-579,0074,Regional Frankfurt,2026-09-26,Toxtricity Box,11,1,0.09090909090909091,33,39,12,0.44047619047619047
 major,major-579,0074,Regional Frankfurt,2026-09-26,Beedrill,10,2,0.2,30,42,12,0.40476190476190477
 major,major-579,0074,Regional Frankfurt,2026-09-26,Starmie Froslass,9,1,0.1111111111111111,28,32,5,0.45641025641025645
@@ -94,8 +157,8 @@ major,major-578,0073,Regional Brisbane,2026-09-26,Ogerpon Meganium Hydrapple,25,
 major,major-578,0073,Regional Brisbane,2026-09-26,Dragapult Blaziken,24,3,0.125,92,75,30,0.5177664974619289
 major,major-578,0073,Regional Brisbane,2026-09-26,Lucario Hariyama,19,1,0.05263157894736842,49,79,10,0.37922705314009664
 major,major-578,0073,Regional Brisbane,2026-09-26,Rocket's Honchkrow,15,4,0.26666666666666666,56,50,16,0.5027322404371585
+major,major-578,0073,Regional Brisbane,2026-09-26,Other,14,0,0.0,23,56,15,0.2978723404255319
 major,major-578,0073,Regional Brisbane,2026-09-26,Cynthia's Garchomp,13,3,0.23076923076923078,47,51,9,0.4672897196261682
-major,major-578,0073,Regional Brisbane,2026-09-26,Other,13,0,0.0,19,52,15,0.27906976744186046
 major,major-578,0073,Regional Brisbane,2026-09-26,Lopunny Dudunsparce,12,1,0.08333333333333333,35,35,18,0.4659090909090909
 major,major-578,0073,Regional Brisbane,2026-09-26,Mega Lucario,11,3,0.2727272727272727,41,40,8,0.49063670411985016
 major,major-578,0073,Regional Brisbane,2026-09-26,Lopunny Dusknoir,9,2,0.2222222222222222,35,32,6,0.5068493150684932
@@ -117,7 +180,6 @@ major,major-578,0073,Regional Brisbane,2026-09-26,Toxtricity Box,4,0,0.0,10,16,4
 major,major-578,0073,Regional Brisbane,2026-09-26,Cinccino,3,0,0.0,4,11,2,0.27450980392156865
 major,major-578,0073,Regional Brisbane,2026-09-26,Dragapult Dudunsparce,3,2,0.6666666666666666,19,12,0,0.6129032258064516
 major,major-578,0073,Regional Brisbane,2026-09-26,Hop's Trevenant,3,1,0.3333333333333333,9,13,6,0.39285714285714285
-major,major-578,0073,Regional Brisbane,2026-09-26,Mew Box,3,0,0.0,10,13,1,0.4305555555555556
 major,major-578,0073,Regional Brisbane,2026-09-26,Ogerpon Meganium Arboliva,3,0,0.0,11,8,5,0.5277777777777778
 major,major-578,0073,Regional Brisbane,2026-09-26,Seaking Festival Lead,3,2,0.6666666666666666,20,8,4,0.6666666666666666
 major,major-578,0073,Regional Brisbane,2026-09-26,Doublade,2,0,0.0,2,4,1,0.33333333333333337
@@ -128,6 +190,7 @@ major,major-578,0073,Regional Brisbane,2026-09-26,Manectric Eelektrik,2,0,0.0,1,
 major,major-578,0073,Regional Brisbane,2026-09-26,Mega Darkrai,2,0,0.0,3,9,1,0.25641025641025644
 major,major-578,0073,Regional Brisbane,2026-09-26,Mega Starmie,2,0,0.0,7,6,3,0.5
 major,major-578,0073,Regional Brisbane,2026-09-26,Metagross,2,0,0.0,8,7,1,0.5208333333333334
+major,major-578,0073,Regional Brisbane,2026-09-26,Mew Box,2,0,0.0,6,9,1,0.3958333333333333
 major,major-578,0073,Regional Brisbane,2026-09-26,Yanmega,2,0,0.0,5,9,2,0.3541666666666667
 major,major-578,0073,Regional Brisbane,2026-09-26,Archaludon,1,0,0.0,1,6,0,0.14285714285714285
 major,major-578,0073,Regional Brisbane,2026-09-26,Blaziken Zoroark,1,0,0.0,4,2,2,0.5833333333333334
@@ -500,67 +563,6 @@ major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Mega Manectric,1,0,0
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Paldean Tauros,1,0,0.0,0,2,2,0.16666666666666666
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Raging Bolt Bellibolt,1,0,0.0,2,3,1,0.3888888888888889
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Toxtricity Box,1,0,0.0,3,3,0,0.5
-major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult,96,32,0.3333333333333333,419,298,137,0.5441061670569868
-major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult Dusknoir,84,28,0.3333333333333333,362,298,67,0.5286565795506648
-major,major-550,0066,Regional Melbourne,2026-05-23,N's Zoroark,65,9,0.13846153846153847,203,237,59,0.4462257849031396
-major,major-550,0066,Regional Melbourne,2026-05-23,Lopunny Dudunsparce,54,6,0.1111111111111111,166,178,65,0.458842705786471
-major,major-550,0066,Regional Melbourne,2026-05-23,Rocket's Honchkrow,54,9,0.16666666666666666,157,185,60,0.44029850746268656
-major,major-550,0066,Regional Melbourne,2026-05-23,Raging Bolt Ogerpon,52,11,0.21153846153846154,197,177,46,0.5055555555555555
-major,major-550,0066,Regional Melbourne,2026-05-23,Rocket's Mewtwo,47,7,0.14893617021276595,151,167,53,0.4546271338724169
-major,major-550,0066,Regional Melbourne,2026-05-23,Ogerpon Meganium Hydrapple,45,8,0.17777777777777778,169,162,42,0.4906166219839142
-major,major-550,0066,Regional Melbourne,2026-05-23,Festival Lead,41,13,0.3170731707317073,185,141,39,0.5424657534246575
-major,major-550,0066,Regional Melbourne,2026-05-23,Lucario Hariyama,40,1,0.025,109,140,31,0.4261904761904762
-major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult Blaziken,35,4,0.11428571428571428,105,119,41,0.4477987421383648
-major,major-550,0066,Regional Melbourne,2026-05-23,Cynthia's Garchomp,34,3,0.08823529411764706,102,124,34,0.4358974358974359
-major,major-550,0066,Regional Melbourne,2026-05-23,Alakazam Dudunsparce,33,7,0.21212121212121213,120,108,37,0.49937106918239
-major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult Dudunsparce,30,6,0.2,115,97,36,0.5120967741935484
-major,major-550,0066,Regional Melbourne,2026-05-23,Basic Box,27,10,0.37037037037037035,123,97,29,0.5327978580990629
-major,major-550,0066,Regional Melbourne,2026-05-23,Slowking,22,7,0.3181818181818182,79,73,22,0.4961685823754789
-major,major-550,0066,Regional Melbourne,2026-05-23,Starmie Dusknoir,22,1,0.045454545454545456,64,98,2,0.39430894308943093
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Lucario,17,5,0.29411764705882354,70,69,14,0.4880174291938998
-major,major-550,0066,Regional Melbourne,2026-05-23,Ogerpon Meganium Arboliva,14,1,0.07142857142857142,46,47,19,0.46726190476190477
-major,major-550,0066,Regional Melbourne,2026-05-23,Other,14,0,0.0,34,57,9,0.37
-major,major-550,0066,Regional Melbourne,2026-05-23,Grimmsnarl Froslass,13,4,0.3076923076923077,51,45,16,0.5029761904761905
-major,major-550,0066,Regional Melbourne,2026-05-23,Starmie Froslass,13,0,0.0,39,49,6,0.43617021276595747
-major,major-550,0066,Regional Melbourne,2026-05-23,Greninja,11,2,0.18181818181818182,46,37,3,0.5465116279069767
-major,major-550,0066,Regional Melbourne,2026-05-23,Ceruledge,10,1,0.1,26,39,10,0.3911111111111111
-major,major-550,0066,Regional Melbourne,2026-05-23,Crustle,8,0,0.0,24,27,8,0.4519774011299435
-major,major-550,0066,Regional Melbourne,2026-05-23,Ethan's Typhlosion,7,0,0.0,14,23,13,0.36666666666666664
-major,major-550,0066,Regional Melbourne,2026-05-23,Okidogi Barbaracle,6,1,0.16666666666666666,19,17,13,0.47619047619047616
-major,major-550,0066,Regional Melbourne,2026-05-23,Clefairy Ogerpon,5,0,0.0,13,18,3,0.4117647058823529
-major,major-550,0066,Regional Melbourne,2026-05-23,Diancie Dusknoir,5,0,0.0,12,18,2,0.3958333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Flareon Noctowl,4,0,0.0,9,18,2,0.3333333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Hop's Trevenant,4,0,0.0,10,13,4,0.4197530864197531
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Venusaur,4,0,0.0,5,13,3,0.2857142857142857
-major,major-550,0066,Regional Melbourne,2026-05-23,Hydreigon,3,0,0.0,7,13,3,0.34782608695652173
-major,major-550,0066,Regional Melbourne,2026-05-23,Sharpedo Toxtricity,3,0,0.0,5,10,5,0.33333333333333337
-major,major-550,0066,Regional Melbourne,2026-05-23,Ursaluna Lunatone,3,0,0.0,8,10,3,0.42857142857142855
-major,major-550,0066,Regional Melbourne,2026-05-23,Doublade,2,0,0.0,2,8,5,0.24444444444444446
-major,major-550,0066,Regional Melbourne,2026-05-23,Flareon,2,0,0.0,5,8,3,0.375
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Abomasnow,2,0,0.0,1,6,0,0.14285714285714285
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Absol Box,2,0,0.0,3,7,2,0.3055555555555555
-major,major-550,0066,Regional Melbourne,2026-05-23,Ogerpon Meganium,2,1,0.5,8,5,3,0.5625
-major,major-550,0066,Regional Melbourne,2026-05-23,Tera Box,2,1,0.5,12,7,1,0.6166666666666667
-major,major-550,0066,Regional Melbourne,2026-05-23,Yanmega,2,0,0.0,5,6,2,0.4358974358974359
-major,major-550,0066,Regional Melbourne,2026-05-23,Archaludon,1,0,0.0,4,4,0,0.5
-major,major-550,0066,Regional Melbourne,2026-05-23,Archaludon Zoroark,1,0,0.0,2,5,1,0.2916666666666667
-major,major-550,0066,Regional Melbourne,2026-05-23,Blaziken,1,0,0.0,3,3,2,0.4583333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Bronzong,1,0,0.0,3,3,2,0.4583333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Decidueye,1,0,0.0,0,1,0,0.0
-major,major-550,0066,Regional Melbourne,2026-05-23,Dragapult Froslass,1,0,0.0,2,4,2,0.3333333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Eelektrik,1,0,0.0,2,5,1,0.2916666666666667
-major,major-550,0066,Regional Melbourne,2026-05-23,Froslass Munkidori,1,0,0.0,0,4,0,0.0
-major,major-550,0066,Regional Melbourne,2026-05-23,Hydrapple Ogerpon,1,0,0.0,0,2,0,0.0
-major,major-550,0066,Regional Melbourne,2026-05-23,Jellicent Dusknoir,1,0,0.0,3,3,2,0.4583333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Kangaskhan Bouffalant,1,0,0.0,0,4,0,0.0
-major,major-550,0066,Regional Melbourne,2026-05-23,Marnie's Grimmsnarl,1,0,0.0,1,6,0,0.14285714285714285
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Lopunny,1,0,0.0,1,3,0,0.25
-major,major-550,0066,Regional Melbourne,2026-05-23,Mega Starmie,1,0,0.0,0,6,0,0.0
-major,major-550,0066,Regional Melbourne,2026-05-23,Misty's Gyarados,1,0,0.0,2,3,3,0.375
-major,major-550,0066,Regional Melbourne,2026-05-23,Rocket's Spidops,1,0,0.0,2,3,1,0.3888888888888889
-major,major-550,0066,Regional Melbourne,2026-05-23,Steven's Metagross,1,0,0.0,3,3,2,0.4583333333333333
-major,major-550,0066,Regional Melbourne,2026-05-23,Toxtricity Box,1,1,1.0,8,2,2,0.7222222222222222
-major,major-550,0066,Regional Melbourne,2026-05-23,Zygarde Barbaracle,1,0,0.0,0,3,0,0.0
 major,major-536,0067,Special Event Lima,2026-05-23,Dragapult,97,16,0.16494845360824742,318,311,147,0.4729381443298969
 major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dudunsparce,46,11,0.2391304347826087,167,139,76,0.5034904013961606
 major,major-536,0067,Special Event Lima,2026-05-23,Raging Bolt Ogerpon,32,7,0.21875,120,113,27,0.49615384615384617
