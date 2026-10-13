@@ -21,6 +21,10 @@ export default async function Home() {
           <div className="rounded-xl border border-[#cdd7cd] bg-[#e5efe8] px-4 py-3 text-sm font-semibold text-[#33694b]">{events.length} events · {events.reduce((sum, event) => sum + event.playerTotal, 0).toLocaleString()} decks</div>
         </div>
         <SeasonTrends events={events} />
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d7d5cc] bg-white px-5 py-4">
+          <p className="text-sm text-[#52616b]">Want to see every deck in the 2027 field?</p>
+          <a href="/rankings" className="inline-flex min-h-11 items-center font-semibold text-[#27566a] underline underline-offset-4 hover:text-[#18323d] focus:outline-none focus:ring-2 focus:ring-[#3485a4]">View full deck ranking →</a>
+        </div>
         <footer className="mt-12 border-t border-[#d2d0c6] pt-5 text-xs text-[#78858a]">Data: <a className="underline" href="https://labs.limitlesstcg.com/" target="_blank" rel="noreferrer">Limitless Labs</a> · Independent Pokémon TCG analysis.</footer>
       </div>
     </main>
