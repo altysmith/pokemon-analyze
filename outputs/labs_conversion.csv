@@ -1,4 +1,86 @@
 source,tournament_id,labs_id,tournament_name,date,deck,day1,day2,conversion_rate,wins,losses,ties,tie_adjusted_win_rate
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dragapult,543,141,0.2596685082872928,2179,1795,693,0.5163916863081208
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Basic Box,223,43,0.19282511210762332,837,766,186,0.5025153717160424
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Slowking,205,46,0.22439024390243903,760,736,184,0.48888888888888893
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Alakazam Dudunsparce,162,26,0.16049382716049382,491,534,198,0.455437448896157
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,N's Zoroark,150,33,0.22,513,509,176,0.47718419588202554
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Excadrill,147,15,0.10204081632653061,407,493,143,0.4359220198146373
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dhelmise,114,22,0.19298245614035087,420,362,134,0.507278020378457
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dragapult Dusknoir,113,17,0.1504424778761062,353,406,93,0.4507042253521127
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ogerpon Meganium Hydrapple,113,18,0.1592920353982301,370,363,159,0.4742152466367713
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dragapult Blaziken,112,28,0.25,435,380,125,0.5070921985815603
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Alakazam Dusknoir,79,16,0.20253164556962025,258,280,57,0.46554621848739497
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Sharpedo Toxtricity,75,11,0.14666666666666667,258,244,64,0.4935217903415783
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Lopunny Dudunsparce,74,13,0.17567567567567569,247,247,78,0.4772727272727273
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Festival Lead,73,18,0.2465753424657534,276,256,60,0.5
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Crustle,69,16,0.2318840579710145,251,237,83,0.4880326911850555
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Lopunny Dusknoir,67,8,0.11940298507462686,192,239,40,0.43595187544232133
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Lucario Hariyama,65,14,0.2153846153846154,230,235,52,0.47840103159252095
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Rocket's Honchkrow,61,11,0.18032786885245902,200,189,91,0.4798611111111111
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Cynthia's Garchomp,43,4,0.09302325581395349,104,144,34,0.408983451536643
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Other,28,1,0.03571428571428571,46,105,25,0.3087121212121212
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Lucario,27,1,0.037037037037037035,72,87,30,0.43386243386243384
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Rocket's Mewtwo,27,2,0.07407407407407407,65,92,24,0.40331491712707185
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Greninja,25,1,0.04,60,94,21,0.38285714285714284
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Raging Bolt Ogerpon,24,1,0.041666666666666664,55,89,19,0.37627811860940696
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ogerpon Meganium Arboliva,21,4,0.19047619047619047,77,73,18,0.49404761904761907
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Grimmsnarl Froslass,19,6,0.3157894736842105,84,71,23,0.5149812734082397
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ceruledge,18,3,0.16666666666666666,44,71,8,0.37940379403794033
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ethan's Typhlosion,18,1,0.05555555555555555,46,70,14,0.38974358974358975
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mew Box,18,6,0.3333333333333333,84,62,16,0.5514403292181069
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dragapult Dudunsparce,15,0,0.0,23,51,13,0.31417624521072796
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Seaking Festival Lead,14,5,0.35714285714285715,63,50,18,0.5267175572519084
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Chandelure,13,0,0.0,30,49,7,0.375968992248062
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Beedrill,11,1,0.09090909090909091,29,37,9,0.4266666666666667
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Hop's Trevenant,11,2,0.18181818181818182,32,38,10,0.4416666666666667
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Starmie,11,1,0.09090909090909091,32,35,5,0.46759259259259256
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Toucannon,11,1,0.09090909090909091,32,43,7,0.4186991869918699
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Kangaskhan Bouffalant,10,2,0.2,31,37,13,0.43621399176954734
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Greninja,9,1,0.1111111111111111,29,28,5,0.4946236559139785
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Venusaur,8,0,0.0,15,25,9,0.3673469387755102
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Cinccino,6,0,0.0,8,23,2,0.2626262626262626
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Clefairy Ogerpon,6,2,0.3333333333333333,20,20,8,0.47222222222222227
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Starmie Froslass,6,0,0.0,14,17,3,0.4411764705882353
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Absol Box,5,0,0.0,5,16,6,0.25925925925925924
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Manectric Eelektrik,4,1,0.25,7,12,4,0.36231884057971014
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Okidogi Barbaracle,4,1,0.25,20,10,8,0.5964912280701755
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Toxtricity Box,4,1,0.25,12,13,5,0.45555555555555555
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Alakazam,3,0,0.0,3,10,2,0.24444444444444444
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Charizard X,3,0,0.0,4,11,4,0.2807017543859649
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Metagross,3,1,0.3333333333333333,7,8,5,0.4333333333333333
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ogerpon Meganium,3,0,0.0,6,10,2,0.3703703703703704
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Steven's Metagross,3,0,0.0,5,12,4,0.30158730158730157
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Archaludon Dudunsparce,2,0,0.0,4,7,2,0.358974358974359
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Decidueye,2,0,0.0,2,7,4,0.2564102564102564
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Doublade,2,0,0.0,0,4,0,0.0
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Dragapult Froslass,2,0,0.0,2,6,2,0.26666666666666666
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Flareon Noctowl,2,1,0.5,8,7,1,0.5208333333333334
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Hop's Zacian,2,0,0.0,5,10,0,0.3333333333333333
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Dragonite,2,0,0.0,3,7,6,0.3125
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Froslass,2,0,0.0,2,6,1,0.2592592592592593
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Lopunny,2,0,0.0,2,12,2,0.16666666666666666
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Rocket's Spidops,2,0,0.0,5,7,1,0.41025641025641024
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Yanmega,2,0,0.0,2,6,0,0.25
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Blaziken,1,0,0.0,1,3,0,0.25
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Blaziken Zoroark,1,0,0.0,1,5,1,0.19047619047619047
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Blissey,1,0,0.0,2,6,0,0.25
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Diancie Dusknoir,1,0,0.0,2,3,0,0.4
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Gengar,1,0,0.0,2,4,2,0.3333333333333333
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Heatran Metang,1,0,0.0,4,3,1,0.5416666666666666
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Iron Thorns,1,0,0.0,1,4,0,0.2
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Jellicent Dusknoir,1,1,1.0,8,5,1,0.5952380952380952
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Joltik Box,1,0,0.0,2,6,0,0.25
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Lillie's Clefairy,1,0,0.0,0,1,0,0.0
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Abomasnow,1,0,0.0,1,5,1,0.19047619047619047
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Camerupt,1,0,0.0,3,5,0,0.375
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Mega Gengar,1,0,0.0,1,1,5,0.380952380952381
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ogerpon,1,0,0.0,1,4,1,0.2222222222222222
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Palafin,1,0,0.0,2,3,1,0.3888888888888889
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Starmie Dusknoir,1,0,0.0,3,3,0,0.5
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Tera Box,1,0,0.0,3,3,2,0.4583333333333333
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Toxtricity,1,0,0.0,3,4,0,0.42857142857142855
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Ursaluna Lunatone,1,0,0.0,2,4,1,0.33333333333333337
+major,major-581,0076,"Regional Louisville, KY",2026-10-10,Wailord,1,0,0.0,2,5,1,0.2916666666666667
 major,major-580,0075,Regional Recife,2026-10-03,Dragapult,250,44,0.176,919,789,362,0.5022544283413849
 major,major-580,0075,Regional Recife,2026-10-03,N's Zoroark,79,31,0.3924050632911392,367,282,111,0.531578947368421
 major,major-580,0075,Regional Recife,2026-10-03,Alakazam Dudunsparce,66,9,0.13636363636363635,216,214,96,0.4714828897338403
@@ -563,44 +645,3 @@ major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Mega Manectric,1,0,0
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Paldean Tauros,1,0,0.0,0,2,2,0.16666666666666666
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Raging Bolt Bellibolt,1,0,0.0,2,3,1,0.3888888888888889
 major,major-559,0068,"Regional Indianapolis, IN",2026-05-30,Toxtricity Box,1,0,0.0,3,3,0,0.5
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult,97,16,0.16494845360824742,318,311,147,0.4729381443298969
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dudunsparce,46,11,0.2391304347826087,167,139,76,0.5034904013961606
-major,major-536,0067,Special Event Lima,2026-05-23,Raging Bolt Ogerpon,32,7,0.21875,120,113,27,0.49615384615384617
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Dusknoir,28,7,0.25,108,87,39,0.5170940170940171
-major,major-536,0067,Special Event Lima,2026-05-23,N's Zoroark,28,3,0.10714285714285714,79,87,50,0.44290123456790126
-major,major-536,0067,Special Event Lima,2026-05-23,Alakazam Dudunsparce,26,5,0.19230769230769232,75,81,45,0.44776119402985076
-major,major-536,0067,Special Event Lima,2026-05-23,Lopunny Dudunsparce,25,6,0.24,73,87,37,0.43316412859560066
-major,major-536,0067,Special Event Lima,2026-05-23,Dragapult Blaziken,24,4,0.16666666666666666,71,77,39,0.44919786096256686
-major,major-536,0067,Special Event Lima,2026-05-23,Basic Box,20,4,0.2,72,67,27,0.4879518072289157
-major,major-536,0067,Special Event Lima,2026-05-23,Lucario Hariyama,16,2,0.125,43,59,20,0.40710382513661203
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Mewtwo,15,2,0.13333333333333333,40,46,22,0.4382716049382716
-major,major-536,0067,Special Event Lima,2026-05-23,Cynthia's Garchomp,13,1,0.07692307692307693,40,40,19,0.46801346801346805
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Hydrapple,12,3,0.25,43,43,16,0.47385620915032683
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Honchkrow,12,2,0.16666666666666666,45,34,23,0.5163398692810457
-major,major-536,0067,Special Event Lima,2026-05-23,Festival Lead,11,3,0.2727272727272727,45,34,15,0.5319148936170213
-major,major-536,0067,Special Event Lima,2026-05-23,Starmie Froslass,11,2,0.18181818181818182,43,37,10,0.5148148148148148
-major,major-536,0067,Special Event Lima,2026-05-23,Greninja,7,2,0.2857142857142857,29,25,8,0.510752688172043
-major,major-536,0067,Special Event Lima,2026-05-23,Clefairy Ogerpon,6,1,0.16666666666666666,22,21,8,0.48366013071895425
-major,major-536,0067,Special Event Lima,2026-05-23,Grimmsnarl Froslass,6,0,0.0,12,23,11,0.34057971014492755
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium Arboliva,6,2,0.3333333333333333,24,20,7,0.5163398692810457
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Lucario,5,1,0.2,17,19,7,0.44961240310077516
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Starmie,5,1,0.2,13,18,6,0.40540540540540543
-major,major-536,0067,Special Event Lima,2026-05-23,Slowking,5,1,0.2,23,12,7,0.6031746031746031
-major,major-536,0067,Special Event Lima,2026-05-23,Crustle,3,1,0.3333333333333333,14,7,4,0.6133333333333334
-major,major-536,0067,Special Event Lima,2026-05-23,Flareon Noctowl,3,0,0.0,5,11,3,0.3157894736842105
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Venusaur,3,0,0.0,7,15,2,0.3194444444444445
-major,major-536,0067,Special Event Lima,2026-05-23,Hop's Trevenant,2,0,0.0,1,12,0,0.07692307692307693
-major,major-536,0067,Special Event Lima,2026-05-23,Okidogi Barbaracle,2,1,0.5,11,5,3,0.631578947368421
-major,major-536,0067,Special Event Lima,2026-05-23,Starmie Dusknoir,2,0,0.0,8,7,1,0.5208333333333334
-major,major-536,0067,Special Event Lima,2026-05-23,Tera Box,2,0,0.0,5,5,4,0.4523809523809524
-major,major-536,0067,Special Event Lima,2026-05-23,Yanmega,2,0,0.0,4,8,3,0.3333333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Feraligatr,1,0,0.0,1,4,3,0.25
-major,major-536,0067,Special Event Lima,2026-05-23,Hop's Zacian,1,0,0.0,4,4,0,0.5
-major,major-536,0067,Special Event Lima,2026-05-23,Joltik Box,1,0,0.0,3,4,0,0.42857142857142855
-major,major-536,0067,Special Event Lima,2026-05-23,Mega Froslass,1,0,0.0,1,7,0,0.125
-major,major-536,0067,Special Event Lima,2026-05-23,Ogerpon Meganium,1,0,0.0,4,3,1,0.5416666666666666
-major,major-536,0067,Special Event Lima,2026-05-23,Other,1,0,0.0,3,5,0,0.375
-major,major-536,0067,Special Event Lima,2026-05-23,Rocket's Spidops,1,0,0.0,3,3,2,0.4583333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Steven's Metagross,1,0,0.0,3,4,1,0.4166666666666667
-major,major-536,0067,Special Event Lima,2026-05-23,Toxtricity Box,1,0,0.0,3,3,2,0.4583333333333333
-major,major-536,0067,Special Event Lima,2026-05-23,Ursaluna Lunatone,1,0,0.0,2,5,1,0.2916666666666667
