@@ -1,6 +1,6 @@
 # LoMeta
 
-LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page compares Regional trends; `/overall` shows the top 15 decks and their matchup profiles. The previous `pokemon-analyze` application was consulted only for source discovery.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page compares Regional trends; `/overall` shows the top 15 decks and selectable matchups inside the main table; `/rankings` lists every ranked deck. The previous `pokemon-analyze` application was consulted only for source discovery.
 
 ## 2027 season views
 
@@ -8,7 +8,7 @@ The current season set contains Baltimore, Brisbane, Frankfurt, Recife, and Loui
 
 Share trends use percentage point changes in player share. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. The top ten increases and decreases are shown separately. Generic `Other`/`Unknown` classifications are excluded from those trend lists.
 
-The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. Selecting a deck fetches its combined matchups against the other top 15 decks. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted.
+The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. Opening a row fetches its combined matchups against the other top 15 decks; category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
 
 ## Connected sources
 

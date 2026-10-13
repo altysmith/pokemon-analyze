@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export function SiteHeader({ active }: { active: "trends" | "overall" }) {
+export function SiteHeader({ active }: { active: "trends" | "overall" | "rankings" }) {
   return (
     <header className="border-b border-[#d6d4cb] bg-[#fbfaf6]">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
@@ -11,6 +11,7 @@ export function SiteHeader({ active }: { active: "trends" | "overall" }) {
         <nav aria-label="Main navigation" className="flex gap-1 rounded-xl bg-[#eeede7] p-1 text-sm font-semibold">
           <Link href="/" aria-current={active === "trends" ? "page" : undefined} className={active === "trends" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Regional trends</Link>
           <Link href="/overall" aria-current={active === "overall" ? "page" : undefined} className={active === "overall" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Overall meta</Link>
+          <Link href="/rankings" aria-current={active === "rankings" ? "page" : undefined} className={active === "rankings" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Full ranking</Link>
         </nav>
       </div>
     </header>
