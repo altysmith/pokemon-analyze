@@ -1,6 +1,14 @@
 # LoMeta
 
-LoMeta is a new Pokémon TCG metagame comparison site. This repository begins with the data-source layer and a small connection dashboard; it intentionally does not reproduce the previous `pokemon-analyze` application.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page compares Regional trends; `/overall` shows the top 15 decks and their matchup profiles. The previous `pokemon-analyze` application was consulted only for source discovery.
+
+## 2027 season views
+
+The current season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three Regionals by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific Regionals. Geography filters cover all events, US, Europe, South America, and Oceania.
+
+Share trends use percentage point changes in player share. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. The top ten increases and decreases are shown separately. Generic `Other`/`Unknown` classifications are excluded from those trend lists.
+
+The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. Selecting a deck fetches its combined matchups against the other top 15 decks. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted.
 
 ## Connected sources
 
@@ -21,6 +29,7 @@ The HTML integrations are deliberately isolated in `lib/limitless/overall-meta.t
 - `GET /api/tournaments/:id/pairings`
 - `GET /api/meta/overall?time=1months&variants=split&limit=50`
 - `GET /api/labs/events`
+- `GET /api/season/matchups?deck=dragapult-ex&geography=all`
 
 All upstream calls happen on the server. This avoids browser CORS limitations and keeps an optional API key out of client code.
 
