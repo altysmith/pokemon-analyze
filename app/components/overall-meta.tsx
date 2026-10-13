@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Geography, Matchup, MetaDeck } from "@/lib/limitless/season";
 
@@ -80,7 +79,7 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">The 15 most played decks across the selected Regionals. Open a deck to see opponent records and select a specific matchup.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
-          <Link href="/rankings" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#18323d] px-4 py-3 text-sm font-semibold text-white hover:bg-[#2d5261] focus:outline-none focus:ring-2 focus:ring-[#3485a4]">Full deck ranking →</Link>
+          <a href="/rankings" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#18323d] px-4 py-3 text-sm font-semibold text-white hover:bg-[#2d5261] focus:outline-none focus:ring-2 focus:ring-[#3485a4]">Full deck ranking →</a>
           <div className="min-w-48 flex-1">
           <label htmlFor="overall-geography" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Geography</label>
           <select id="overall-geography" value={geography} onChange={(event) => changeGeography(event.target.value as Geography)} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3485a4]">
