@@ -1,0 +1,15 @@
+.git
+.next
+.vinext
+.wrangler
+.sites-runtime
+node_modules
+dist
+out
+coverage
+outputs
+work
+*.tsbuildinfo
+.env*
+.agents
+.codex

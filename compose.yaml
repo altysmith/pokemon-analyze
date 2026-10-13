@@ -1,0 +1,10 @@
+services:
+  lometa:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      LIMITLESS_API_KEY: ${LIMITLESS_API_KEY:-}

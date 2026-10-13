@@ -1,194 +1,64 @@
-# Pokemon Analyze
+# LoMeta
 
-Small Python app for pulling Limitless tournament data, extracting deck cards,
-and reporting on deck trends.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page compares Regional trends; `/overall` shows the top 15 decks and selectable matchups inside the main table; `/rankings` lists every ranked deck. The previous `pokemon-analyze` application was consulted only for source discovery.
 
-## Setup
+## 2027 season views
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+The current season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three Regionals by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific Regionals. Geography filters cover all events, US, Europe, South America, and Oceania.
+
+Share trends use percentage point changes in player share. One slider sets the number of rows shown in all four trend lists—share rising/falling and win-rate improving/declining—from top 5 to top 35, defaulting to top 15. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists.
+
+The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. Opening a row fetches its combined matchups against the other top 15 decks and displays an opponent table with W–L–T records, win rates, and result categories. The five most-played matchups appear first, with See more for the rest. Category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
+
+## Connected sources
+
+| Source | Integration | Intended use |
+| --- | --- | --- |
+| Play Limitless | Supported JSON API at `https://play.limitlesstcg.com/api` | Online tournaments, details, standings/decklists, and pairings |
+| Limitless main site | Server-side HTML adapter for `/decks` | Overall metagame points and share |
+| Limitless Labs | Server-side HTML adapter | Major-event discovery and future standings, conversion, and matchup analysis |
+
+The HTML integrations are deliberately isolated in `lib/limitless/overall-meta.ts` and `lib/limitless/labs.ts`. If those public pages change, their parsers can be updated without changing the rest of the application.
+
+## Local API routes
+
+- `GET /api/sources/health`
+- `GET /api/tournaments?game=PTCG&format=STANDARD&limit=50&page=1`
+- `GET /api/tournaments/:id/details`
+- `GET /api/tournaments/:id/standings`
+- `GET /api/tournaments/:id/pairings`
+- `GET /api/meta/overall?time=1months&variants=split&limit=50`
+- `GET /api/labs/events`
+- `GET /api/season/matchups?deck=dragapult-ex&geography=all`
+
+All upstream calls happen on the server. This avoids browser CORS limitations and keeps an optional API key out of client code.
+
+## Optional API key
+
+Most Play Limitless tournament endpoints do not require a key. Copy `.env.example` to `.env.local` and set `LIMITLESS_API_KEY` only if access to a protected endpoint, such as deck-classification rules, is approved.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev
 ```
 
-## Data Flow
+The current `pnpm build` script creates the Sites preview build. The Raspberry Pi deployment uses a standard Next.js standalone build instead.
 
-One-click Windows pull:
+## Raspberry Pi Docker deployment
 
-```powershell
-.\pull_all.bat
+The Docker path is designed for a 64-bit Raspberry Pi OS (arm64). It builds a standalone Node.js server from the same app source; it does not require ChatGPT Sites or a Cloudflare worker at runtime.
+
+Copy this project directory to the Pi, then run:
+
+```bash
+docker compose up -d --build
+docker compose logs -f lometa
 ```
 
-That pulls both Play Limitless online events and main Limitless major events,
-pulls the Limitless metagame ranking, pulls match pairings, combines decklists,
-extracts cards, and rebuilds the deck summary.
+The Compose example binds port 3000 to `127.0.0.1` on the Pi, so a reverse proxy on that host can reach `http://127.0.0.1:3000` without exposing the app directly to the network. To allow direct LAN access instead, change the port mapping in `compose.yaml` to `"3000:3000"`, then visit `http://<pi-address>:3000`. Do not expose that port directly to the public internet without your intended access controls and TLS proxy.
 
-Manual pipeline:
+An API key is optional. If needed, place `LIMITLESS_API_KEY=...` in an untracked `.env` next to `compose.yaml` on the Pi; Docker Compose will pass it to the container. The app still needs outbound HTTPS access to Limitless for its live data.
 
-```powershell
-python limitless_pull.py
-python pull_limitless_meta.py
-python limitless_major_pull.py
-python combine_players.py
-python extract_cards.py
-python analyze_players.py
-python best_meta_report.py
-```
-
-By default, `limitless_pull.py` pulls one page of recent tournaments. Pull more
-history with:
-
-```powershell
-python limitless_pull.py --pages 5
-```
-
-To pull every tournament page Limitless returns, use:
-
-```powershell
-python limitless_pull.py --all-pages
-```
-
-That can take a while because the script fetches standings for every tournament.
-
-For cleaner, narrower data, filter the tournaments before standings are pulled:
-
-```powershell
-python limitless_pull.py --format STANDARD --min-players 50 --days 31 --pages 5
-python limitless_pull.py --format STANDARD --min-players 64 --since 2026-05-01 --pages 5
-python limitless_pull.py --format STANDARD --min-players 64 --has-decklists --pages 5
-python limitless_pull.py --format STANDARD --min-players 50 --days 31 --pages 5 --has-decklists
-```
-
-Useful options:
-
-- `--format STANDARD` limits the Limitless tournament search to Standard.
-- `--min-players 50` matches the TrainerHill-style minimum player filter.
-- `--days 31` pulls roughly the previous month of tournaments.
-- `--since 2026-05-01` skips older events.
-- `--has-decklists` keeps only standing rows that include a submitted decklist.
-- `--pairings-delay 1.5` slows match-pairing requests to avoid rate limits.
-
-`pull_all.bat` and the daily GitHub Action use `--min-players 50` for online
-and major events. Major events still depend on the decklists published by
-Limitless Labs, which may be a selective event cut. The Limitless meta ranking
-is pulled with `--time 1months`, matching Limitless's "Past month" tournament
-filter.
-
-These commands write CSV files under `outputs/`:
-
-- `outputs/tournaments.csv`
-- `outputs/online_players.csv`
-- `outputs/major_tournaments.csv`
-- `outputs/limitless_meta_decks.csv`
-- `outputs/major_players.csv`
-- `outputs/matches.csv`
-- `outputs/online_matches.csv`
-- `outputs/major_matches.csv`
-- `outputs/players.csv`
-- `outputs/cards.csv`
-- `outputs/deck_summary.csv`
-- `outputs/best_decks_against_top25_meta.csv`
-
-Existing CSV outputs are not removed by the app.
-
-## Command Line Reports
-
-List decks:
-
-```powershell
-python list_decks.py
-```
-
-Show one deck report:
-
-```powershell
-python deck_report.py "Charizard" --bucket daily
-python deck_report.py "Charizard" --bucket monthly
-```
-
-## Streamlit Dashboard
-
-Run the dashboard:
-
-```powershell
-streamlit run dashboard.py
-```
-
-The dashboard reads `outputs/cards.csv` and includes:
-
-- a Meta Overview opening page
-- a Deck Detail page with a deck dropdown
-- a Testing Recommendations page for Top 25 matchup analysis
-- an All, Online, or Majors source filter
-- a Meta Overview table with complete W-L-T records against all known opponents
-- representative decklists from the newest available Major, using best placement within that event
-- copyable representative decklists formatted with section totals and card set/number identifiers when available
-- side-by-side top-5 lists for most favorable matchups, highest overall win percentage, and highest non-Dragapult win percentage
-- matchup percentages with wins, losses, ties, win rate, and tie-adjusted win rate
-- favorable and unfavorable matchup lines at the top of each selected deck detail page
-- a card-impact text search that compares lists with and without a card against the top 15 meta decks
-- daily or monthly trend buckets
-- core, common, flex, and tech card groups
-- trending up and trending down cards
-- best average placement tech and flex cards, with a minimum deck count filter
-
-The Meta Overview shows the current top decks with their complete win, loss,
-and tie records against every known opponent in the selected data. It does not
-limit those records to games against other meta decks. The overview also keeps
-the Top-25 matchup comparison tables. Recommendation scores, labels, exclusions,
-and explanations live on Testing Recommendations, while one-deck matchup
-analysis lives on Deck Detail.
-
-Testing Recommendations uses
-`outputs/limitless_meta_decks.csv`, which comes from Limitless's metagame
-ranking page with deck variants split and the "Past month" time filter.
-Candidates and targets come from the selected top meta list. A favorable
-matchup is 55% or higher tie-adjusted win rate against a top meta deck, and a
-very favorable matchup is over 60%. An unfavorable matchup is under 45%, and a
-very unfavorable matchup is under 40%.
-Recommendation scores use the full current Top 25 meta list and weight each
-opponent by its meta share.
-The Testing Recommendations Score Lab can rebalance confidence-adjusted matchup win rate,
-Limitless Labs Day 2 conversion, and matchup coverage without changing code.
-Its optional conversion benchmark is off by default, so every scored deck stays
-visible unless a user chooses to filter the table. Run
-`python limitless_labs_pull.py` after the major pull to refresh
-`outputs/labs_conversion.csv`.
-Matchup coverage is weighted by each opponent's meta share. Conversion below
-the selected major-field average uses a squared penalty, while above-average
-conversion remains linear.
-Major matchup calculations use the archetypes attached to the full Limitless
-Labs pairing data, with the published decklist map retained as a fallback.
-The dashboard's collapsed "How scoring works" panel documents these calculations
-next to the adjustable Score Lab controls, including explicit definitions for
-every recommendation label.
-Testing Recommendations has its own dashboard page so the Meta Overview remains
-focused on factual metagame and matchup tables.
-The automated major pull retains the latest ten events, independent of the
-31-day online window, so the dashboard's Last 3/5/8/10 Major filters use the
-number of events shown.
-For meta matchup percentages, ties count as one-third of a win, matching the
-TrainerHill formula.
-The Deck Detail page keeps the card trends, individual matchup table, and
-tech/flex placement analysis for one selected deck.
-
-Percentages and numbers are formatted to at most 3 decimals for readability.
-
-To rebuild just the meta matchup report after data is already pulled:
-
-```powershell
-python best_meta_report.py
-```
-
-## Daily Data Updates
-
-The GitHub Actions workflow in `.github/workflows/update-data.yml` refreshes the
-CSV files every day and can also be run manually from GitHub:
-
-1. Open the GitHub repository.
-2. Go to **Actions**.
-3. Select **Update Pokemon Analyze Data**.
-4. Click **Run workflow**.
-
-The workflow pulls online events, major events, match pairings, rebuilds the CSV
-files in `outputs/`, and commits changes back to the repository.
+To update after copying new source to the Pi, run `docker compose up -d --build` again. This Docker route has not yet been run on the Pi hardware; test it there before relying on it as the production host.
