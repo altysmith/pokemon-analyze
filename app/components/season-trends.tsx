@@ -13,8 +13,16 @@ const GEO: Array<{ value: Geography; label: string }> = [
 
 type Trend = { slug: string; name: string; from: number; to: number; delta: number; fromSample: number; toSample: number };
 
-const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
-const formatDelta = (value: number) => `${value > 0 ? "+" : ""}${(value * 100).toFixed(1)} pts`;
+const formatPercent = (value: number) => {
+  const percentage = value * 100;
+  return `${percentage.toFixed(percentage !== 0 && Math.abs(percentage) < 0.1 ? 2 : 1)}%`;
+};
+const formatDelta = (value: number) => {
+  const points = value * 100;
+  const magnitude = Math.abs(points);
+  const digits = magnitude < 0.01 ? 3 : magnitude < 0.1 ? 2 : 1;
+  return `${value > 0 ? "+" : ""}${points.toFixed(digits)} pts`;
+};
 
 function deckValue(deck: EventDeck | undefined, metric: "share" | "winRate") {
   return deck ? deck[metric] : 0;
@@ -59,6 +67,7 @@ function TrendList({ title, items, tone }: { title: string; items: Trend[]; tone
 
 export function SeasonTrends({ events }: { events: RegionalData[] }) {
   const [geography, setGeography] = useState<Geography>("all");
+  const [shareCount, setShareCount] = useState(15);
   const [selection, setSelection] = useState<{ geography: Geography; start: number; end: number }>({ geography: "all", start: Math.max(0, events.length - 3), end: events.length - 1 });
   const filtered = useMemo(() => events.filter((event) => geography === "all" || event.geography === geography), [events, geography]);
   const start = selection.geography === geography ? Math.min(selection.start, Math.max(0, filtered.length - 1)) : Math.max(0, filtered.length - 3);
@@ -67,8 +76,8 @@ export function SeasonTrends({ events }: { events: RegionalData[] }) {
   const last = filtered[end];
   const allShare = first && last ? trends(first, last, "share") : [];
   const allWin = first && last ? trends(first, last, "winRate") : [];
-  const upShare = allShare.filter((item) => item.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 10);
-  const downShare = allShare.filter((item) => item.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 10);
+  const upShare = allShare.filter((item) => item.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, shareCount);
+  const downShare = allShare.filter((item) => item.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, shareCount);
   const upWin = allWin.filter((item) => item.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 10);
   const downWin = allWin.filter((item) => item.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 10);
 
@@ -122,11 +131,16 @@ export function SeasonTrends({ events }: { events: RegionalData[] }) {
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div><p className="section-kicker">Play rate</p><h2 className="section-title">Metagame share changes</h2></div>
-              <p className="text-xs text-[#738088]">Player share • percentage point change</p>
+              <div className="w-full rounded-xl border border-[#d7d5cc] bg-[#fbfaf6] px-4 py-3 sm:w-72">
+                <label htmlFor="share-trend-count" className="flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-wider text-[#52616b]"><span>Show top share changes</span><output htmlFor="share-trend-count" className="font-mono text-base text-[#1d343f]">{shareCount}</output></label>
+                <input id="share-trend-count" type="range" min="5" max="35" step="1" value={shareCount} onChange={(event) => setShareCount(Number(event.target.value))} aria-valuetext={`Top ${shareCount} decks per direction`} className="mt-3 w-full accent-[#3485a4]" />
+                <div className="flex justify-between text-[11px] text-[#738088]"><span>Top 5</span><span>Top 35</span></div>
+              </div>
             </div>
+            <p className="mb-4 text-xs text-[#738088]">Player share • percentage point change • up to {shareCount} decks in each direction</p>
             <div className="grid gap-5 lg:grid-cols-2">
-              <TrendList title="Top 10 rising" items={upShare} tone="up" />
-              <TrendList title="Top 10 falling" items={downShare} tone="down" />
+              <TrendList title={`Top ${shareCount} rising`} items={upShare} tone="up" />
+              <TrendList title={`Top ${shareCount} falling`} items={downShare} tone="down" />
             </div>
           </section>
           <section>
