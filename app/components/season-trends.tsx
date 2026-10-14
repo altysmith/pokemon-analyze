@@ -206,7 +206,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
               <TrendList title="Declining" items={downWin} tone="down" matchupSummaries={matchupSummaries} matchupLoading={matchupLoading} matchupOpponentCount={matchupOpponentCount} matchupDecks={matchupDecks} />
             </div>
           </section>
-          <CardShifts from={first} to={last} ranking={ranking} trendCount={trendCount} />
+          <CardShifts from={first} to={last} ranking={ranking} />
         </div>
       ) : null}
       <p className="mt-8 text-xs leading-5 text-[#718087]">Win rate follows Limitless Labs: (wins + ties ÷ 3) ÷ all matches. Share rankings include new and disappearing decks as 0% at the event where they are absent. Win rate trends require recorded matches in both events. Matchup counts are favorable (≥55%), neutral (between 45% and 55%), and unfavorable (≤45%) versus recorded opponents in the selected geography; mirror matches are excluded.</p>
