@@ -6,9 +6,9 @@ LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. It
 
 The current season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three Regionals by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific Regionals. Geography filters cover all events, US, Europe, South America, and Oceania.
 
-Share trends use percentage point changes in player share. One slider sets the number of rows shown in all four trend lists—share rising/falling and win-rate improving/declining—from top 5 to top 35, defaulting to top 15. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists.
+Share trends use percentage point changes in player share. One slider selects the top 5 to top 35 decks by full-season share (top 15 by default) for both share and win-rate trend lists. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists. The card-construction comparison shows the five largest increases and decreases in average copies per published decklist for a selected archetype across the two endpoint Regionals. It requires at least 10 published lists at each event and a change of at least 0.10 copies per list; exact set/number printings are compared.
 
-The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. Opening a row fetches its combined matchups against the other top 15 decks and displays an opponent table with W–L–T records, win rates, and result categories. The five most-played matchups appear first, with See more for the rest. Category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
+The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. The main table shows favorable–neutral–unfavorable matchup counts against the selected top 10 or top 15 opposing decks. A smaller Full matchup button opens the opponent table with W–L–T records, win rates, and result categories. The five most-played matchups appear first, with See more for the rest. Category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
 
 ## Connected sources
 
@@ -17,6 +17,7 @@ The overall view ranks decks by total player count across the selected geography
 | Play Limitless | Supported JSON API at `https://play.limitlesstcg.com/api` | Online tournaments, details, standings/decklists, and pairings |
 | Limitless main site | Server-side HTML adapter for `/decks` | Overall metagame points and share |
 | Limitless Labs | Server-side HTML adapter | Major-event discovery and future standings, conversion, and matchup analysis |
+| Limitless main-site tournament Cards pages | Server-side HTML adapter | Published archetype-level average card counts for Regional-to-Regional comparisons |
 
 The HTML integrations are deliberately isolated in `lib/limitless/overall-meta.ts` and `lib/limitless/labs.ts`. If those public pages change, their parsers can be updated without changing the rest of the application.
 
@@ -30,6 +31,7 @@ The HTML integrations are deliberately isolated in `lib/limitless/overall-meta.t
 - `GET /api/meta/overall?time=1months&variants=split&limit=50`
 - `GET /api/labs/events`
 - `GET /api/season/matchups?deck=dragapult-ex&geography=all`
+- `GET /api/season/cards?from=0074&to=0076&deck=dragapult-ex`
 
 All upstream calls happen on the server. This avoids browser CORS limitations and keeps an optional API key out of client code.
 
