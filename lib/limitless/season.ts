@@ -6,6 +6,7 @@ export type RecordCounts = { wins: number; losses: number; ties: number };
 export type EventDeck = {
   slug: string;
   name: string;
+  icons: string[];
   players: number;
   share: number;
   record: RecordCounts;
@@ -26,6 +27,7 @@ export type RegionalData = Regional & { decks: EventDeck[]; playerTotal: number 
 export type MetaDeck = {
   slug: string;
   name: string;
+  icons: string[];
   players: number;
   share: number;
   record: RecordCounts;
@@ -38,6 +40,7 @@ export type MetaDeck = {
 export type Matchup = {
   slug: string;
   name: string;
+  icons: string[];
   record: RecordCounts;
   matches: number;
   winRate: number;
@@ -102,6 +105,10 @@ function deckLink(value: string) {
   return match ? { slug: match[1], name: plain(match[2]) } : null;
 }
 
+function deckIcons(value: string) {
+  return [...value.matchAll(/<img\b[^>]*\balt="([a-z0-9-]+)"[^>]*>/gi)].map((match) => match[1].toLowerCase());
+}
+
 function parseEventDecks(html: string): EventDeck[] {
   return rows(html).flatMap((cells) => {
     if (cells.length < 6) return [];
@@ -110,7 +117,7 @@ function parseEventDecks(html: string): EventDeck[] {
     const players = number(cells[1]);
     const share = percent(cells[3]);
     if (!deck || !counts || !Number.isFinite(players) || !Number.isFinite(share)) return [];
-    return [{ ...deck, players, share, record: counts, winRate: winRate(counts), day1: null, day2: null, conversion: null }];
+    return [{ ...deck, icons: deckIcons(cells[0]), players, share, record: counts, winRate: winRate(counts), day1: null, day2: null, conversion: null }];
   });
 }
 
@@ -170,11 +177,12 @@ export function aggregateMeta(events: RegionalData[]): MetaDeck[] {
   for (const event of events) {
     for (const deck of event.decks) {
       const item = map.get(deck.slug) ?? {
-        slug: deck.slug, name: deck.name, players: 0, share: 0,
+        slug: deck.slug, name: deck.name, icons: deck.icons, players: 0, share: 0,
         record: { wins: 0, losses: 0, ties: 0 }, winRate: 0,
         day1: 0, day2: 0, conversion: null, events: 0,
       };
       item.players += deck.players;
+      if (!item.icons.length && deck.icons.length) item.icons = deck.icons;
       addRecord(item.record, deck.record);
       item.day1 += deck.day1 ?? 0;
       item.day2 += deck.day2 ?? 0;
@@ -195,7 +203,7 @@ function parseMatchups(html: string) {
     if (cells.length < 5) return [];
     const deck = deckLink(cells[1]);
     const counts = record(cells[3]);
-    return deck && counts ? [{ ...deck, record: counts }] : [];
+    return deck && counts ? [{ ...deck, icons: deckIcons(cells[0]), record: counts }] : [];
   });
 }
 
@@ -206,11 +214,12 @@ export async function getAggregatedMatchups(events: RegionalData[], slug: string
     parseMatchups(await fetchHtml(`${LABS_BASE}/${event.id}/decks/${slug}/matchups`))
   )));
   const allowed = new Set(opponentSlugs);
-  const map = new Map<string, { name: string; record: RecordCounts }>();
+  const map = new Map<string, { name: string; icons: string[]; record: RecordCounts }>();
   for (const eventRows of sourceRows) {
     for (const row of eventRows) {
       if (row.slug === slug || !allowed.has(row.slug)) continue;
-      const item = map.get(row.slug) ?? { name: row.name, record: { wins: 0, losses: 0, ties: 0 } };
+      const item = map.get(row.slug) ?? { name: row.name, icons: row.icons, record: { wins: 0, losses: 0, ties: 0 } };
+      if (!item.icons.length && row.icons.length) item.icons = row.icons;
       addRecord(item.record, row.record);
       map.set(row.slug, item);
     }
@@ -218,7 +227,7 @@ export async function getAggregatedMatchups(events: RegionalData[], slug: string
   return [...map.entries()].map(([opponentSlug, value]) => {
     const rate = winRate(value.record);
     return {
-      slug: opponentSlug, name: value.name, record: value.record,
+      slug: opponentSlug, name: value.name, icons: value.icons, record: value.record,
       matches: matches(value.record), winRate: rate,
       category: rate >= 0.55 ? "favorable" as const : rate <= 0.45 ? "unfavorable" as const : "neutral" as const,
     };

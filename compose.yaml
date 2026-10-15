@@ -8,3 +8,22 @@ services:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       LIMITLESS_API_KEY: ${LIMITLESS_API_KEY:-}
+      JP_DB_PATH: /data/japan.sqlite
+    volumes:
+      - japan-data:/data
+
+  japan-sync:
+    build:
+      context: .
+      target: japan-sync
+    restart: unless-stopped
+    environment:
+      JP_DB_PATH: /data/japan.sqlite
+      JP_SYNC_INTERVAL_HOURS: ${JP_SYNC_INTERVAL_HOURS:-24}
+      JP_SYNC_PAGES: ${JP_SYNC_PAGES:-1}
+      JP_SYNC_MAX_EVENTS: ${JP_SYNC_MAX_EVENTS:-10}
+    volumes:
+      - japan-data:/data
+
+volumes:
+  japan-data:

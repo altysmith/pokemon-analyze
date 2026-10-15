@@ -1,8 +1,9 @@
 FROM node:22-bookworm-slim AS dependencies
 
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
 RUN npm install --global pnpm@11.25.0
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS build
@@ -10,6 +11,15 @@ FROM dependencies AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm exec next build
+
+FROM dependencies AS japan-sync
+
+COPY --chown=node:node . .
+RUN mkdir -p /data && chown node:node /data
+ENV NODE_ENV=production \
+    JP_DB_PATH=/data/japan.sqlite
+USER node
+CMD ["node", "scripts/japan-sync-scheduler.mjs"]
 
 FROM node:22-bookworm-slim AS runtime
 
@@ -22,6 +32,8 @@ ENV NODE_ENV=production \
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/drizzle ./drizzle
+RUN mkdir -p /data && chown node:node /data
 
 USER node
 EXPOSE 3000
