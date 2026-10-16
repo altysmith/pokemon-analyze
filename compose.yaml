@@ -2,6 +2,13 @@ services:
   lometa:
     build: .
     restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1.5
+    pids_limit: 256
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "127.0.0.1:3000:3000"
     environment:
