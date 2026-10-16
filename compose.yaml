@@ -2,7 +2,6 @@ services:
   lometa:
     build: .
     restart: unless-stopped
-    mem_limit: 768m
     cpus: 1.5
     pids_limit: 256
     cap_drop:
@@ -14,4 +13,5 @@ services:
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: --max-old-space-size=512
       LIMITLESS_API_KEY: ${LIMITLESS_API_KEY:-}
