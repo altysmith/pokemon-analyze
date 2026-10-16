@@ -17,7 +17,7 @@ pnpm japan:sync --pages 1 --max-events 10
 pnpm japan:sync:scheduler -- --once
 ```
 
-The sync defaults to one listing page and at most 10 due events per run. Subsequent runs work through additional unimported events; already checked events are revisited according to the refresh policy. The generated `lib/japan/preview-overview.json` is a preview snapshot, not the Pi database. The [Play Limitless API](https://docs.limitlesstcg.com/developer) documents a different tournament platform and is not used as a City League feed.
+The Pi sync scans up to ten listing pages and imports at most 100 due events per daily run. Requests are paced, and already checked events are revisited according to the refresh policy. The generated `lib/japan/preview-overview.json` is a preview snapshot, not the Pi database. The [Play Limitless API](https://docs.limitlesstcg.com/developer) documents a different tournament platform and is not used as a City League feed.
 
 The Japan blade ranks archetypes by placement points across imported standings: 1st = 8, 2nd = 6, 3rd–4th = 4, 5th–8th = 2, and 9th–16th = 1. It shows first-place and Top 8 counts plus share of classified Top 8 appearances. These are not match win rates or conversion rates because the full entrant field is unknown. Each archetype's external deck link is its most recent available first-place list; a newer lower placement adds points but does not replace that link. Individual imported events are not displayed on the page.
 
@@ -31,8 +31,8 @@ The schedule is configurable in the untracked `.env` file:
 
 ```dotenv
 JP_SYNC_INTERVAL_HOURS=24
-JP_SYNC_PAGES=1
-JP_SYNC_MAX_EVENTS=10
+JP_SYNC_PAGES=10
+JP_SYNC_MAX_EVENTS=100
 ```
 
 Keep the defaults for normal operation. To run an immediate manual refresh on the Pi, use `docker compose run --rm japan-sync node scripts/japan-sync-scheduler.mjs --once`.

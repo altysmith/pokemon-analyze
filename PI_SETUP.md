@@ -10,7 +10,7 @@ Japan City League results do **not** use the Play Limitless webhook system. They
 - `japan-sync`: runs once when it starts and every 24 hours afterward.
 - `japan-data`: a named Docker volume containing the shared SQLite database.
 
-The importer is idempotent, records source revisions, limits each default run to 10 due events, and selectively revisits recent or incomplete events.
+The importer is idempotent, records source revisions, limits each scheduled run to 100 due events, and selectively revisits recent or incomplete events.
 
 ## Instructions for the Codex instance on the Pi
 
