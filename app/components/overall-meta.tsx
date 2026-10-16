@@ -24,15 +24,16 @@ function MatchupCounts({ matchups, opponents, loading }: { matchups: Matchup[] |
   const favorable = rows.filter((matchup) => matchup.category === "favorable").length;
   const neutral = rows.filter((matchup) => matchup.category === "neutral").length;
   const unfavorable = rows.filter((matchup) => matchup.category === "unfavorable").length;
-  return <span className="font-mono font-semibold tabular-nums" aria-label={`${favorable} favorable, ${neutral} neutral, ${unfavorable} unfavorable`}><span className="text-[#237444]">{favorable}</span>-<span className="text-[#586d78]">{neutral}</span>-<span className="text-[#bd4c45]">{unfavorable}</span></span>;
+  return <span className="font-mono font-semibold tabular-nums" aria-label={`${favorable} favorable, ${neutral} neutral, ${unfavorable} unfavorable opposing decks in the selected top ${opponents.size}, excluding mirror matches`}><span className="text-[#237444]">{favorable}</span>-<span className="text-[#586d78]">{neutral}</span>-<span className="text-[#bd4c45]">{unfavorable}</span></span>;
 }
 
 export function OverallMeta({ byGeography }: { byGeography: Record<Geography, MetaDeck[]> }) {
   const [geography, setGeography] = useState<Geography>("all");
   const decks = byGeography[geography].slice(0, 15);
-  const [opponentCount, setOpponentCount] = useState<10 | 15>(10);
-  const opponentSlugs = new Set(decks.slice(0, opponentCount).map((deck) => deck.slug));
-  const matchupKey = `${geography}:${decks.map((deck) => deck.slug).join(",")}`;
+  const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(15);
+  const opponentSlugs = new Set(byGeography[geography].slice(0, opponentCount).map((deck) => deck.slug));
+  const deckSlugs = decks.map((deck) => deck.slug).join(",");
+  const matchupKey = `${geography}:${opponentCount}:${deckSlugs}`;
   const [matchupData, setMatchupData] = useState<{ key: string; rows: Record<string, Matchup[] | null> } | null>(null);
   const loading = matchupData?.key !== matchupKey;
   const matchupRows = loading ? {} : matchupData?.rows ?? {};
@@ -46,9 +47,9 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all(matchupKey.split(":")[1].split(",").filter(Boolean).map(async (slug) => {
+    Promise.all(deckSlugs.split(",").filter(Boolean).map(async (slug) => {
       try {
-        const response = await fetch(`/api/season/matchups?deck=${encodeURIComponent(slug)}&geography=${geography}`, { signal: controller.signal });
+        const response = await fetch(`/api/season/matchups?deck=${encodeURIComponent(slug)}&geography=${geography}&opponents=${opponentCount}`, { signal: controller.signal });
         if (!response.ok) return [slug, null] as const;
         const body = await response.json() as { matchups?: Matchup[] };
         return [slug, body.matchups ?? []] as const;
@@ -59,7 +60,7 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
       if (!controller.signal.aborted) setMatchupData({ key: matchupKey, rows: Object.fromEntries(rows) });
     });
     return () => controller.abort();
-  }, [geography, matchupKey]);
+  }, [deckSlugs, geography, matchupKey, opponentCount]);
 
   const categorized = useMemo(() => Object.fromEntries(categories.map((category) =>
     [category, matchups.filter((matchup) => matchup.category === category)]
@@ -102,9 +103,11 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
           </div>
           <div className="min-w-44 flex-1">
             <label htmlFor="overall-opponents" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Top meta matchups</label>
-            <select id="overall-opponents" value={opponentCount} onChange={(event) => setOpponentCount(Number(event.target.value) as 10 | 15)} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3485a4]">
+            <select id="overall-opponents" value={opponentCount} onChange={(event) => { setOpponentCount(Number(event.target.value) as 10 | 15 | 20 | 25); setCategory("all"); setOpponentSlug(""); setShowAllMatchups(false); }} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3485a4]">
               <option value={10}>Versus top 10</option>
               <option value={15}>Versus top 15</option>
+              <option value={20}>Versus top 20</option>
+              <option value={25}>Versus top 25</option>
             </select>
           </div>
         </div>
@@ -120,13 +123,13 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{percent(deck.share)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono font-semibold md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win %</span>{percent(deck.winRate)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Day 2</span>{deck.conversion === null ? "—" : percent(deck.conversion)}</td>
-                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">F–N–U</span><MatchupCounts matchups={matchupRows[deck.slug]} opponents={opponentSlugs} loading={loading} /></td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">F–N–U · top {opponentCount}</span><MatchupCounts matchups={matchupRows[deck.slug]} opponents={opponentSlugs} loading={loading} /></td>
                   <td className="col-span-2 pt-1 md:table-cell md:px-4 md:py-3 md:text-right"><button type="button" onClick={() => toggleDeck(deck.slug)} aria-expanded={selected?.slug === deck.slug} aria-controls={`matchup-${deck.slug}`} className="w-full whitespace-nowrap rounded-md border border-[#c6d0d0] bg-white px-2.5 py-2 text-xs font-semibold text-[#27566a] hover:border-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#3485a4] md:w-auto md:py-1.5 md:text-[11px]">{selected?.slug === deck.slug ? "Close ↑" : "Full matchup ↗"}</button></td>
                 </tr>
                 {selected?.slug === deck.slug ? <tr id={`matchup-${deck.slug}`} className="block md:table-row"><td colSpan={6} className="block w-full bg-[#f7f8f4] px-4 py-5 md:table-cell sm:px-6">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div><p className="section-kicker">Matchup profile</p><h2 className="flex items-center gap-2 text-xl font-semibold"><DeckSprites icons={deck.icons} /><span>{deck.name}</span></h2><p className="mt-1 text-xs text-[#78858a]">{deck.record.wins}–{deck.record.losses}–{deck.record.ties} across {deck.events} event{deck.events === 1 ? "" : "s"}</p></div>
-                    {!loading && !error ? <div className="flex flex-wrap gap-2" aria-label="Matchup categories">{categories.map((item) => <span key={item} className={`rounded-lg px-3 py-2 text-xs font-semibold ${item === "favorable" ? "bg-[#e3f2e5] text-[#237444]" : item === "unfavorable" ? "bg-[#f9e8e5] text-[#bd4c45]" : "bg-[#e9eef0] text-[#586d78]"}`}>{categorized[item].length} {item}</span>)}</div> : null}
+                    <div><p className="section-kicker">Matchup profile</p><h2 className="flex items-center gap-2 text-xl font-semibold"><DeckSprites icons={deck.icons} /><span>{deck.name}</span></h2><p className="mt-1 text-xs text-[#78858a]">Overall W–L–T: {deck.record.wins}–{deck.record.losses}–{deck.record.ties} across {deck.events} event{deck.events === 1 ? "" : "s"}</p><p className="mt-1 text-xs text-[#78858a]">Win % counts each tie as ⅓ of a win.</p></div>
+                    {!loading && !error ? <div><p className="mb-2 text-xs font-semibold text-[#6f7a7f]">Opposing decks versus top {opponentCount} · mirror excluded</p><div className="flex flex-wrap gap-2" aria-label={`Matchup categories versus top ${opponentCount} opposing decks, excluding mirror matches`}>{categories.map((item) => <span key={item} className={`rounded-lg px-3 py-2 text-xs font-semibold ${item === "favorable" ? "bg-[#e3f2e5] text-[#237444]" : item === "unfavorable" ? "bg-[#f9e8e5] text-[#bd4c45]" : "bg-[#e9eef0] text-[#586d78]"}`}>{categorized[item].length} {item}</span>)}</div></div> : null}
                   </div>
                   {loading ? <p className="mt-5 text-sm text-[#6f7b80]">Loading matchup records…</p> : null}
                   {error ? <p className="mt-5 text-sm text-[#aa4d44]">{error}</p> : null}
@@ -150,7 +153,7 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
           </div>
         </section>
 
-      <p className="mt-8 text-xs leading-5 text-[#718087]">F–N–U counts favorable, neutral, and unfavorable records versus the selected top 10 or 15 opposing meta decks. Only recorded matchups count; mirror matches are excluded. Share is player count divided by all players in the selected events. Win percentages combine W–L–T records, counting each tie as one-third of a win. A matchup at exactly 55% is favorable; exactly 45% is unfavorable.</p>
+      <p className="mt-8 text-xs leading-5 text-[#718087]">F–N–U counts favorable, neutral, and unfavorable records versus the selected top 10, 15, 20, or 25 opposing meta decks. Only recorded matchups count; mirror matches are excluded. Share is player count divided by all players in the selected events. Win percentages combine W–L–T records, counting each tie as one-third of a win. A matchup at exactly 55% is favorable; exactly 45% is unfavorable.</p>
     </>
   );
 }

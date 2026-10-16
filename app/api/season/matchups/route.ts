@@ -11,10 +11,12 @@ export async function GET(request: NextRequest) {
   const geography = geographies.has(requestedGeography as Geography)
     ? requestedGeography as Geography
     : "all";
+  const requestedOpponents = Number(request.nextUrl.searchParams.get("opponents"));
+  const opponentCount = [10, 15, 20, 25].includes(requestedOpponents) ? requestedOpponents : 15;
   try {
     const all = await getSeasonData();
     const events = all.filter((event) => geography === "all" || event.geography === geography);
-    const top = aggregateMeta(events).slice(0, 15);
+    const top = aggregateMeta(events).slice(0, opponentCount);
     const matchups = await getAggregatedMatchups(events, slug, top.map((deck) => deck.slug));
     return NextResponse.json({ deck: slug, geography, matchups }, {
       headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=1800" },
