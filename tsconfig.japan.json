@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "db/japan.ts",
+    "db/schema.ts",
+    "lib/japan/**/*.ts",
+    "scripts/japan-import-fixture.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist"
+  ]
+}

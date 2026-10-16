@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export function SiteHeader({ active }: { active: "trends" | "overall" | "rankings" }) {
+export function SiteHeader({ active }: { active: "trends" | "overall" | "rankings" | "japan" }) {
   return (
     <header className="border-b border-[#d6d4cb] bg-[#fbfaf6]">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
@@ -9,8 +9,9 @@ export function SiteHeader({ active }: { active: "trends" | "overall" | "ranking
           LoMeta
         </Link>
         <nav aria-label="Main navigation" className="flex gap-1 rounded-xl bg-[#eeede7] p-1 text-sm font-semibold">
-          <Link href="/" aria-current={active === "trends" ? "page" : undefined} className={active === "trends" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Regional trends</Link>
-          <a href="/overall" aria-current={active === "overall" ? "page" : undefined} className={active === "overall" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Overall meta</a>
+          <Link href="/" aria-current={active === "overall" ? "page" : undefined} className={active === "overall" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Overall meta</Link>
+          <Link href="/trends" aria-current={active === "trends" ? "page" : undefined} className={active === "trends" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Regional trends</Link>
+          <Link href="/japan" aria-current={active === "japan" ? "page" : undefined} className={active === "japan" ? "rounded-lg bg-white px-4 py-2 text-[#1d343f] shadow-sm" : "rounded-lg px-4 py-2 text-[#69767b] hover:text-[#1d343f]"}>Japan City League</Link>
         </nav>
       </div>
     </header>

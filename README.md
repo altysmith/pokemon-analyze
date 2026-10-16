@@ -1,6 +1,43 @@
 # LoMeta
 
-LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page compares Regional trends; `/overall` shows the top 15 decks and selectable matchups inside the main table; `/rankings` lists every ranked deck. The previous `pokemon-analyze` application was consulted only for source discovery.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 15 decks and selectable matchups; `/trends` compares Regional trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked Regional deck. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
+
+## Japan City League (local only)
+
+The Japan City League pipeline is separate from all existing Regional and international calculations. Its SQLite tables use the `jp_` prefix. The `/japan` page reads local SQLite on the Next.js/Pi path. The Sites-style local preview uses a generated snapshot from that same database because its worker cannot open native SQLite. Neither path adds Japan results to the Regional dashboards.
+
+The live HTML adapter reads the public [City League listing](https://www.limitlesstcg.com/tournaments/jp) and its event pages with bounded pagination, pacing, and retries. The importer preserves source IDs, Japanese player/shop values, Pokémon icon identifiers, unknown archetypes, and decklist links. It tracks classification and decklist coverage separately, records source revisions, and refuses to overwrite an event with fewer placements unless the caller explicitly allows it. A decklist link is not counted as parsed card content.
+
+The local database defaults to `.data/japan.sqlite`; set `JP_DB_PATH` to another writable file path when needed. Migrations under `drizzle/` are applied when the importer opens the database. The database file is ignored by Git. The Docker deployment stores it in the shared `japan-data` volume so the web and scheduler containers use the same persistent database.
+
+```bash
+pnpm japan:test
+pnpm japan:import-fixture test/fixtures/japan/index.html test/fixtures/japan/event.html 5062
+pnpm japan:sync --pages 1 --max-events 10
+pnpm japan:sync:scheduler -- --once
+```
+
+The sync defaults to one listing page and at most 10 due events per run. Subsequent runs work through additional unimported events; already checked events are revisited according to the refresh policy. The generated `lib/japan/preview-overview.json` is a preview snapshot, not the Pi database. The [Play Limitless API](https://docs.limitlesstcg.com/developer) documents a different tournament platform and is not used as a City League feed.
+
+The Japan blade ranks archetypes by placement points across imported standings: 1st = 8, 2nd = 6, 3rd–4th = 4, 5th–8th = 2, and 9th–16th = 1. It shows first-place and Top 8 counts plus share of classified Top 8 appearances. These are not match win rates or conversion rates because the full entrant field is unknown. Each archetype's external deck link is its most recent available first-place list; a newer lower placement adds points but does not replace that link. Individual imported events are not displayed on the page.
+
+The Japan page defaults to the last 30 calendar days in the `America/New_York` time zone, inclusive of today. Visitors can select 7 days, 30 days, 90 days, all imported dates, or a custom start and end date. The event sample, placement scores, Top 8 share, leader, and latest first-place decklist links are all recomputed within the selected period. The preview snapshot stores the minimal event and classified-placement rows needed for this filtering; the Pi path reads the same rows directly from SQLite.
+
+### Automated Japan updates
+
+Limitless does not send Play Limitless webhooks for main-site Japan City League results, so the Pi deployment uses a dedicated `japan-sync` container instead. It runs once at startup and every 24 hours thereafter. The existing refresh policy selectively revisits recent or incomplete events, ingestion runs and source revisions remain recorded in SQLite, and failures are visible in `docker compose logs japan-sync`.
+
+The schedule is configurable in the untracked `.env` file:
+
+```dotenv
+JP_SYNC_INTERVAL_HOURS=24
+JP_SYNC_PAGES=1
+JP_SYNC_MAX_EVENTS=10
+```
+
+Keep the defaults for normal operation. To run an immediate manual refresh on the Pi, use `docker compose run --rm japan-sync node scripts/japan-sync-scheduler.mjs --once`.
+
+A future Regional job should discover new eligible Regionals and replace the current need to edit the hard-coded `SEASON_REGIONALS` list. Play Limitless tournaments can separately use its `tournament:ended` webhook and structured API; that webhook does not apply to City Leagues.
 
 ## 2027 season views
 
@@ -61,6 +98,6 @@ docker compose logs -f lometa
 
 The Compose example binds port 3000 to `127.0.0.1` on the Pi, so a reverse proxy on that host can reach `http://127.0.0.1:3000` without exposing the app directly to the network. To allow direct LAN access instead, change the port mapping in `compose.yaml` to `"3000:3000"`, then visit `http://<pi-address>:3000`. Do not expose that port directly to the public internet without your intended access controls and TLS proxy.
 
-An API key is optional. If needed, place `LIMITLESS_API_KEY=...` in an untracked `.env` next to `compose.yaml` on the Pi; Docker Compose will pass it to the container. The app still needs outbound HTTPS access to Limitless for its live data.
+An API key is optional. If needed, place `LIMITLESS_API_KEY=...` in an untracked `.env` next to `compose.yaml` on the Pi; Docker Compose will pass it to the container. Both containers need outbound HTTPS access to Limitless for live data. The `japan-sync` service starts immediately and refreshes the shared database daily by default.
 
 To update after copying new source to the Pi, run `docker compose up -d --build` again. This Docker route has not yet been run on the Pi hardware; test it there before relying on it as the production host.
