@@ -119,4 +119,4 @@ The Compose example binds port 3000 to `127.0.0.1` on the Pi, so a reverse proxy
 
 An API key is optional. If needed, place `LIMITLESS_API_KEY=...` in an untracked `.env` next to `compose.yaml` on the Pi; Docker Compose will pass it to the container. Both containers need outbound HTTPS access to Limitless for live data. The `japan-sync` service starts immediately and refreshes the shared database daily by default.
 
-To update after copying new source to the Pi, run `docker compose up -d --build` again. This Docker route has not yet been run on the Pi hardware; test it there before relying on it as the production host.
+The Raspberry Pi runs the production Docker deployment. The deployment timer handles new commits pushed to GitHub `master`; `docker compose up -d --build` remains available for a manual rebuild on the Pi.
