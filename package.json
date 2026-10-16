@@ -17,6 +17,9 @@
     "japan:import-fixture": "tsx scripts/japan-import-fixture.ts",
     "japan:sync": "tsx scripts/japan-sync.ts",
     "japan:sync:scheduler": "node scripts/japan-sync-scheduler.mjs",
+    "season:sync": "tsx scripts/season-sync.ts",
+    "season:sync:scheduler": "node scripts/season-sync-scheduler.mjs",
+    "season:test": "tsx --test lib/limitless/season-catalog.test.ts lib/limitless/season-store.test.ts",
     "japan:test": "tsx --test lib/japan/*.test.ts"
   },
   "dependencies": {

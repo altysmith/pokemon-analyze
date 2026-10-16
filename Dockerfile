@@ -21,6 +21,15 @@ ENV NODE_ENV=production \
 USER node
 CMD ["node", "scripts/japan-sync-scheduler.mjs"]
 
+FROM dependencies AS season-sync
+
+COPY --chown=node:node . .
+RUN mkdir -p /data && chown node:node /data
+ENV NODE_ENV=production \
+    SEASON_CATALOG_PATH=/data/season-events.json
+USER node
+CMD ["node", "scripts/season-sync-scheduler.mjs"]
+
 FROM node:22-bookworm-slim AS runtime
 
 WORKDIR /app

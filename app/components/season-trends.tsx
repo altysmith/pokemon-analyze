@@ -11,6 +11,7 @@ const GEO: Array<{ value: Geography; label: string }> = [
   { value: "europe", label: "Europe" },
   { value: "south-america", label: "South America" },
   { value: "oceania", label: "Oceania" },
+  { value: "other", label: "Other locations" },
 ];
 
 type Trend = { slug: string; name: string; icons: string[]; from: number; to: number; delta: number; fromSample: number; toSample: number };
@@ -137,7 +138,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
       <section className="rounded-3xl border border-[#d0cec3] bg-[#fbfaf6] p-5 sm:p-7">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="section-kicker">2027 season / regional tracker</p>
+            <p className="section-kicker">2027 season / event tracker</p>
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Compare the meta as it moves</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#64727a]">Select a geography and slide between tournaments. Rankings compare the first and last event in your window; any events between them remain in the selection.</p>
           </div>
@@ -152,12 +153,12 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
         {first && last ? (
           <div className="mt-7 grid gap-6 border-t border-[#e2e0d8] pt-6 md:grid-cols-2">
             <div>
-              <label htmlFor="from-regional" className="block text-xs font-bold uppercase tracking-wider text-[#7b8589]">From Regional</label>
+              <label htmlFor="from-regional" className="block text-xs font-bold uppercase tracking-wider text-[#7b8589]">From event</label>
               <div className="mt-1 text-xl font-semibold">{first.shortName} <span className="text-sm font-normal text-[#788389]">{first.date}</span></div>
               <input id="from-regional" className="mt-4 w-full accent-[#237444]" type="range" min="0" max={filtered.length - 1} value={start} onChange={(event) => updateStart(Number(event.target.value))} aria-valuetext={`${first.shortName}, ${first.date}`} />
             </div>
             <div>
-              <label htmlFor="to-regional" className="block text-xs font-bold uppercase tracking-wider text-[#7b8589]">To Regional</label>
+              <label htmlFor="to-regional" className="block text-xs font-bold uppercase tracking-wider text-[#7b8589]">To event</label>
               <div className="mt-1 text-xl font-semibold">{last.shortName} <span className="text-sm font-normal text-[#788389]">{last.date}</span></div>
               <input id="to-regional" className="mt-4 w-full accent-[#e85245]" type="range" min="0" max={filtered.length - 1} value={end} onChange={(event) => updateEnd(Number(event.target.value))} aria-valuetext={`${last.shortName}, ${last.date}`} />
             </div>
@@ -169,7 +170,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
         </div>
       </section>
 
-      {first && last && start === end ? <div className="mt-6 rounded-2xl border border-[#d7d5cc] bg-white p-6 text-sm text-[#68777f]">Move one slider to a different Regional to compare changes.</div> : null}
+      {first && last && start === end ? <div className="mt-6 rounded-2xl border border-[#d7d5cc] bg-white p-6 text-sm text-[#68777f]">Move one slider to a different event to compare changes.</div> : null}
       {first && last && start !== end ? (
         <div className="mt-8 space-y-10">
           <div className="flex flex-wrap items-end gap-4">

@@ -16,6 +16,7 @@ services:
       NODE_OPTIONS: --max-old-space-size=512
       LIMITLESS_API_KEY: ${LIMITLESS_API_KEY:-}
       JP_DB_PATH: /data/japan.sqlite
+      SEASON_CATALOG_PATH: /data/season-events.json
     volumes:
       - japan-data:/data
 
@@ -36,6 +37,24 @@ services:
       JP_SYNC_INTERVAL_HOURS: ${JP_SYNC_INTERVAL_HOURS:-24}
       JP_SYNC_PAGES: ${JP_SYNC_PAGES:-10}
       JP_SYNC_MAX_EVENTS: ${JP_SYNC_MAX_EVENTS:-100}
+    volumes:
+      - japan-data:/data
+
+  season-sync:
+    build:
+      context: .
+      target: season-sync
+    restart: unless-stopped
+    cpus: 0.5
+    pids_limit: 128
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_OPTIONS: --max-old-space-size=256
+      SEASON_CATALOG_PATH: /data/season-events.json
+      SEASON_SYNC_INTERVAL_HOURS: ${SEASON_SYNC_INTERVAL_HOURS:-6}
     volumes:
       - japan-data:/data
 

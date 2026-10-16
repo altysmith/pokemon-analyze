@@ -1,7 +1,9 @@
 import { fetchHtml } from "./http";
 import { LABS_BASE } from "./labs";
+import { readSeasonEvents } from "./season-store";
+import type { SeasonEvent } from "./season-catalog";
 
-export type Geography = "all" | "us" | "europe" | "south-america" | "oceania";
+export type Geography = "all" | "us" | "europe" | "south-america" | "oceania" | "other";
 export type RecordCounts = { wins: number; losses: number; ties: number };
 export type EventDeck = {
   slug: string;
@@ -15,14 +17,7 @@ export type EventDeck = {
   day2: number | null;
   conversion: number | null;
 };
-export type Regional = {
-  id: string;
-  name: string;
-  shortName: string;
-  date: string;
-  geography: Exclude<Geography, "all">;
-  country: string;
-};
+export type Regional = SeasonEvent;
 export type RegionalData = Regional & { decks: EventDeck[]; playerTotal: number };
 export type MetaDeck = {
   slug: string;
@@ -47,13 +42,7 @@ export type Matchup = {
   category: "favorable" | "neutral" | "unfavorable";
 };
 
-export const SEASON_REGIONALS: Regional[] = [
-  { id: "0072", name: "Regional Championship Baltimore", shortName: "Baltimore", date: "2026-09-18", geography: "us", country: "US" },
-  { id: "0073", name: "Regional Championship Brisbane", shortName: "Brisbane", date: "2026-09-26", geography: "oceania", country: "AU" },
-  { id: "0074", name: "Regional Championship Frankfurt", shortName: "Frankfurt", date: "2026-09-26", geography: "europe", country: "DE" },
-  { id: "0075", name: "Regional Championship Recife", shortName: "Recife", date: "2026-10-03", geography: "south-america", country: "BR" },
-  { id: "0076", name: "Regional Championship Louisville", shortName: "Louisville", date: "2026-10-09", geography: "us", country: "US" },
-];
+export const getSeasonEvents = readSeasonEvents;
 
 const TTL = 30 * 60 * 1000;
 const cached = new Map<string, { expires: number; value: unknown }>();
@@ -168,7 +157,7 @@ export async function getRegionalData(event: Regional): Promise<RegionalData> {
 }
 
 export async function getSeasonData() {
-  return Promise.all(SEASON_REGIONALS.map(getRegionalData));
+  return Promise.all((await getSeasonEvents()).map(getRegionalData));
 }
 
 export function aggregateMeta(events: RegionalData[]): MetaDeck[] {

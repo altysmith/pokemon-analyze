@@ -1,6 +1,6 @@
 # LoMeta
 
-LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 15 decks and selectable matchups; `/trends` compares Regional trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked Regional deck. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 15 decks and selectable matchups; `/trends` compares Regional and Special Event trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked deck from those major events. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
 
 ## Git branch for every machine
 
@@ -47,11 +47,20 @@ JP_SYNC_MAX_EVENTS=100
 
 Keep the defaults for normal operation. To run an immediate manual refresh on the Pi, use `docker compose run --rm japan-sync node scripts/japan-sync-scheduler.mjs --once`.
 
-A future Regional job should discover new eligible Regionals and replace the current need to edit the hard-coded `SEASON_REGIONALS` list. Play Limitless tournaments can separately use its `tournament:ended` webhook and structured API; that webhook does not apply to City Leagues.
+### Automated major-event updates
+
+The `season-sync` Pi container checks the Limitless Labs listing every six hours, including at startup. It looks only for 2027-season Regional Championships and Special Events. After an event's listed end date, it checks that the Labs deck and Day 2 conversion pages contain usable rows before adding the event to `/data/season-events.json`. Recent events are checked again for the first week; the web app reads current Labs figures with a 30-minute in-process cache. An incomplete event, failed fetch, or malformed listing does not replace the existing catalog. The catalog shares the persistent Docker volume with Japan data, while the original five events remain a fallback for a fresh installation and local preview.
+
+```bash
+docker compose logs --tail=100 season-sync
+docker compose run --rm season-sync node scripts/season-sync-scheduler.mjs --once
+```
+
+Set `SEASON_SYNC_INTERVAL_HOURS` in the untracked `.env` to change the listing-check interval (1–168 hours). The season boundary is currently September 2026 through August 2027; advancing it for the next season remains a code change. The job also tries to link a new Labs event to the main Limitless tournament page by type, city, country, nearby date, and a verified Labs standings link. If the main-site event has not appeared or cannot be matched uniquely, its metagame, rankings, matchups, and trends still appear; card-average comparisons show an unavailable message until a later sync finds the link. The Play Limitless `tournament:ended` webhook is for its separate tournament platform and is not used for Labs discovery.
 
 ## 2027 season views
 
-The current season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three Regionals by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific Regionals. Geography filters cover all events, US, Europe, South America, and Oceania.
+The initial season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three events by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific events. Geography filters cover all events, US, Europe, South America, Oceania, and other locations.
 
 Share trends use percentage point changes in player share. One slider selects the top 5 to top 35 decks by full-season share (top 15 by default) for both share and win-rate trend lists. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists. The card-construction dropdown independently offers the top 40 named meta decks in the selected geography. It shows the five largest increases and decreases in average copies per published decklist for a selected archetype across the two endpoint Regionals. It requires at least 10 published lists at each event and a change of at least 0.10 copies per list; exact set/number printings are compared.
 

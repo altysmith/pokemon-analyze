@@ -1,12 +1,5 @@
 import { fetchHtml } from "./http";
 
-const MAIN_EVENT_IDS: Record<string, string> = {
-  "0072": "577", // Baltimore
-  "0073": "578", // Brisbane
-  "0074": "579", // Frankfurt
-  "0075": "580", // Recife
-  "0076": "581", // Louisville
-};
 const BASE = "https://www.limitlesstcg.com";
 const MIN_DECKLISTS = 10;
 const MIN_COPY_CHANGE = 0.1;
@@ -82,8 +75,8 @@ function cards(html: string): Card[] {
   return [...found.values()];
 }
 
-async function cardUsage(eventId: string, slug: string, deckName: string) {
-  const base = `${BASE}/tournaments/${MAIN_EVENT_IDS[eventId]}/cards`;
+async function cardUsage(mainEventId: string, slug: string, deckName: string) {
+  const base = `${BASE}/tournaments/${mainEventId}/cards`;
   const index = await cachedHtml(base);
   const names = [deckName, ...(ALIASES[slug] ?? [])].map(normalize);
   const option = deckOptions(index).find((item) => names.includes(normalize(item.name)));
@@ -93,12 +86,12 @@ async function cardUsage(eventId: string, slug: string, deckName: string) {
   const selected = plain(index.match(/<div class="dropdown-select" data-reload data-key="deck">([\s\S]*?)<span class="sub">/)?.[1] ?? "");
   const html = normalize(selected) === normalize(option.name) ? index : await cachedHtml(url);
   const parsed = cards(html);
-  if (parsed.length === 0) throw new Error(`No card rows found for ${deckName} at tournament ${eventId}.`);
+  if (parsed.length === 0) throw new Error(`No card rows found for ${deckName} at tournament ${mainEventId}.`);
   return { decklists: option.decklists, cards: parsed, url, available: true };
 }
 
 export async function getCardComparison(fromId: string, toId: string, slug: string, deckName: string): Promise<CardComparison> {
-  if (!MAIN_EVENT_IDS[fromId] || !MAIN_EVENT_IDS[toId] || fromId === toId) throw new Error("Invalid Regional comparison.");
+  if (!/^\d+$/.test(fromId) || !/^\d+$/.test(toId) || fromId === toId) throw new Error("Invalid event comparison.");
   if (!/^[a-z0-9-]{2,80}$/.test(slug)) throw new Error("Invalid deck slug.");
   const [from, to] = await Promise.all([cardUsage(fromId, slug, deckName), cardUsage(toId, slug, deckName)]);
   const common = { fromDecklists: from.decklists, toDecklists: to.decklists, fromUrl: from.url, toUrl: to.url };

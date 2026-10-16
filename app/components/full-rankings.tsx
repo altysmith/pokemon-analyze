@@ -6,11 +6,12 @@ import type { Geography, MetaDeck } from "@/lib/limitless/season";
 import { DeckSprites } from "./deck-sprites";
 
 const geographies: Array<{ value: Geography; label: string }> = [
-  { value: "all", label: "All regionals" },
+  { value: "all", label: "All events" },
   { value: "us", label: "US" },
   { value: "europe", label: "Europe" },
   { value: "south-america", label: "South America" },
   { value: "oceania", label: "Oceania" },
+  { value: "other", label: "Other locations" },
 ];
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const sharePercent = (value: number) => {
@@ -27,7 +28,7 @@ export function FullRankings({ byGeography }: { byGeography: Record<Geography, M
 
   return <>
     <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-      <div><p className="section-kicker">2027 season / five regionals</p><h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Full deck ranking</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">Every deck ranked by metagame share across the selected Regionals. Rankings preserve their overall position while you search.</p></div>
+      <div><p className="section-kicker">2027 season / major events</p><h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Full deck ranking</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">Every deck ranked by metagame share across Regionals and Special Events. Rankings preserve their overall position while you search.</p></div>
       <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-semibold text-[#27566a] hover:border-[#3485a4]">← Top 15 & matchups</Link>
     </div>
     <div className="mb-4 flex flex-col gap-3 sm:flex-row">

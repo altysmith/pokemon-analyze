@@ -6,11 +6,12 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Geography, Matchup, MetaDeck } from "@/lib/limitless/season";
 
 const GEO: Array<{ value: Geography; label: string }> = [
-  { value: "all", label: "All regionals" },
+  { value: "all", label: "All events" },
   { value: "us", label: "US" },
   { value: "europe", label: "Europe" },
   { value: "south-america", label: "South America" },
   { value: "oceania", label: "Oceania" },
+  { value: "other", label: "Other locations" },
 ];
 const categories = ["favorable", "neutral", "unfavorable"] as const;
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -88,9 +89,9 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
     <>
       <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
-          <p className="section-kicker">2027 season / five regionals</p>
+          <p className="section-kicker">2027 season / major events</p>
           <h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Overall metagame</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">The 15 most played decks across the selected Regionals. Favorable–neutral–unfavorable matchup counts are shown in each row; open Full matchup for opponent records.</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">The 15 most played decks across Regionals and Special Events. Favorable–neutral–unfavorable matchup counts are shown in each row; open Full matchup for opponent records.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-48 flex-1">

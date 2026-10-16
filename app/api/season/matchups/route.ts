@@ -3,7 +3,7 @@ import { aggregateMeta, getAggregatedMatchups, getSeasonData, type Geography } f
 
 export const dynamic = "force-dynamic";
 
-const geographies = new Set<Geography>(["all", "us", "europe", "south-america", "oceania"]);
+const geographies = new Set<Geography>(["all", "us", "europe", "south-america", "oceania", "other"]);
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("deck") ?? "";

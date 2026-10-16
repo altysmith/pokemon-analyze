@@ -4,7 +4,7 @@ import { aggregateMeta, getSeasonData, type Geography, type MetaDeck } from "@/l
 
 export const dynamic = "force-dynamic";
 
-const geographies: Geography[] = ["all", "us", "europe", "south-america", "oceania"];
+const geographies: Geography[] = ["all", "us", "europe", "south-america", "oceania", "other"];
 
 export default async function OverallPage() {
   let events;
