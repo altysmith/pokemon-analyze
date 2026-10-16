@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { EventDeck, Geography, Matchup, MetaDeck, RegionalData } from "@/lib/limitless/season";
 import { CardShifts } from "./card-shifts";
+import { DeckSprites } from "./deck-sprites";
 
 const GEO: Array<{ value: Geography; label: string }> = [
   { value: "all", label: "All regions" },
@@ -12,7 +13,7 @@ const GEO: Array<{ value: Geography; label: string }> = [
   { value: "oceania", label: "Oceania" },
 ];
 
-type Trend = { slug: string; name: string; from: number; to: number; delta: number; fromSample: number; toSample: number };
+type Trend = { slug: string; name: string; icons: string[]; from: number; to: number; delta: number; fromSample: number; toSample: number };
 
 const formatPercent = (value: number) => {
   const percentage = value * 100;
@@ -42,7 +43,7 @@ function trends(from: RegionalData, to: RegionalData, metric: "share" | "winRate
     if (metric === "winRate" && (fromSample < 20 || toSample < 20)) return [];
     const first = deckValue(a, metric);
     const last = deckValue(b, metric);
-    return [{ slug, name: b?.name ?? a?.name ?? slug, from: first, to: last, delta: last - first, fromSample, toSample }];
+    return [{ slug, name: b?.name ?? a?.name ?? slug, icons: b?.icons?.length ? b.icons : a?.icons ?? [], from: first, to: last, delta: last - first, fromSample, toSample }];
   });
 }
 
@@ -57,7 +58,7 @@ function TrendList({ title, items, tone, matchupSummaries, matchupLoading, match
           <div key={item.slug} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 py-3 text-sm">
             <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
             <div className="min-w-0">
-              <div className="truncate font-semibold text-[#1b2930]">{item.name}</div>
+              <div className="flex items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={item.icons} compact /><span className="truncate">{item.name}</span></div>
               <div className="mt-0.5 text-xs text-[#7b8589]">{formatPercent(item.from)} → {formatPercent(item.to)} <span className="font-mono">({item.fromSample} → {item.toSample})</span></div>
               {item.slug in matchupSummaries ? <div className="mt-1 text-[11px] text-[#65747b]" aria-label={`Matchups versus top ${matchupOpponentCount} meta decks: ${matchupSummaries[item.slug].favorable} favorable, ${matchupSummaries[item.slug].neutral} neutral, ${matchupSummaries[item.slug].unfavorable} unfavorable`}>
                 vs top {matchupOpponentCount}: <span className="font-semibold text-[#237444]">{matchupSummaries[item.slug].favorable} F</span> · <span className="font-semibold text-[#586d78]">{matchupSummaries[item.slug].neutral} N</span> · <span className="font-semibold text-[#bd4c45]">{matchupSummaries[item.slug].unfavorable} U</span>{matchupSummaries[item.slug].total < matchupOpponentCount - 1 ? <span> · {matchupSummaries[item.slug].total} recorded opponents</span> : null}
