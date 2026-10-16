@@ -4,7 +4,7 @@ LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. It
 
 ## Git branch for every machine
 
-`master` is the GitHub default branch and the source used for the Raspberry Pi deployment. Use `git switch master` and `git pull --ff-only origin master` in existing checkouts; new clones select it automatically. The old `main` branch is retained for existing checkouts, but new work should go to `master`. On the Pi, pull in `/home/ealtenho/lometa` and run `sudo docker compose up -d --build` to publish a code change; pushing GitHub alone does not update the running containers.
+`master` is the GitHub default branch and the source used for the Raspberry Pi deployment. Use `git switch master` and `git pull --ff-only origin master` in existing checkouts; new clones select it automatically. The old `main` branch is retained for existing checkouts, but new work should go to `master`. The Pi checks GitHub `master` every two minutes with `deploy/lometa-auto-deploy.timer` and rebuilds the Compose services when it finds a new commit. It requires a clean Pi checkout, checks the local HTTP response, and restores the prior commit and containers if the release fails. The failed commit is skipped until `master` changes again. Logs are available with `journalctl -u lometa-auto-deploy.service`.
 
 ```bash
 cd /home/ealtenho/lometa

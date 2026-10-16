@@ -1,0 +1,10 @@
+[Unit]
+Description=Check GitHub master for LoMeta releases
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+Unit=lometa-auto-deploy.service
+
+[Install]
+WantedBy=timers.target

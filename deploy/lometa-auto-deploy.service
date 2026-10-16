@@ -1,0 +1,11 @@
+[Unit]
+Description=Deploy new LoMeta master commits to production
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=ealtenho
+WorkingDirectory=/home/ealtenho/lometa
+ExecStart=/bin/bash /home/ealtenho/lometa/deploy/auto-deploy.sh
+TimeoutStartSec=30min
