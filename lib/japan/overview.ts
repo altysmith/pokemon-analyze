@@ -35,6 +35,14 @@ export function placementPoints(placing: number) {
   return 0;
 }
 
+export function japanDeckLabel(sourceValue: string) {
+  const icons = sourceValue.split("+").filter(Boolean);
+  if (icons.length === 2 && icons.includes("kangaskhan-mega") && icons.includes("rayquaza-mega")) {
+    return "Mega Kangaskhan";
+  }
+  return displayName(sourceValue).replaceAll("Kangaskhan Mega", "Mega Kangaskhan");
+}
+
 export function japanSourceData(db: Database.Database): JapanSourceData {
   const events = db.prepare(`SELECT id, event_date, placement_count, classified_top8_count, decklist_count FROM jp_events`).all() as EventRow[];
   const placements = db.prepare(`SELECT p.archetype_id, a.source_value, p.placing, p.decklist_url,
@@ -64,7 +72,7 @@ export function summarizeJapanData(data: JapanSourceData, range: { from: string 
     let group = groups.get(row.archetype_id);
     if (!group) {
       group = {
-        id: row.archetype_id, name: displayName(row.source_value), icons: row.source_value.split("+").filter(Boolean), placementPoints: 0,
+        id: row.archetype_id, name: japanDeckLabel(row.source_value), icons: row.source_value.split("+").filter(Boolean), placementPoints: 0,
         wins: 0, top8: 0, finishes: 0, latestWinningListUrl: null,
         latestWinningDate: null, winningEventId: -1,
       };

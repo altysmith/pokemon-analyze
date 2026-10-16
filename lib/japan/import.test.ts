@@ -6,7 +6,7 @@ import { openJapanDb } from "../../db/japan";
 import { FixtureJapanSource } from "./fixture-source";
 import { resolveJapanDateRange } from "./date-range";
 import { displayName, importJapanEvent, setArchetypeAlias } from "./import";
-import { japanOverview, japanSourceData, placementPoints, summarizeJapanData } from "./overview";
+import { japanDeckLabel, japanOverview, japanSourceData, placementPoints, summarizeJapanData } from "./overview";
 import { parseCityLeagueEvent, parseCityLeagueIndex } from "./parse";
 import { nextRefreshDays } from "./refresh-policy";
 import { eventNeedsRefresh, syncJapanSource } from "./sync";
@@ -15,6 +15,14 @@ import type { JapanEventSnapshot } from "./source";
 const fixture = (name: string) => readFileSync(path.resolve("test/fixtures/japan", name), "utf8");
 const listing = parseCityLeagueIndex(fixture("index.html"))[0];
 const snapshot = () => parseCityLeagueEvent(fixture("event.html"), listing);
+
+test("shortens Mega Kangaskhan labels without changing source archetypes", () => {
+  assert.equal(japanDeckLabel("kangaskhan-mega+rayquaza-mega"), "Mega Kangaskhan");
+  assert.equal(japanDeckLabel("rayquaza-mega+kangaskhan-mega"), "Mega Kangaskhan");
+  assert.equal(japanDeckLabel("kangaskhan-mega+slowking"), "Mega Kangaskhan / Slowking");
+  assert.equal(japanDeckLabel("slowking+kangaskhan-mega"), "Slowking / Mega Kangaskhan");
+  assert.equal(japanDeckLabel("dragapult+rayquaza-mega"), "Dragapult / Rayquaza Mega");
+});
 
 test("parses source identity, original values, missing data, and icon identifiers", () => {
   assert.equal(listing.id, "5062");
