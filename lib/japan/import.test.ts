@@ -16,11 +16,11 @@ const fixture = (name: string) => readFileSync(path.resolve("test/fixtures/japan
 const listing = parseCityLeagueIndex(fixture("index.html"))[0];
 const snapshot = () => parseCityLeagueEvent(fixture("event.html"), listing);
 
-test("shortens Mega Kangaskhan labels without changing source archetypes", () => {
-  assert.equal(japanDeckLabel("kangaskhan-mega+rayquaza-mega"), "Mega Kangaskhan");
-  assert.equal(japanDeckLabel("rayquaza-mega+kangaskhan-mega"), "Mega Kangaskhan");
-  assert.equal(japanDeckLabel("kangaskhan-mega+slowking"), "Mega Kangaskhan / Slowking");
-  assert.equal(japanDeckLabel("slowking+kangaskhan-mega"), "Slowking / Mega Kangaskhan");
+test("abbreviates Kangaskhan while preserving both Pokemon in each deck label", () => {
+  assert.equal(japanDeckLabel("kangaskhan-mega+rayquaza-mega"), "Mega Kanga / Rayquaza Mega");
+  assert.equal(japanDeckLabel("rayquaza-mega+kangaskhan-mega"), "Rayquaza Mega / Mega Kanga");
+  assert.equal(japanDeckLabel("kangaskhan-mega+slowking"), "Mega Kanga / Slowking");
+  assert.equal(japanDeckLabel("slowking+kangaskhan-mega"), "Slowking / Mega Kanga");
   assert.equal(japanDeckLabel("dragapult+rayquaza-mega"), "Dragapult / Rayquaza Mega");
 });
 

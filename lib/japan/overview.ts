@@ -36,11 +36,7 @@ export function placementPoints(placing: number) {
 }
 
 export function japanDeckLabel(sourceValue: string) {
-  const icons = sourceValue.split("+").filter(Boolean);
-  if (icons.length === 2 && icons.includes("kangaskhan-mega") && icons.includes("rayquaza-mega")) {
-    return "Mega Kangaskhan";
-  }
-  return displayName(sourceValue).replaceAll("Kangaskhan Mega", "Mega Kangaskhan");
+  return displayName(sourceValue).replaceAll("Kangaskhan Mega", "Mega Kanga");
 }
 
 export function japanSourceData(db: Database.Database): JapanSourceData {
