@@ -2,6 +2,10 @@
 
 LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 15 decks and selectable matchups; `/trends` compares Regional trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked Regional deck. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
 
+## Git branch for every machine
+
+`master` is the GitHub default branch and the source used for the Raspberry Pi deployment. Use `git switch master` and `git pull --ff-only origin master` in existing checkouts; new clones select it automatically. The old `main` branch is retained for existing checkouts, but new work should go to `master`. The Pi currently receives a release archive built from `master`, so pushing GitHub alone does not update the running containers.
+
 ## Japan City League (local only)
 
 The Japan City League pipeline is separate from all existing Regional and international calculations. Its SQLite tables use the `jp_` prefix. The `/japan` page reads local SQLite on the Next.js/Pi path. The Sites-style local preview uses a generated snapshot from that same database because its worker cannot open native SQLite. Neither path adds Japan results to the Regional dashboards.
