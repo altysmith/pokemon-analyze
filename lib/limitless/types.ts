@@ -55,6 +55,7 @@ export type Pairing = {
 export type OverallMetaDeck = {
   rank: number;
   id: string | null;
+  url: string | null;
   name: string;
   points: number;
   share: number;

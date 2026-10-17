@@ -25,6 +25,7 @@ export type RegionalData = Regional & { decks: EventDeck[]; playerTotal: number 
 export type MetaDeck = {
   slug: string;
   name: string;
+  limitlessUrl: string;
   icons: string[];
   players: number;
   share: number;
@@ -219,10 +220,13 @@ export function aggregateMeta(events: RegionalData[]): MetaDeck[] {
   for (const event of events) {
     for (const deck of event.decks) {
       const item = map.get(deck.slug) ?? {
-        slug: deck.slug, name: deck.name, icons: deck.icons, players: 0, share: 0,
+        slug: deck.slug, name: deck.name, icons: deck.icons,
+        limitlessUrl: `${LABS_BASE}/${event.id}/decks/${encodeURIComponent(deck.slug)}`,
+        players: 0, share: 0,
         record: { wins: 0, losses: 0, ties: 0 }, winRate: 0,
         day1: 0, day2: 0, conversion: null, events: 0,
       };
+      if (map.has(deck.slug)) item.limitlessUrl = `${LABS_BASE}/${event.id}/decks/${encodeURIComponent(deck.slug)}`;
       item.players += deck.players;
       if (!item.icons.length && deck.icons.length) item.icons = deck.icons;
       addRecord(item.record, deck.record);
