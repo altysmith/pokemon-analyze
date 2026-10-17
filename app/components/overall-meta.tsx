@@ -18,6 +18,7 @@ const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const EMPTY_MATCHUPS: Matchup[] = [];
 const MATCHUP_CACHE_MS = 5 * 60 * 1000;
 const MATCHUP_CACHE_PREFIX = "lometa:matchups:v1:";
+const MATCHUP_REQUEST_TIMEOUT_MS = 25_000;
 
 function readCachedMatchups(key: string, slugs: string[]): Record<string, Matchup[]> | null {
   try {
@@ -50,8 +51,10 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
   const deckSlugs = decks.map((deck) => deck.slug).join(",");
   const matchupKey = `${geography}:${deckSlugs}`;
   const [matchupData, setMatchupData] = useState<{ key: string; rows: Record<string, Matchup[] | null> } | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const loading = matchupData?.key !== matchupKey;
   const matchupRows = loading ? {} : matchupData?.rows ?? {};
+  const failedCount = Object.values(matchupRows).filter((rows) => rows === null).length;
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const selected = decks.find((deck) => deck.slug === selectedSlug);
   const selectedLoading = loading || !!selectedSlug && !(selectedSlug in matchupRows);
@@ -65,15 +68,17 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
 
   useEffect(() => {
     const controller = new AbortController();
+    let active = true;
     const cacheKey = `${MATCHUP_CACHE_PREFIX}${matchupKey}`;
     const slugs = deckSlugs.split(",").filter(Boolean);
     const cachedRows = readCachedMatchups(cacheKey, slugs);
     if (cachedRows) {
       queueMicrotask(() => {
-        if (!controller.signal.aborted) setMatchupData({ key: matchupKey, rows: cachedRows });
+        if (active) setMatchupData({ key: matchupKey, rows: cachedRows });
       });
-      return () => controller.abort();
+      return () => { active = false; controller.abort(); };
     }
+    const timeout = setTimeout(() => controller.abort(), MATCHUP_REQUEST_TIMEOUT_MS);
     Promise.all(slugs.map(async (slug) => {
       let result: Matchup[] | null;
       try {
@@ -84,21 +89,21 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
       } catch {
         result = null;
       }
-      if (!controller.signal.aborted) setMatchupData((current) => ({
+      if (active) setMatchupData((current) => ({
         key: matchupKey,
         rows: { ...(current?.key === matchupKey ? current.rows : {}), [slug]: result },
       }));
       return [slug, result] as const;
     })).then((rows) => {
-      if (controller.signal.aborted || rows.some(([, result]) => result === null)) return;
+      if (!active || rows.some(([, result]) => result === null)) return;
       try {
         localStorage.setItem(cacheKey, JSON.stringify({ expires: Date.now() + MATCHUP_CACHE_MS, rows: Object.fromEntries(rows) }));
       } catch {
         // A full or disabled storage area does not affect the visible results.
       }
-    });
-    return () => controller.abort();
-  }, [deckSlugs, geography, matchupKey]);
+    }).finally(() => clearTimeout(timeout));
+    return () => { active = false; clearTimeout(timeout); controller.abort(); };
+  }, [deckSlugs, geography, matchupKey, retryCount]);
 
   const categorized = useMemo(() => Object.fromEntries(categories.map((category) =>
     [category, matchups.filter((matchup) => matchup.category === category)]
@@ -150,6 +155,8 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
           </div>
         </div>
       </div>
+
+      {failedCount > 0 ? <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e5c8c2] bg-[#fff4f1] px-4 py-3 text-sm text-[#8f433b]" role="status"><span>{failedCount} matchup {failedCount === 1 ? "request" : "requests"} could not finish.</span><button type="button" onClick={() => setRetryCount((count) => count + 1)} className="rounded-lg border border-[#bd8a82] bg-white px-3 py-2 font-semibold hover:bg-[#fff9f7]">Retry matchups</button></div> : null}
 
         <section className="overflow-hidden rounded-2xl border border-[#d7d5cc] bg-white" aria-label="Top 15 decks">
           <div className="md:overflow-x-auto">
