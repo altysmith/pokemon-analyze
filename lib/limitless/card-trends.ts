@@ -1,7 +1,7 @@
 import { fetchHtml } from "./http";
 
 const BASE = "https://www.limitlesstcg.com";
-const MIN_DECKLISTS = 10;
+const MIN_DECKLISTS = 5;
 const MIN_COPY_CHANGE = 0.1;
 const ALIASES: Record<string, string[]> = {
   "ogerpon-meganium-hydrapple": ["Hydrapple"],
