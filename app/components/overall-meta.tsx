@@ -16,6 +16,21 @@ const GEO: Array<{ value: Geography; label: string }> = [
 const categories = ["favorable", "neutral", "unfavorable"] as const;
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const EMPTY_MATCHUPS: Matchup[] = [];
+const MATCHUP_CACHE_MS = 5 * 60 * 1000;
+const MATCHUP_CACHE_PREFIX = "lometa:matchups:v1:";
+
+function readCachedMatchups(key: string, slugs: string[]): Record<string, Matchup[]> | null {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+    const entry = JSON.parse(saved) as { expires: number; rows: Record<string, Matchup[]> };
+    if (entry.expires > Date.now() && entry.rows && slugs.every((slug) => Array.isArray(entry.rows[slug]))) return entry.rows;
+    localStorage.removeItem(key);
+  } catch {
+    // Storage can be unavailable in private browsing; requests still work.
+  }
+  return null;
+}
 
 function MatchupCounts({ matchups, opponents, loading }: { matchups: Matchup[] | null | undefined; opponents: Set<string>; loading: boolean }) {
   if (loading) return <span className="text-xs text-[#78858a]">Loading…</span>;
@@ -33,34 +48,57 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
   const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(15);
   const opponentSlugs = new Set(byGeography[geography].slice(0, opponentCount).map((deck) => deck.slug));
   const deckSlugs = decks.map((deck) => deck.slug).join(",");
-  const matchupKey = `${geography}:${opponentCount}:${deckSlugs}`;
+  const matchupKey = `${geography}:${deckSlugs}`;
   const [matchupData, setMatchupData] = useState<{ key: string; rows: Record<string, Matchup[] | null> } | null>(null);
   const loading = matchupData?.key !== matchupKey;
   const matchupRows = loading ? {} : matchupData?.rows ?? {};
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const selected = decks.find((deck) => deck.slug === selectedSlug);
-  const matchups = selectedSlug && selectedSlug in matchupRows ? matchupRows[selectedSlug] ?? EMPTY_MATCHUPS : EMPTY_MATCHUPS;
-  const error = !loading && selectedSlug && matchupRows[selectedSlug] === null ? "Unable to load matchup records." : "";
+  const selectedLoading = loading || !!selectedSlug && !(selectedSlug in matchupRows);
+  const matchups = selectedSlug && selectedSlug in matchupRows
+    ? (matchupRows[selectedSlug] ?? EMPTY_MATCHUPS).filter((matchup) => opponentSlugs.has(matchup.slug))
+    : EMPTY_MATCHUPS;
+  const error = !selectedLoading && selectedSlug && matchupRows[selectedSlug] === null ? "Unable to load matchup records." : "";
   const [category, setCategory] = useState<"all" | Matchup["category"]>("all");
   const [opponentSlug, setOpponentSlug] = useState("");
   const [showAllMatchups, setShowAllMatchups] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all(deckSlugs.split(",").filter(Boolean).map(async (slug) => {
+    const cacheKey = `${MATCHUP_CACHE_PREFIX}${matchupKey}`;
+    const slugs = deckSlugs.split(",").filter(Boolean);
+    const cachedRows = readCachedMatchups(cacheKey, slugs);
+    if (cachedRows) {
+      queueMicrotask(() => {
+        if (!controller.signal.aborted) setMatchupData({ key: matchupKey, rows: cachedRows });
+      });
+      return () => controller.abort();
+    }
+    Promise.all(slugs.map(async (slug) => {
+      let result: Matchup[] | null;
       try {
-        const response = await fetch(`/api/season/matchups?deck=${encodeURIComponent(slug)}&geography=${geography}&opponents=${opponentCount}`, { signal: controller.signal });
-        if (!response.ok) return [slug, null] as const;
+        const response = await fetch(`/api/season/matchups?deck=${encodeURIComponent(slug)}&geography=${geography}&opponents=25`, { signal: controller.signal });
+        if (!response.ok) throw new Error("Matchups unavailable");
         const body = await response.json() as { matchups?: Matchup[] };
-        return [slug, body.matchups ?? []] as const;
+        result = body.matchups ?? [];
       } catch {
-        return [slug, null] as const;
+        result = null;
       }
+      if (!controller.signal.aborted) setMatchupData((current) => ({
+        key: matchupKey,
+        rows: { ...(current?.key === matchupKey ? current.rows : {}), [slug]: result },
+      }));
+      return [slug, result] as const;
     })).then((rows) => {
-      if (!controller.signal.aborted) setMatchupData({ key: matchupKey, rows: Object.fromEntries(rows) });
+      if (controller.signal.aborted || rows.some(([, result]) => result === null)) return;
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ expires: Date.now() + MATCHUP_CACHE_MS, rows: Object.fromEntries(rows) }));
+      } catch {
+        // A full or disabled storage area does not affect the visible results.
+      }
     });
     return () => controller.abort();
-  }, [deckSlugs, geography, matchupKey, opponentCount]);
+  }, [deckSlugs, geography, matchupKey]);
 
   const categorized = useMemo(() => Object.fromEntries(categories.map((category) =>
     [category, matchups.filter((matchup) => matchup.category === category)]
@@ -123,17 +161,17 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{percent(deck.share)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono font-semibold md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win %</span>{percent(deck.winRate)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Day 2</span>{deck.conversion === null ? "—" : percent(deck.conversion)}</td>
-                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">F–N–U · top {opponentCount}</span><MatchupCounts matchups={matchupRows[deck.slug]} opponents={opponentSlugs} loading={loading} /></td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">F–N–U · top {opponentCount}</span><MatchupCounts matchups={matchupRows[deck.slug]} opponents={opponentSlugs} loading={loading || !(deck.slug in matchupRows)} /></td>
                   <td className="col-span-2 pt-1 md:table-cell md:px-4 md:py-3 md:text-right"><button type="button" onClick={() => toggleDeck(deck.slug)} aria-expanded={selected?.slug === deck.slug} aria-controls={`matchup-${deck.slug}`} className="w-full whitespace-nowrap rounded-md border border-[#c6d0d0] bg-white px-2.5 py-2 text-xs font-semibold text-[#27566a] hover:border-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#3485a4] md:w-auto md:py-1.5 md:text-[11px]">{selected?.slug === deck.slug ? "Close ↑" : "Full matchup ↗"}</button></td>
                 </tr>
                 {selected?.slug === deck.slug ? <tr id={`matchup-${deck.slug}`} className="block md:table-row"><td colSpan={6} className="block w-full bg-[#f7f8f4] px-4 py-5 md:table-cell sm:px-6">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div><p className="section-kicker">Matchup profile</p><h2 className="flex items-center gap-2 text-xl font-semibold"><DeckSprites icons={deck.icons} /><span>{deck.name}</span></h2><p className="mt-1 text-xs text-[#78858a]">Overall W–L–T: {deck.record.wins}–{deck.record.losses}–{deck.record.ties} across {deck.events} event{deck.events === 1 ? "" : "s"}</p><p className="mt-1 text-xs text-[#78858a]">Win % counts each tie as ⅓ of a win.</p></div>
-                    {!loading && !error ? <div><p className="mb-2 text-xs font-semibold text-[#6f7a7f]">Opposing decks versus top {opponentCount} · mirror excluded</p><div className="flex flex-wrap gap-2" aria-label={`Matchup categories versus top ${opponentCount} opposing decks, excluding mirror matches`}>{categories.map((item) => <span key={item} className={`rounded-lg px-3 py-2 text-xs font-semibold ${item === "favorable" ? "bg-[#e3f2e5] text-[#237444]" : item === "unfavorable" ? "bg-[#f9e8e5] text-[#bd4c45]" : "bg-[#e9eef0] text-[#586d78]"}`}>{categorized[item].length} {item}</span>)}</div></div> : null}
+                    {!selectedLoading && !error ? <div><p className="mb-2 text-xs font-semibold text-[#6f7a7f]">Opposing decks versus top {opponentCount} · mirror excluded</p><div className="flex flex-wrap gap-2" aria-label={`Matchup categories versus top ${opponentCount} opposing decks, excluding mirror matches`}>{categories.map((item) => <span key={item} className={`rounded-lg px-3 py-2 text-xs font-semibold ${item === "favorable" ? "bg-[#e3f2e5] text-[#237444]" : item === "unfavorable" ? "bg-[#f9e8e5] text-[#bd4c45]" : "bg-[#e9eef0] text-[#586d78]"}`}>{categorized[item].length} {item}</span>)}</div></div> : null}
                   </div>
-                  {loading ? <p className="mt-5 text-sm text-[#6f7b80]">Loading matchup records…</p> : null}
+                  {selectedLoading ? <p className="mt-5 text-sm text-[#6f7b80]">Loading matchup records…</p> : null}
                   {error ? <p className="mt-5 text-sm text-[#aa4d44]">{error}</p> : null}
-                  {!loading && !error ? <><div className="mt-5 grid gap-4 border-t border-[#dfe2dc] pt-5 md:grid-cols-[minmax(0,180px)_minmax(0,280px)_minmax(0,1fr)] md:items-end">
+                  {!selectedLoading && !error ? <><div className="mt-5 grid gap-4 border-t border-[#dfe2dc] pt-5 md:grid-cols-[minmax(0,180px)_minmax(0,280px)_minmax(0,1fr)] md:items-end">
                     <div><label htmlFor="matchup-category" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Result category</label><select id="matchup-category" value={category} onChange={(event) => { setCategory(event.target.value as typeof category); setOpponentSlug(""); setShowAllMatchups(false); }} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3485a4]"><option value="all">All matchups</option><option value="favorable">Favorable (≥55%)</option><option value="neutral">Neutral (45–55%)</option><option value="unfavorable">Unfavorable (≤45%)</option></select></div>
                     <div><label htmlFor="matchup-opponent" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Opposing meta deck</label><select id="matchup-opponent" value={opponentSlug} onChange={(event) => { setOpponentSlug(event.target.value); if (event.target.value) setShowAllMatchups(true); }} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3485a4]"><option value="">Select a deck…</option>{filtered.map((matchup) => <option key={matchup.slug} value={matchup.slug}>{matchup.name} · {percent(matchup.winRate)}</option>)}</select></div>
                     <div className="min-h-12 rounded-xl border border-[#e0e3df] bg-white px-4 py-3 text-sm" aria-live="polite">{opponent ? <div className="flex flex-wrap items-center justify-between gap-2"><span className="inline-flex items-center gap-1 font-semibold">vs. <DeckSprites icons={opponent.icons} compact />{opponent.name}</span><span className={opponent.category === "favorable" ? "font-bold text-[#237444]" : opponent.category === "unfavorable" ? "font-bold text-[#bd4c45]" : "font-bold text-[#586d78]"}>{percent(opponent.winRate)} · {opponent.category}</span><span className="font-mono text-xs text-[#78858a]">{opponent.record.wins}–{opponent.record.losses}–{opponent.record.ties} ({opponent.matches} matches)</span></div> : <span className="text-[#78858a]">Choose an opposing deck to see its win rate and record.</span>}</div>
