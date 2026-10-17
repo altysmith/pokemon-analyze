@@ -2,6 +2,9 @@ import { fetchHtml } from "./http";
 import { LABS_BASE } from "./labs";
 import { readSeasonEvents } from "./season-store";
 import type { SeasonEvent } from "./season-catalog";
+import { createHash, randomUUID } from "node:crypto";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export type Geography = "all" | "us" | "europe" | "south-america" | "oceania" | "other";
 export type RecordCounts = { wins: number; losses: number; ties: number };
@@ -45,19 +48,69 @@ export type Matchup = {
 export const getSeasonEvents = readSeasonEvents;
 
 const TTL = 30 * 60 * 1000;
+const MAX_STALE = 24 * 60 * 60 * 1000;
 const cached = new Map<string, { expires: number; value: unknown }>();
 const pending = new Map<string, Promise<unknown>>();
+
+function cachePath(key: string) {
+  const dir = process.env.SEASON_CACHE_DIR;
+  return dir ? join(dir, `${createHash("sha256").update(`v1:${key}`).digest("hex")}.json`) : null;
+}
+
+async function readDiskCache<T>(key: string): Promise<{ savedAt: number; value: T } | null> {
+  const path = cachePath(key);
+  if (!path) return null;
+  try {
+    const entry: unknown = JSON.parse(await readFile(path, "utf8"));
+    if (entry && typeof entry === "object") {
+      const record = entry as Record<string, unknown>;
+      if (typeof record.savedAt === "number" && Number.isFinite(record.savedAt)
+        && record.savedAt <= Date.now() && Date.now() - record.savedAt < MAX_STALE && "value" in record) {
+        return { savedAt: record.savedAt, value: record.value as T };
+      }
+    }
+  } catch {
+    // A missing or corrupt cache entry can be rebuilt from Limitless.
+  }
+  return null;
+}
+
+async function writeDiskCache<T>(key: string, value: T) {
+  const path = cachePath(key);
+  if (!path) return;
+  const temporary = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await mkdir(process.env.SEASON_CACHE_DIR!, { recursive: true });
+    await writeFile(temporary, JSON.stringify({ savedAt: Date.now(), value }));
+    await rename(temporary, path);
+  } catch (error) {
+    await unlink(temporary).catch(() => {});
+    console.warn(`[season cache] Could not save ${key}: ${error instanceof Error ? error.message : error}`);
+  }
+}
 
 async function memo<T>(key: string, load: () => Promise<T>): Promise<T> {
   const hit = cached.get(key);
   if (hit && hit.expires > Date.now()) return hit.value as T;
   const inFlight = pending.get(key);
   if (inFlight) return inFlight as Promise<T>;
-  const task = load().then((value) => {
+  const disk = await readDiskCache<T>(key);
+  const afterRead = pending.get(key);
+  if (afterRead) return disk ? disk.value : afterRead as Promise<T>;
+  if (disk) {
+    cached.set(key, { expires: disk.savedAt + TTL > Date.now() ? disk.savedAt + TTL : Date.now() + 60_000, value: disk.value });
+    if (disk.savedAt + TTL > Date.now()) return disk.value;
+  }
+  const task = load().then(async (value) => {
     cached.set(key, { expires: Date.now() + TTL, value });
+    await writeDiskCache(key, value);
     return value;
   }).finally(() => pending.delete(key));
   pending.set(key, task);
+  if (disk) {
+    void task.catch(() => {});
+    return disk.value;
+  }
   return task;
 }
 

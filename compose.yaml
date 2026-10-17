@@ -17,6 +17,7 @@ services:
       LIMITLESS_API_KEY: ${LIMITLESS_API_KEY:-}
       JP_DB_PATH: /data/japan.sqlite
       SEASON_CATALOG_PATH: /data/season-events.json
+      SEASON_CACHE_DIR: /data/season-cache
     volumes:
       - japan-data:/data
 
@@ -54,6 +55,7 @@ services:
     environment:
       NODE_OPTIONS: --max-old-space-size=256
       SEASON_CATALOG_PATH: /data/season-events.json
+      SEASON_CACHE_DIR: /data/season-cache
       SEASON_SYNC_INTERVAL_HOURS: ${SEASON_SYNC_INTERVAL_HOURS:-6}
     volumes:
       - japan-data:/data
