@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { describeRun, nextDailyRun, validateTimeZone } from "./japan-sync-schedule.mjs";
 
 const numberSetting = (name, fallback, minimum, maximum) => {
   const raw = process.env[name];
@@ -10,11 +11,12 @@ const numberSetting = (name, fallback, minimum, maximum) => {
   return value;
 };
 
-const intervalHours = numberSetting("JP_SYNC_INTERVAL_HOURS", 24, 1, 168);
-const pages = numberSetting("JP_SYNC_PAGES", 1, 1, 10);
-const maxEvents = numberSetting("JP_SYNC_MAX_EVENTS", 10, 1, 100);
+const pages = numberSetting("JP_SYNC_PAGES", 10, 1, 10);
+const maxEvents = numberSetting("JP_SYNC_MAX_EVENTS", 100, 1, 100);
+const runHour = numberSetting("JP_SYNC_HOUR", 11, 0, 23);
+const runMinute = numberSetting("JP_SYNC_MINUTE", 0, 0, 59);
+const timeZone = validateTimeZone(process.env.JP_SYNC_TIME_ZONE || "America/New_York");
 const runOnce = process.argv.includes("--once");
-const intervalMs = intervalHours * 60 * 60 * 1_000;
 
 let stopping = false;
 let activeChild;
@@ -73,7 +75,7 @@ do {
     if (!succeeded && !stopping) process.exitCode = 1;
     break;
   }
-  const nextRun = new Date(Date.now() + intervalMs).toISOString();
-  console.log(`[japan-sync] next run at ${nextRun}`);
-  await sleep(intervalMs);
+  const nextRun = nextDailyRun(new Date(), runHour, runMinute, timeZone);
+  console.log(`[japan-sync] next run at ${nextRun.toISOString()} (${describeRun(nextRun, timeZone)} ${timeZone})`);
+  await sleep(nextRun.getTime() - Date.now());
 } while (!stopping);
