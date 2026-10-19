@@ -35,12 +35,14 @@ The Japan page defaults to the last 30 calendar days in the `America/New_York` t
 
 ### Automated Japan updates
 
-Limitless does not send Play Limitless webhooks for main-site Japan City League results, so the Pi deployment uses a dedicated `japan-sync` container instead. It runs once at startup and every 24 hours thereafter. The existing refresh policy selectively revisits recent or incomplete events, ingestion runs and source revisions remain recorded in SQLite, and failures are visible in `docker compose logs japan-sync`.
+Limitless does not send Play Limitless webhooks for main-site Japan City League results, so the Pi deployment uses a dedicated `japan-sync` container instead. It runs once at startup and then every day at 11:00 AM `America/New_York`, following daylight-saving changes. The existing refresh policy selectively revisits recent or incomplete events, ingestion runs and source revisions remain recorded in SQLite, and failures are visible in `docker compose logs japan-sync`.
 
 The schedule is configurable in the untracked `.env` file:
 
 ```dotenv
-JP_SYNC_INTERVAL_HOURS=24
+JP_SYNC_TIME_ZONE=America/New_York
+JP_SYNC_HOUR=11
+JP_SYNC_MINUTE=0
 JP_SYNC_PAGES=10
 JP_SYNC_MAX_EVENTS=100
 ```

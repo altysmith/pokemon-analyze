@@ -7,7 +7,7 @@ Japan City League results do **not** use the Play Limitless webhook system. They
 ## What the deployment runs
 
 - `lometa`: the Next.js web application, bound to `127.0.0.1:3000` by default.
-- `japan-sync`: runs once when it starts and every 24 hours afterward.
+- `japan-sync`: runs once when it starts and then daily at 11:00 AM Eastern.
 - `season-sync`: checks the Labs listing at startup and every six hours, then validates newly completed Regionals and Special Events before adding them to the shared season catalog.
 - `japan-data`: a named Docker volume containing the shared SQLite database and season event catalog.
 
@@ -74,18 +74,22 @@ The untracked `.env` file can override these defaults:
 
 ```dotenv
 LIMITLESS_API_KEY=
-JP_SYNC_INTERVAL_HOURS=24
-JP_SYNC_PAGES=1
-JP_SYNC_MAX_EVENTS=10
+JP_SYNC_TIME_ZONE=America/New_York
+JP_SYNC_HOUR=11
+JP_SYNC_MINUTE=0
+JP_SYNC_PAGES=10
+JP_SYNC_MAX_EVENTS=100
 SEASON_SYNC_INTERVAL_HOURS=6
 ```
 
-- `JP_SYNC_INTERVAL_HOURS`: integer from 1 through 168.
+- `JP_SYNC_TIME_ZONE`: IANA time-zone name; the default follows Eastern daylight-saving changes.
+- `JP_SYNC_HOUR`: local hour from 0 through 23.
+- `JP_SYNC_MINUTE`: local minute from 0 through 59.
 - `JP_SYNC_PAGES`: listing pages checked per run, from 1 through 10.
 - `JP_SYNC_MAX_EVENTS`: maximum due event pages imported per run, from 1 through 100.
 - `SEASON_SYNC_INTERVAL_HOURS`: Labs listing check interval, from 1 through 168 hours. New events are checked after their listed end date.
 
-The defaults are intentionally conservative. Do not reduce the interval aggressively; the source is a public website rather than a City League API.
+The defaults are intentionally conservative. Do not increase the polling frequency aggressively; the source is a public website rather than a City League API.
 
 ## Persistence and backups
 
