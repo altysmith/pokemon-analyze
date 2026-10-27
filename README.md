@@ -1,6 +1,6 @@
 # LoMeta
 
-LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 15 decks and selectable matchups; `/trends` compares Regional and Special Event trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked deck from those major events. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
+LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. Its home page shows the overall top 25 decks and selectable matchups; `/trends` compares Regional and Special Event trends; `/japan` shows Japan City League placements; `/rankings` lists every ranked deck from those major events. `/overall` redirects to the home page. The previous `pokemon-analyze` application was consulted only for source discovery.
 
 ## Git branch for every machine
 
@@ -66,7 +66,7 @@ The initial season set contains Baltimore, Brisbane, Frankfurt, Recife, and Loui
 
 Share trends use percentage point changes in player share. One slider selects the top 5 to top 35 decks by full-season share (top 15 by default) for both share and win-rate trend lists. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists. The card-construction dropdown independently offers the top 40 named meta decks in the selected geography. It shows the five largest increases and decreases in average copies per published decklist for a selected archetype across the two endpoint Regionals. It requires at least 5 published lists at each event and a change of at least 0.10 copies per list; exact set/number printings are compared.
 
-The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. The main table shows favorable–neutral–unfavorable matchup counts against the selected top 10, 15, 20, or 25 opposing decks (top 15 by default). A smaller Full matchup button opens the opponent table for the same selection, with W–L–T records, win rates, and result categories. The five most-played matchups appear first, with See more for the rest. Category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
+The overall view ranks decks by total player count across the selected geography. Share, win rate, and Day 2 conversion are recomputed from summed counts rather than averaging event percentages. The main table shows the top 25 decks with favorable–neutral–unfavorable matchup counts against the selected top 10, 15, 20, or 25 opposing decks (top 25 by default). A smaller Full matchup button opens the opponent table for the same selection, with W–L–T records, win rates, and result categories. The five most-played matchups appear first, with See more for the rest. Category and opposing-deck dropdowns select the matchup to inspect. A matchup is favorable at 55% or above, unfavorable at 45% or below, and neutral between those cutoffs. Mirror matches are omitted. The full ranking page uses the same geographic filters and adds deck-name search.
 
 ## Connected sources
 
@@ -88,7 +88,7 @@ The HTML integrations are deliberately isolated in `lib/limitless/overall-meta.t
 - `GET /api/tournaments/:id/pairings`
 - `GET /api/meta/overall?time=1months&variants=split&limit=50`
 - `GET /api/labs/events`
-- `GET /api/season/matchups?deck=dragapult-ex&geography=all&opponents=15` (`opponents` accepts 10, 15, 20, or 25; defaults to 15)
+- `GET /api/season/matchups?deck=dragapult-ex&geography=all&opponents=25` (`opponents` accepts 10, 15, 20, or 25; defaults to 25)
 - `GET /api/season/cards?from=0074&to=0076&deck=dragapult-ex`
 
 All upstream calls happen on the server. This avoids browser CORS limitations and keeps an optional API key out of client code.

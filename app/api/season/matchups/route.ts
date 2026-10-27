@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     ? requestedGeography as Geography
     : "all";
   const requestedOpponents = Number(request.nextUrl.searchParams.get("opponents"));
-  const opponentCount = [10, 15, 20, 25].includes(requestedOpponents) ? requestedOpponents : 15;
+  const opponentCount = [10, 15, 20, 25].includes(requestedOpponents) ? requestedOpponents : 25;
   try {
     const all = await getSeasonData();
     const events = all.filter((event) => geography === "all" || event.geography === geography);

@@ -45,8 +45,8 @@ function MatchupCounts({ matchups, opponents, loading }: { matchups: Matchup[] |
 
 export function OverallMeta({ byGeography }: { byGeography: Record<Geography, MetaDeck[]> }) {
   const [geography, setGeography] = useState<Geography>("all");
-  const decks = byGeography[geography].slice(0, 15);
-  const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(15);
+  const decks = byGeography[geography].slice(0, 25);
+  const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(25);
   const opponentSlugs = new Set(byGeography[geography].slice(0, opponentCount).map((deck) => deck.slug));
   const deckSlugs = decks.map((deck) => deck.slug).join(",");
   const matchupKey = `${geography}:${deckSlugs}`;
@@ -135,7 +135,7 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
         <div>
           <p className="section-kicker">2027 season / major events</p>
           <h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Overall metagame</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">The 15 most played decks across Regionals and Special Events. Favorable–neutral–unfavorable matchup counts are shown in each row; open Full matchup for opponent records.</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">The 25 most played decks across Regionals and Special Events. Favorable–neutral–unfavorable matchup counts are shown in each row; open Full matchup for opponent records.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-48 flex-1">
@@ -158,7 +158,7 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
 
       {failedCount > 0 ? <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e5c8c2] bg-[#fff4f1] px-4 py-3 text-sm text-[#8f433b]" role="status"><span>{failedCount} matchup {failedCount === 1 ? "request" : "requests"} could not finish.</span><button type="button" onClick={() => setRetryCount((count) => count + 1)} className="rounded-lg border border-[#bd8a82] bg-white px-3 py-2 font-semibold hover:bg-[#fff9f7]">Retry matchups</button></div> : null}
 
-        <section className="overflow-hidden rounded-2xl border border-[#d7d5cc] bg-white" aria-label="Top 15 decks">
+        <section className="overflow-hidden rounded-2xl border border-[#d7d5cc] bg-white" aria-label="Top 25 decks">
           <div className="md:overflow-x-auto">
             <table className="block w-full text-left text-sm md:table md:min-w-[760px]">
               <thead className="hidden bg-[#eeede7] text-xs uppercase tracking-wider text-[#6f7a7f] md:table-header-group"><tr><th className="px-4 py-3"># / Deck</th><th className="px-3 py-3 text-right">Share</th><th className="px-3 py-3 text-right">Win %</th><th className="px-3 py-3 text-right">Day 2</th><th className="px-3 py-3 text-right">F–N–U <span className="sr-only">Favorable–neutral–unfavorable matchups against top meta decks</span></th><th className="px-4 py-3 text-right"><span className="sr-only">Full matchup details</span></th></tr></thead>

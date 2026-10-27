@@ -29,7 +29,7 @@ export function FullRankings({ byGeography }: { byGeography: Record<Geography, M
   return <>
     <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
       <div><p className="section-kicker">2027 season / major events</p><h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Full deck ranking</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#67757d]">Every deck ranked by metagame share across Regionals and Special Events. Rankings preserve their overall position while you search.</p></div>
-      <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-semibold text-[#27566a] hover:border-[#3485a4]">← Top 15 & matchups</Link>
+      <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm font-semibold text-[#27566a] hover:border-[#3485a4]">← Top 25 & matchups</Link>
     </div>
     <div className="mb-4 flex flex-col gap-3 sm:flex-row">
       <div className="sm:w-56"><label htmlFor="ranking-geography" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Geography</label><select id="ranking-geography" value={geography} onChange={(event) => setGeography(event.target.value as Geography)} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3485a4]">{geographies.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
