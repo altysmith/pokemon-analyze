@@ -109,22 +109,72 @@ function aggregateRange(events: RegionalData[]): RangeDeck[] {
   }).sort((a, b) => b.players - a.players || a.name.localeCompare(b.name));
 }
 
-function TopEventDecks({ decks, eventCount }: { decks: RangeDeck[]; eventCount: number }) {
+function RangeMatchupCounts({ matchups, loading, opponents }: { matchups: Matchup[] | undefined; loading: boolean; opponents: Set<string> }) {
+  if (loading) return <span className="text-xs text-[#78858a]">Loading…</span>;
+  if (!matchups) return <span className="text-xs text-[#aa4d44]">Unavailable</span>;
+  const rows = matchups.filter((matchup) => opponents.has(matchup.slug));
+  const favorable = rows.filter((matchup) => matchup.category === "favorable").length;
+  const neutral = rows.filter((matchup) => matchup.category === "neutral").length;
+  const unfavorable = rows.filter((matchup) => matchup.category === "unfavorable").length;
+  return <span className="font-mono font-semibold tabular-nums"><span className="text-[#237444]">{favorable}</span>-<span className="text-[#586d78]">{neutral}</span>-<span className="text-[#bd4c45]">{unfavorable}</span></span>;
+}
+
+function TopEventDecks({ decks, eventCount, eventIds }: { decks: RangeDeck[]; eventCount: number; eventIds: string[] }) {
+  const topDecks = useMemo(() => decks.slice(0, 25), [decks]);
+  const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(25);
+  const [selectedSlug, setSelectedSlug] = useState("");
+  const deckSlugs = topDecks.map((deck) => deck.slug).join(",");
+  const eventKey = eventIds.join(",");
+  const requestKey = `${eventKey}:${opponentCount}:${deckSlugs}`;
+  const [matchupData, setMatchupData] = useState<{ key: string; rows: Record<string, Matchup[]> } | null>(null);
+  const loading = matchupData?.key !== requestKey;
+  const matchupRows = loading ? {} : matchupData?.rows ?? {};
+  const opponentSlugs = new Set(topDecks.slice(0, opponentCount).map((deck) => deck.slug));
+  const selectedMatchups = selectedSlug ? matchupRows[selectedSlug]?.filter((matchup) => opponentSlugs.has(matchup.slug)) ?? [] : [];
+
+  useEffect(() => {
+    const controller = new AbortController();
+    Promise.all(topDecks.map(async (deck) => {
+      try {
+        const response = await fetch(`/api/season/matchups?deck=${encodeURIComponent(deck.slug)}&events=${encodeURIComponent(eventKey)}&opponents=${opponentCount}`, { signal: controller.signal });
+        if (!response.ok) return null;
+        const body = await response.json() as { matchups?: Matchup[] };
+        return [deck.slug, body.matchups ?? []] as const;
+      } catch {
+        return null;
+      }
+    })).then((rows) => {
+      if (!controller.signal.aborted) setMatchupData({ key: requestKey, rows: Object.fromEntries(rows.filter((row) => row !== null)) });
+    });
+    return () => controller.abort();
+  }, [eventKey, opponentCount, requestKey, topDecks]);
+
   return (
     <section className="rounded-2xl border border-[#d7d5cc] bg-white p-5 sm:p-6" aria-labelledby="top-event-decks-title">
-      <div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
         <p className="section-kicker">Event metagame / selected range</p>
         <h2 id="top-event-decks-title" className="section-title">Top 25 decks across {eventCount} selected event{eventCount === 1 ? "" : "s"}</h2>
         <p className="mt-2 text-sm text-[#68777f]">Combined share, W–L–T record, and tie-adjusted win rate across the events in your slider range. These values do not use comparison thresholds.</p>
+        </div>
+        <div className="min-w-44">
+          <label htmlFor="range-matchup-opponents" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Top meta matchups</label>
+          <select id="range-matchup-opponents" value={opponentCount} onChange={(event) => setOpponentCount(Number(event.target.value) as 10 | 15 | 20 | 25)} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3485a4]">
+            <option value={10}>Versus top 10</option><option value={15}>Versus top 15</option><option value={20}>Versus top 20</option><option value={25}>Versus top 25</option>
+          </select>
+        </div>
       </div>
       <ol className="mt-5 divide-y divide-[#eeede8] overflow-hidden rounded-xl border border-[#d7d5cc]">
-        <li aria-hidden="true" className="hidden bg-[#eeede7] text-xs font-bold uppercase tracking-wider text-[#6f7a7f] sm:grid sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4 sm:py-3"><span>#</span><span>Deck</span><span className="text-right">Share</span><span className="text-right">Record</span><span className="text-right">Win %</span></li>
-        {decks.slice(0, 25).map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4">
+        <li aria-hidden="true" className="hidden bg-[#eeede7] text-xs font-bold uppercase tracking-wider text-[#6f7a7f] sm:grid sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4 sm:py-3"><span>#</span><span>Deck</span><span className="text-right">Share</span><span className="text-right">Record</span><span className="text-right">Win %</span><span className="text-right">F–N–U</span><span /></li>
+        {topDecks.map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4">
           <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
           <span className="flex min-w-0 items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={deck.icons} compact /><span className="break-words">{deck.name}</span></span>
           <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Share</span>{formatPercent(deck.share)}</span>
           <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Record</span>{deck.record.wins}-{deck.record.losses}-{deck.record.ties}</span>
           <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm font-semibold sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Win rate</span>{formatPercent(deck.winRate)}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">F–N–U</span><RangeMatchupCounts matchups={matchupRows[deck.slug]} loading={loading} opponents={opponentSlugs} /></span>
+          <button type="button" onClick={() => setSelectedSlug((current) => current === deck.slug ? "" : deck.slug)} className="col-span-2 mt-3 w-full rounded-md border border-[#c6d0d0] bg-white px-2.5 py-2 text-xs font-semibold text-[#27566a] hover:border-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#3485a4] sm:col-span-1 sm:mt-0 sm:w-auto sm:py-1.5">{selectedSlug === deck.slug ? "Close ↑" : "Full matchup ↗"}</button>
+          {selectedSlug === deck.slug ? <div className="col-span-2 mt-4 border-t border-[#e2e0d8] pt-4 sm:col-span-7"><p className="text-xs font-semibold uppercase tracking-wider text-[#64727a]">Matchups versus the selected top {opponentCount} decks</p>{loading ? <p className="mt-3 text-sm text-[#78858a]">Loading matchup records…</p> : <div className="mt-3 divide-y divide-[#eeede8] rounded-lg border border-[#e2e0d8]">{selectedMatchups.length ? selectedMatchups.map((matchup) => <div key={matchup.slug} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-3 text-sm"><span className="flex min-w-0 items-center gap-2 font-semibold"><DeckSprites icons={matchup.icons} compact /><span className="break-words">{matchup.name}</span></span><span className="font-mono text-xs">{matchup.record.wins}-{matchup.record.losses}-{matchup.record.ties}</span><span className="font-mono font-semibold">{formatPercent(matchup.winRate)}</span></div>) : <p className="px-3 py-4 text-sm text-[#78858a]">No recorded matchups in this range.</p>}</div>}</div> : null}
         </li>)}
       </ol>
     </section>
@@ -294,7 +344,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
             </div>
           </div>
           <p className="-mt-6 text-xs leading-5 text-[#738088]">The slider chooses decks by their full-season share in the selected geography, then ranks changes within that same group for both tables. Matchup counts appear for the top 10 decks.</p>
-          <TopEventDecks decks={selectedTopDecks} eventCount={selectedEvents.length} />
+          <TopEventDecks decks={selectedTopDecks} eventCount={selectedEvents.length} eventIds={selectedEvents.map((event) => event.id)} />
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div><p className="section-kicker">Play rate</p><h2 className="section-title">Metagame share changes</h2></div>

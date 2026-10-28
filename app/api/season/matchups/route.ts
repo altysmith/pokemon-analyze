@@ -13,9 +13,13 @@ export async function GET(request: NextRequest) {
     : "all";
   const requestedOpponents = Number(request.nextUrl.searchParams.get("opponents"));
   const opponentCount = [10, 15, 20, 25].includes(requestedOpponents) ? requestedOpponents : 25;
+  const eventIds = [...new Set((request.nextUrl.searchParams.get("events") ?? "").split(",").filter((id) => /^\d{4,12}$/.test(id)))];
   try {
     const all = await getSeasonData();
-    const events = all.filter((event) => geography === "all" || event.geography === geography);
+    const selectedIds = new Set(eventIds);
+    const events = selectedIds.size
+      ? all.filter((event) => selectedIds.has(event.id))
+      : all.filter((event) => geography === "all" || event.geography === geography);
     const top = aggregateMeta(events).slice(0, opponentCount);
     const matchups = await getAggregatedMatchups(events, slug, top.map((deck) => deck.slug));
     return NextResponse.json({ deck: slug, geography, matchups }, {
