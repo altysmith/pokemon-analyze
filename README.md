@@ -62,7 +62,7 @@ Set `SEASON_SYNC_INTERVAL_HOURS` in the untracked `.env` to change the listing-c
 
 ## 2027 season views
 
-The initial season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three events by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific events. Geography filters cover all events, US, Europe, South America, Oceania, and other locations.
+The initial season set contains Baltimore, Brisbane, Frankfurt, Recife, and Louisville. The trends view selects the latest three events by default and compares the first and last selected events. Both endpoint sliders can be moved to compare specific events; selecting the same event on both endpoints shows its metadata instead. Geography filters cover all events, US, Europe, South America, Oceania, and other locations.
 
 Share trends use percentage point changes in player share. One slider selects the top 5 to top 35 decks by full-season share (top 15 by default) for both share and win-rate trend lists. Win rate trends use percentage point changes in Labs' tie-adjusted win rate, requiring at least 20 recorded matches at both events. Generic `Other`/`Unknown` classifications are excluded from those trend lists. The card-construction dropdown independently offers the top 40 named meta decks in the selected geography. It shows the five largest increases and decreases in average copies per published decklist for a selected archetype across the two endpoint Regionals. It requires at least 5 published lists at each event and a change of at least 0.10 copies per list; exact set/number printings are compared.
 

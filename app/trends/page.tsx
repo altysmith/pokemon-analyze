@@ -17,7 +17,7 @@ export default async function Home() {
       <SiteHeader active="trends" />
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="section-kicker">LoMeta / 2027 season</p><h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Event trends</h1><p className="mt-3 text-sm leading-6 text-[#66747b]">Compare play rate and performance across Regionals and Special Events.</p></div>
+          <div><p className="section-kicker">LoMeta / 2027 season</p><h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Event trends</h1><p className="mt-3 text-sm leading-6 text-[#66747b]">View a single event’s field or compare play rate and performance across Regionals and Special Events.</p></div>
           <div className="rounded-xl border border-[#cdd7cd] bg-[#e5efe8] px-4 py-3 text-sm font-semibold text-[#33694b]">{events.length} events · {events.reduce((sum, event) => sum + event.playerTotal, 0).toLocaleString()} decks</div>
         </div>
         <SeasonTrends events={events} byGeography={Object.fromEntries(

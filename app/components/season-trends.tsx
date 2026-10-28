@@ -27,6 +27,38 @@ const formatDelta = (value: number) => {
   return `${value > 0 ? "+" : ""}${points.toFixed(digits)} pts`;
 };
 
+function eventDate(event: RegionalData) {
+  return event.date === event.endDate ? event.date : `${event.date} – ${event.endDate}`;
+}
+
+function EventSnapshot({ event }: { event: RegionalData }) {
+  const recordedMatches = event.decks.reduce((total, deck) => total + deck.record.wins + deck.record.losses + deck.record.ties, 0);
+  const location = GEO.find((option) => option.value === event.geography)?.label ?? "Other locations";
+  const fields = [
+    ["Date", eventDate(event)],
+    ["Event", event.kind === "regional" ? "Regional Championship" : "Special Event"],
+    ["Location", event.country ? `${location} · ${event.country}` : location],
+    ["Published decks", event.playerTotal.toLocaleString()],
+    ["Archetypes", event.decks.length.toLocaleString()],
+    ["Recorded matches", recordedMatches.toLocaleString()],
+  ];
+  return (
+    <section className="mt-8 rounded-2xl border border-[#d7d5cc] bg-white p-5 sm:p-6" aria-labelledby="event-snapshot-title">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="section-kicker">Single event</p>
+          <h2 id="event-snapshot-title" className="section-title">{event.shortName} event metadata</h2>
+          <p className="mt-2 text-sm text-[#68777f]">Select a different endpoint when you’re ready to compare events.</p>
+        </div>
+        <a href={`https://labs.limitlesstcg.com/${encodeURIComponent(event.id)}/decks`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-[#27566a] underline underline-offset-4 hover:text-[#18323d] focus:outline-none focus:ring-2 focus:ring-[#3485a4]">View deck data in Labs ↗</a>
+      </div>
+      <dl className="mt-6 grid gap-x-6 gap-y-5 border-t border-[#eeede8] pt-5 sm:grid-cols-2 lg:grid-cols-3">
+        {fields.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-wider text-[#738088]">{label}</dt><dd className="mt-1 text-sm font-semibold text-[#1b2930]">{value}</dd></div>)}
+      </dl>
+    </section>
+  );
+}
+
 function deckValue(deck: EventDeck | undefined, metric: "share" | "winRate") {
   return deck ? deck[metric] : 0;
 }
@@ -140,7 +172,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
           <div>
             <p className="section-kicker">2027 season / event tracker</p>
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Compare the meta as it moves</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#64727a]">Select a geography and slide between tournaments. Rankings compare the first and last event in your window; any events between them remain in the selection.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#64727a]">Select a geography and slide between tournaments. One selected event shows its metadata; two endpoints compare the first and last event in your window.</p>
           </div>
           <div className="min-w-48">
             <label htmlFor="geography" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Geography</label>
@@ -170,7 +202,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
         </div>
       </section>
 
-      {first && last && start === end ? <div className="mt-6 rounded-2xl border border-[#d7d5cc] bg-white p-6 text-sm text-[#68777f]">Move one slider to a different event to compare changes.</div> : null}
+      {first && last && start === end ? <EventSnapshot event={first} /> : null}
       {first && last && start !== end ? (
         <div className="mt-8 space-y-10">
           <div className="flex flex-wrap items-end gap-4">
