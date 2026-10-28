@@ -55,6 +55,31 @@ function EventSnapshot({ event }: { event: RegionalData }) {
       <dl className="mt-6 grid gap-x-6 gap-y-5 border-t border-[#eeede8] pt-5 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-wider text-[#738088]">{label}</dt><dd className="mt-1 text-sm font-semibold text-[#1b2930]">{value}</dd></div>)}
       </dl>
+      <div className="mt-8 border-t border-[#eeede8] pt-6">
+        <div>
+          <p className="section-kicker">Event metagame</p>
+          <h3 className="text-xl font-semibold tracking-tight text-[#1b2930]">Every reported deck</h3>
+          <p className="mt-1 text-sm text-[#68777f]">This is the event’s published field, without cross-event comparisons or minimum sample rules.</p>
+        </div>
+        <div className="mt-5 overflow-hidden rounded-xl border border-[#e2e0d8] md:overflow-x-auto">
+          <table className="block w-full text-left text-sm md:table md:min-w-[42rem]">
+            <thead className="hidden bg-[#fbfaf6] text-xs font-bold uppercase tracking-wider text-[#64727a] md:table-header-group">
+              <tr><th className="px-4 py-3">Deck</th><th className="px-4 py-3 text-right">Share</th><th className="px-4 py-3 text-right">Players</th><th className="px-4 py-3 text-right">Record</th><th className="px-4 py-3 text-right">Win rate</th></tr>
+            </thead>
+            <tbody className="block divide-y divide-[#eeede8] md:table-row-group">
+              {[...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).map((deck) => (
+                <tr key={deck.slug} className="grid grid-cols-2 gap-2 p-4 text-[#26353b] md:table-row md:p-0">
+                  <td className="col-span-2 pb-2 font-semibold md:table-cell md:px-4 md:py-3"><span className="flex items-center gap-2"><DeckSprites icons={deck.icons} compact /><span>{deck.name}</span></span></td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{formatPercent(deck.share)}</td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Players</span>{deck.players.toLocaleString()}</td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Record</span>{deck.record.wins}-{deck.record.losses}-{deck.record.ties}</td>
+                  <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono font-semibold md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win rate</span>{formatPercent(deck.winRate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   );
 }
