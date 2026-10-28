@@ -58,8 +58,8 @@ function EventSnapshot({ event }: { event: RegionalData }) {
       <div className="mt-8 border-t border-[#eeede8] pt-6">
         <div>
           <p className="section-kicker">Event metagame</p>
-          <h3 className="text-xl font-semibold tracking-tight text-[#1b2930]">Every reported deck</h3>
-          <p className="mt-1 text-sm text-[#68777f]">This is the event’s published field, without cross-event comparisons or minimum sample rules.</p>
+          <h3 className="text-xl font-semibold tracking-tight text-[#1b2930]">Top 25 decks</h3>
+          <p className="mt-1 text-sm text-[#68777f]">The 25 most-played decks in this event, without cross-event comparisons or minimum sample rules.</p>
         </div>
         <div className="mt-5 overflow-hidden rounded-xl border border-[#e2e0d8] md:overflow-x-auto">
           <table className="block w-full text-left text-sm md:table md:min-w-[42rem]">
@@ -67,7 +67,7 @@ function EventSnapshot({ event }: { event: RegionalData }) {
               <tr><th className="px-4 py-3">Deck</th><th className="px-4 py-3 text-right">Share</th><th className="px-4 py-3 text-right">Players</th><th className="px-4 py-3 text-right">Record</th><th className="px-4 py-3 text-right">Win rate</th></tr>
             </thead>
             <tbody className="block divide-y divide-[#eeede8] md:table-row-group">
-              {[...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).map((deck) => (
+              {[...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).slice(0, 25).map((deck) => (
                 <tr key={deck.slug} className="grid grid-cols-2 gap-2 p-4 text-[#26353b] md:table-row md:p-0">
                   <td className="col-span-2 pb-2 font-semibold md:table-cell md:px-4 md:py-3"><span className="flex items-center gap-2"><DeckSprites icons={deck.icons} compact /><span>{deck.name}</span></span></td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{formatPercent(deck.share)}</td>
@@ -80,6 +80,28 @@ function EventSnapshot({ event }: { event: RegionalData }) {
           </table>
         </div>
       </div>
+    </section>
+  );
+}
+
+function TopEventDecks({ event }: { event: RegionalData }) {
+  const decks = [...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).slice(0, 25);
+  return (
+    <section className="rounded-2xl border border-[#d7d5cc] bg-white p-5 sm:p-6" aria-labelledby="top-event-decks-title">
+      <div>
+        <p className="section-kicker">Event metagame / to event</p>
+        <h2 id="top-event-decks-title" className="section-title">Top 25 decks at {event.shortName}</h2>
+        <p className="mt-2 text-sm text-[#68777f]">Share, W–L–T record, and tie-adjusted win rate for this event’s field. These values do not use comparison thresholds.</p>
+      </div>
+      <ol className="mt-5 divide-y divide-[#eeede8] border-y border-[#eeede8]">
+        {decks.map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6">
+          <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
+          <span className="flex min-w-0 items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={deck.icons} compact /><span className="break-words">{deck.name}</span></span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Share</span>{formatPercent(deck.share)}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Record</span>{deck.record.wins}-{deck.record.losses}-{deck.record.ties}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm font-semibold sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Win rate</span>{formatPercent(deck.winRate)}</span>
+        </li>)}
+      </ol>
     </section>
   );
 }
@@ -245,6 +267,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
             </div>
           </div>
           <p className="-mt-6 text-xs leading-5 text-[#738088]">The slider chooses decks by their full-season share in the selected geography, then ranks changes within that same group for both tables. Matchup counts appear for the top 10 decks.</p>
+          <TopEventDecks event={last} />
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div><p className="section-kicker">Play rate</p><h2 className="section-title">Metagame share changes</h2></div>
