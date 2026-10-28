@@ -15,6 +15,7 @@ const GEO: Array<{ value: Geography; label: string }> = [
 ];
 
 type Trend = { slug: string; name: string; icons: string[]; from: number; to: number; delta: number; fromSample: number; toSample: number };
+type RangeDeck = Pick<EventDeck, "slug" | "name" | "icons" | "players" | "share" | "record" | "winRate">;
 
 const formatPercent = (value: number) => {
   const percentage = value * 100;
@@ -84,17 +85,40 @@ function EventSnapshot({ event }: { event: RegionalData }) {
   );
 }
 
-function TopEventDecks({ event }: { event: RegionalData }) {
-  const decks = [...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).slice(0, 25);
+function aggregateRange(events: RegionalData[]): RangeDeck[] {
+  const totalPlayers = events.reduce((total, event) => total + event.playerTotal, 0);
+  const decks = new Map<string, Omit<RangeDeck, "share" | "winRate">>();
+  for (const event of events) {
+    for (const deck of event.decks) {
+      const current = decks.get(deck.slug);
+      if (!current) {
+        decks.set(deck.slug, { ...deck, icons: deck.icons, record: { ...deck.record } });
+        continue;
+      }
+      current.players += deck.players;
+      current.record.wins += deck.record.wins;
+      current.record.losses += deck.record.losses;
+      current.record.ties += deck.record.ties;
+      if (!current.icons.length && deck.icons.length) current.icons = deck.icons;
+      decks.set(deck.slug, current);
+    }
+  }
+  return [...decks.values()].map((deck) => {
+    const matches = deck.record.wins + deck.record.losses + deck.record.ties;
+    return { ...deck, share: totalPlayers ? deck.players / totalPlayers : 0, winRate: matches ? (deck.record.wins + deck.record.ties / 3) / matches : 0 };
+  }).sort((a, b) => b.players - a.players || a.name.localeCompare(b.name));
+}
+
+function TopEventDecks({ decks, eventCount }: { decks: RangeDeck[]; eventCount: number }) {
   return (
     <section className="rounded-2xl border border-[#d7d5cc] bg-white p-5 sm:p-6" aria-labelledby="top-event-decks-title">
       <div>
-        <p className="section-kicker">Event metagame / to event</p>
-        <h2 id="top-event-decks-title" className="section-title">Top 25 decks at {event.shortName}</h2>
-        <p className="mt-2 text-sm text-[#68777f]">Share, W–L–T record, and tie-adjusted win rate for this event’s field. These values do not use comparison thresholds.</p>
+        <p className="section-kicker">Event metagame / selected range</p>
+        <h2 id="top-event-decks-title" className="section-title">Top 25 decks across {eventCount} selected event{eventCount === 1 ? "" : "s"}</h2>
+        <p className="mt-2 text-sm text-[#68777f]">Combined share, W–L–T record, and tie-adjusted win rate across the events in your slider range. These values do not use comparison thresholds.</p>
       </div>
       <ol className="mt-5 divide-y divide-[#eeede8] border-y border-[#eeede8]">
-        {decks.map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6">
+        {decks.slice(0, 25).map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6">
           <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
           <span className="flex min-w-0 items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={deck.icons} compact /><span className="break-words">{deck.name}</span></span>
           <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Share</span>{formatPercent(deck.share)}</span>
@@ -163,6 +187,8 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
   const end = selection.geography === geography ? Math.min(selection.end, Math.max(0, filtered.length - 1)) : filtered.length - 1;
   const first = filtered[start];
   const last = filtered[end];
+  const selectedEvents = filtered.slice(start, end + 1);
+  const selectedTopDecks = useMemo(() => aggregateRange(filtered.slice(start, end + 1)), [filtered, start, end]);
   const ranking = byGeography[geography];
   const topDecks = useMemo(() => new Set(ranking.slice(0, trendCount).map((deck) => deck.slug)), [ranking, trendCount]);
   const topTen = ranking.slice(0, 10).map((deck) => deck.slug);
@@ -267,7 +293,7 @@ export function SeasonTrends({ events, byGeography }: { events: RegionalData[]; 
             </div>
           </div>
           <p className="-mt-6 text-xs leading-5 text-[#738088]">The slider chooses decks by their full-season share in the selected geography, then ranks changes within that same group for both tables. Matchup counts appear for the top 10 decks.</p>
-          <TopEventDecks event={last} />
+          <TopEventDecks decks={selectedTopDecks} eventCount={selectedEvents.length} />
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div><p className="section-kicker">Play rate</p><h2 className="section-title">Metagame share changes</h2></div>
