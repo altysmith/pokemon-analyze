@@ -117,8 +117,9 @@ function TopEventDecks({ decks, eventCount }: { decks: RangeDeck[]; eventCount: 
         <h2 id="top-event-decks-title" className="section-title">Top 25 decks across {eventCount} selected event{eventCount === 1 ? "" : "s"}</h2>
         <p className="mt-2 text-sm text-[#68777f]">Combined share, W–L–T record, and tie-adjusted win rate across the events in your slider range. These values do not use comparison thresholds.</p>
       </div>
-      <ol className="mt-5 divide-y divide-[#eeede8] border-y border-[#eeede8]">
-        {decks.slice(0, 25).map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6">
+      <ol className="mt-5 divide-y divide-[#eeede8] overflow-hidden rounded-xl border border-[#d7d5cc]">
+        <li aria-hidden="true" className="hidden bg-[#eeede7] text-xs font-bold uppercase tracking-wider text-[#6f7a7f] sm:grid sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4 sm:py-3"><span>#</span><span>Deck</span><span className="text-right">Share</span><span className="text-right">Record</span><span className="text-right">Win %</span></li>
+        {decks.slice(0, 25).map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4">
           <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
           <span className="flex min-w-0 items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={deck.icons} compact /><span className="break-words">{deck.name}</span></span>
           <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Share</span>{formatPercent(deck.share)}</span>
