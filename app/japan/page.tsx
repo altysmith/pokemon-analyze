@@ -1,5 +1,5 @@
 import { SiteHeader } from "../components/site-header";
-import { DeckSprites } from "../components/deck-sprites";
+import { JapanRankingTable } from "./ranking-table";
 import { openJapanDb } from "@/db/japan";
 import { resolveJapanDateRange } from "@/lib/japan/date-range";
 import { japanSourceData, summarizeJapanData, type JapanSourceData } from "@/lib/japan/overview";
@@ -25,7 +25,6 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
   }
   const { counts, archetypes } = summarizeJapanData(source, range);
   const showAll = single(params?.show) === "all";
-  const visibleArchetypes = showAll ? archetypes : archetypes.slice(0, 30);
   const rankingParams = new URLSearchParams({ range: range.key });
   if (range.key === "custom") {
     rankingParams.set("from", range.from!);
@@ -33,7 +32,6 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
   }
   if (!showAll) rankingParams.set("show", "all");
   const rankingToggleHref = `/japan?${rankingParams.toString()}#placement-ranking`;
-  const share = (top8: number) => counts.classified_top8 ? `${(top8 / counts.classified_top8 * 100).toFixed(1)}%` : "—";
   const span = range.key === "all" ? (counts.first_date && counts.latest_date ? `${shortDate(counts.first_date)} – ${shortDate(counts.latest_date)}` : "No imported dates") : `${shortDate(range.from!)} – ${shortDate(range.to!)}`;
 
   return <main className="min-h-screen bg-[#f4f3ed] text-[#19252d]">
@@ -72,12 +70,9 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
       <section id="placement-ranking" className="mt-8 overflow-hidden rounded-2xl border border-[#d7d5cc] bg-white">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#e8e6de] px-5 py-5 sm:px-6">
           <div><h2 className="text-xl font-semibold tracking-tight">Placement ranking</h2><p className="mt-1 text-xs leading-5 text-[#78858a]">{span}. Every figure and winning-list link is limited to this range.</p></div>
-          <span className="rounded-full bg-[#f0efe9] px-3 py-1 text-xs font-semibold text-[#52616b]">Showing {visibleArchetypes.length} of {archetypes.length}</span>
+          <span className="rounded-full bg-[#f0efe9] px-3 py-1 text-xs font-semibold text-[#52616b]">Showing {showAll ? archetypes.length : Math.min(30, archetypes.length)} of {archetypes.length}</span>
         </div>
-        {archetypes.length ? <div className="md:overflow-x-auto"><table className="block w-full border-collapse text-left text-sm md:table md:min-w-[760px]">
-          <thead className="hidden bg-[#f8f7f3] text-xs font-semibold uppercase tracking-wider text-[#758289] md:table-header-group"><tr><th className="px-5 py-3 sm:px-6" scope="col">Rank / deck</th><th className="px-3 py-3 text-right" scope="col">Points</th><th className="px-3 py-3 text-right" scope="col">1st</th><th className="px-3 py-3 text-right" scope="col">Top 8</th><th className="px-3 py-3 text-right" scope="col">Top 8 share</th><th className="px-5 py-3 text-right sm:px-6" scope="col">Winning list</th></tr></thead>
-          <tbody className="block divide-y divide-[#eeece6] md:table-row-group md:divide-y-0">{visibleArchetypes.map((deck, index) => <tr key={deck.id} className="grid grid-cols-2 gap-2 p-4 hover:bg-[#faf9f6] md:table-row md:border-t md:border-[#eeece6] md:p-0"><th scope="row" className="col-span-2 block pb-1 text-left font-medium md:table-cell md:px-5 md:py-4 md:pb-4 md:align-middle"><span className="flex min-w-0 items-center gap-2 text-[#1d343f]"><span className="w-6 shrink-0 tabular-nums text-[#9aa3a5]">{index + 1}</span><DeckSprites icons={deck.icons} /><span className="min-w-0 break-words">{deck.name}</span></span></th><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-bold tabular-nums text-[#1d343f] md:table-cell md:rounded-none md:bg-transparent md:py-4 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Points</span>{deck.placementPoints}</td><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 tabular-nums text-[#52616b] md:table-cell md:rounded-none md:bg-transparent md:py-4 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">1st</span>{deck.wins}</td><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 tabular-nums text-[#52616b] md:table-cell md:rounded-none md:bg-transparent md:py-4 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Top 8</span>{deck.top8}</td><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 tabular-nums text-[#52616b] md:table-cell md:rounded-none md:bg-transparent md:py-4 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Top 8 share</span>{share(deck.top8)}</td><td className="col-span-2 pt-1 md:table-cell md:px-5 md:py-4 md:pt-4 md:text-right">{deck.latestWinningListUrl ? <a className="block rounded-lg border border-[#c6d0d0] bg-white px-3 py-2 text-center font-semibold text-[#27566a] hover:border-[#3485a4] md:inline md:border-0 md:bg-transparent md:p-0 md:text-right md:underline md:underline-offset-4" href={deck.latestWinningListUrl} target="_blank" rel="noreferrer" aria-label={`Latest 1st-place ${deck.name} list on Limitless`}><span className="md:hidden">Winning list · </span>{deck.latestWinningDate} ↗</a> : <span className="text-[#9aa3a5]"><span className="md:hidden">No winning list</span><span className="hidden md:inline">—</span></span>}</td></tr>)}</tbody>
-        </table></div> : <p className="px-6 py-8 text-sm text-[#66747b]">No classified placements imported yet.</p>}
+        {archetypes.length ? <JapanRankingTable archetypes={archetypes} classifiedTop8={counts.classified_top8} showAll={showAll} /> : <p className="px-6 py-8 text-sm text-[#66747b]">No classified placements imported yet.</p>}
         {archetypes.length > 30 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8e6de] px-5 py-4 sm:px-6">
           <p className="text-xs text-[#66747b]">{showAll ? "All ranked archetypes are shown." : "Top 30 shown for this date range."}</p>
           <a className="inline-flex min-h-10 items-center rounded-lg border border-[#b7c8cf] px-4 text-sm font-semibold text-[#27566a] hover:bg-[#edf3f4] focus:outline-none focus:ring-2 focus:ring-[#9fd1e3]" href={rankingToggleHref}>{showAll ? "Show top 30" : `Show all ${archetypes.length}`}</a>

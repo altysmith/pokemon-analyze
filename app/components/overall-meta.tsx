@@ -1,6 +1,7 @@
 "use client";
 
 import { DeckSprites } from "./deck-sprites";
+import { MobileSortControls } from "./mobile-sort-controls";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Geography, Matchup, MetaDeck } from "@/lib/limitless/season";
@@ -16,9 +17,17 @@ const GEO: Array<{ value: Geography; label: string }> = [
 const categories = ["favorable", "neutral", "unfavorable"] as const;
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const EMPTY_MATCHUPS: Matchup[] = [];
+const EMPTY_MATCHUP_ROWS: Record<string, Matchup[] | null> = {};
 const MATCHUP_CACHE_MS = 5 * 60 * 1000;
 const MATCHUP_CACHE_PREFIX = "lometa:matchups:v1:";
 const MATCHUP_REQUEST_TIMEOUT_MS = 25_000;
+type MainSortKey = "name" | "share" | "winRate" | "day2" | "fnu";
+type MatchupSortKey = "name" | "record" | "winRate" | "category";
+type SortDirection = "asc" | "desc";
+
+function SortHeader({ label, sortKey, active, direction, onSort, className = "" }: { label: string; sortKey: MainSortKey; active: boolean; direction: SortDirection; onSort: (key: MainSortKey) => void; className?: string }) {
+  return <th scope="col" aria-sort={active ? direction === "asc" ? "ascending" : "descending" : "none"} className={`px-3 py-3 ${className}`}><button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 font-inherit hover:text-[#27566a] focus:outline-none focus:ring-2 focus:ring-[#3485a4]" aria-label={`Sort by ${label}`}>{label}<span aria-hidden="true">{active ? direction === "asc" ? "↑" : "↓" : "↕"}</span></button></th>;
+}
 
 function readCachedMatchups(key: string, slugs: string[]): Record<string, Matchup[]> | null {
   try {
@@ -45,15 +54,16 @@ function MatchupCounts({ matchups, opponents, loading }: { matchups: Matchup[] |
 
 export function OverallMeta({ byGeography }: { byGeography: Record<Geography, MetaDeck[]> }) {
   const [geography, setGeography] = useState<Geography>("all");
-  const decks = byGeography[geography].slice(0, 25);
+  const decks = useMemo(() => byGeography[geography].slice(0, 25), [byGeography, geography]);
+  const rankBySlug = useMemo(() => new Map(decks.map((deck, index) => [deck.slug, index + 1])), [decks]);
   const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(25);
-  const opponentSlugs = new Set(byGeography[geography].slice(0, opponentCount).map((deck) => deck.slug));
+  const opponentSlugs = useMemo(() => new Set(byGeography[geography].slice(0, opponentCount).map((deck) => deck.slug)), [byGeography, geography, opponentCount]);
   const deckSlugs = decks.map((deck) => deck.slug).join(",");
   const matchupKey = `${geography}:${deckSlugs}`;
   const [matchupData, setMatchupData] = useState<{ key: string; rows: Record<string, Matchup[] | null> } | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const loading = matchupData?.key !== matchupKey;
-  const matchupRows = loading ? {} : matchupData?.rows ?? {};
+  const matchupRows = loading ? EMPTY_MATCHUP_ROWS : matchupData?.rows ?? EMPTY_MATCHUP_ROWS;
   const failedCount = Object.values(matchupRows).filter((rows) => rows === null).length;
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const selected = decks.find((deck) => deck.slug === selectedSlug);
@@ -65,6 +75,8 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
   const [category, setCategory] = useState<"all" | Matchup["category"]>("all");
   const [opponentSlug, setOpponentSlug] = useState("");
   const [showAllMatchups, setShowAllMatchups] = useState(false);
+  const [sort, setSort] = useState<{ key: MainSortKey; direction: SortDirection }>({ key: "share", direction: "desc" });
+  const [matchupSort, setMatchupSort] = useState<{ key: MatchupSortKey; direction: SortDirection }>({ key: "record", direction: "desc" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -110,9 +122,28 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
   )) as Record<(typeof categories)[number], Matchup[]>, [matchups]);
   const filtered = useMemo(() => matchups.filter((matchup) => category === "all" || matchup.category === category)
     .sort((a, b) => a.name.localeCompare(b.name)), [matchups, category]);
-  const rankedMatchups = useMemo(() => [...filtered].sort((a, b) => b.matches - a.matches), [filtered]);
+  const rankedMatchups = useMemo(() => [...filtered].sort((a, b) => {
+    const value = (matchup: Matchup) => matchupSort.key === "name" ? matchup.name : matchupSort.key === "record" ? matchup.matches : matchupSort.key === "category" ? matchup.category : matchup.winRate;
+    const left = value(a); const right = value(b);
+    const result = typeof left === "string" ? left.localeCompare(right as string) : left - (right as number);
+    return matchupSort.direction === "asc" ? result : -result;
+  }), [filtered, matchupSort]);
   const visibleMatchups = showAllMatchups ? rankedMatchups : rankedMatchups.slice(0, 5);
   const opponent = filtered.find((matchup) => matchup.slug === opponentSlug);
+  const sortedDecks = useMemo(() => [...decks].sort((a, b) => {
+    const matchupCount = (deck: MetaDeck) => {
+      const rows = matchupRows[deck.slug] ?? [];
+      return rows.filter((matchup) => opponentSlugs.has(matchup.slug) && matchup.category === "favorable").length;
+    };
+    const left = sort.key === "name" ? a.name : sort.key === "fnu" ? matchupCount(a) : sort.key === "day2" ? a.conversion : a[sort.key];
+    const right = sort.key === "name" ? b.name : sort.key === "fnu" ? matchupCount(b) : sort.key === "day2" ? b.conversion : b[sort.key];
+    if (left === null) return right === null ? 0 : 1;
+    if (right === null) return -1;
+    const result = typeof left === "string" ? left.localeCompare(right as string) : (left as number) - (right as number);
+    return sort.direction === "asc" ? result : -result;
+  }), [decks, matchupRows, opponentSlugs, sort]);
+  const onSort = (key: MainSortKey) => setSort((current) => current.key === key ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : { key, direction: key === "name" ? "asc" : "desc" });
+  const onMatchupSort = (key: MatchupSortKey) => setMatchupSort((current) => current.key === key ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : { key, direction: key === "name" || key === "category" ? "asc" : "desc" });
 
   function changeGeography(value: Geography) {
     setGeography(value);
@@ -158,13 +189,16 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
 
       {failedCount > 0 ? <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e5c8c2] bg-[#fff4f1] px-4 py-3 text-sm text-[#8f433b]" role="status"><span>{failedCount} matchup {failedCount === 1 ? "request" : "requests"} could not finish.</span><button type="button" onClick={() => setRetryCount((count) => count + 1)} className="rounded-lg border border-[#bd8a82] bg-white px-3 py-2 font-semibold hover:bg-[#fff9f7]">Retry matchups</button></div> : null}
 
+      <MobileSortControls id="overall-deck-sort" label="Sort decks by" options={[{ key: "name", label: "Deck" }, { key: "share", label: "Share" }, { key: "winRate", label: "Win %" }, { key: "day2", label: "Day 2" }, { key: "fnu", label: "F–N–U" }]} sort={sort} onSelect={(key) => setSort({ key, direction: key === "name" ? "asc" : "desc" })} onToggle={() => setSort((current) => ({ ...current, direction: current.direction === "asc" ? "desc" : "asc" }))} />
+
         <section className="overflow-hidden rounded-2xl border border-[#d7d5cc] bg-white" aria-label="Top 25 decks">
           <div className="md:overflow-x-auto">
-            <table className="block w-full text-left text-sm md:table md:min-w-[760px]">
-              <thead className="hidden bg-[#eeede7] text-xs uppercase tracking-wider text-[#6f7a7f] md:table-header-group"><tr><th className="px-4 py-3"># / Deck</th><th className="px-3 py-3 text-right">Share</th><th className="px-3 py-3 text-right">Win %</th><th className="px-3 py-3 text-right">Day 2</th><th className="px-3 py-3 text-right">F–N–U <span className="sr-only">Favorable–neutral–unfavorable matchups against top meta decks</span></th><th className="px-4 py-3 text-right"><span className="sr-only">Full matchup details</span></th></tr></thead>
+            <table className="block w-full text-left text-sm md:table md:min-w-[900px] md:table-fixed">
+              <colgroup><col /><col className="w-24" /><col className="w-24" /><col className="w-24" /><col className="w-28" /><col className="w-32" /></colgroup>
+              <thead className="hidden bg-[#eeede7] text-xs uppercase tracking-wider text-[#6f7a7f] md:table-header-group"><tr><SortHeader label="# / Deck" sortKey="name" active={sort.key === "name"} direction={sort.direction} onSort={onSort} className="pl-4" /><SortHeader label="Share" sortKey="share" active={sort.key === "share"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="Win %" sortKey="winRate" active={sort.key === "winRate"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="Day 2" sortKey="day2" active={sort.key === "day2"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="F–N–U" sortKey="fnu" active={sort.key === "fnu"} direction={sort.direction} onSort={onSort} className="text-right" /><th className="px-4 py-3 text-right"><span className="sr-only">Full matchup details</span></th></tr></thead>
               <tbody className="block divide-y divide-[#eeede8] md:table-row-group">
-                {decks.map((deck, index) => <Fragment key={deck.slug}><tr className={`grid grid-cols-2 gap-2 p-4 md:table-row md:p-0 ${selected?.slug === deck.slug ? "bg-[#e9f1ec]" : "hover:bg-[#f7f6f2]"}`}>
-                  <td className="col-span-2 pb-2 md:table-cell md:px-4 md:py-3"><span className="flex min-w-0 items-center gap-2 font-semibold"><span className="w-6 shrink-0 font-mono text-xs text-[#9ca5a8]">{index + 1}</span><DeckSprites icons={deck.icons} /><a href={deck.limitlessUrl} className="min-w-0 break-words underline decoration-[#aac6cd] underline-offset-4 hover:text-[#27566a] focus:outline-none focus:ring-2 focus:ring-[#3485a4]" aria-label={`${deck.name} on Limitless`}>{deck.name} <span aria-hidden="true">↗</span></a></span></td>
+                 {sortedDecks.map((deck) => <Fragment key={deck.slug}><tr className={`grid grid-cols-2 gap-2 p-4 md:table-row md:p-0 ${selected?.slug === deck.slug ? "bg-[#e9f1ec]" : "hover:bg-[#f7f6f2]"}`}>
+                   <td className="col-span-2 pb-2 md:table-cell md:px-4 md:py-3"><span className="flex min-w-0 items-center gap-2 font-semibold"><span className="w-6 shrink-0 font-mono text-xs text-[#9ca5a8]">{rankBySlug.get(deck.slug)}</span><DeckSprites icons={deck.icons} /><a href={deck.limitlessUrl} className="min-w-0 break-words underline decoration-[#aac6cd] underline-offset-4 hover:text-[#27566a] focus:outline-none focus:ring-2 focus:ring-[#3485a4]" aria-label={`${deck.name} on Limitless`}>{deck.name} <span aria-hidden="true">↗</span></a></span></td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{percent(deck.share)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono font-semibold md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win %</span>{percent(deck.winRate)}</td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Day 2</span>{deck.conversion === null ? "—" : percent(deck.conversion)}</td>
@@ -183,9 +217,10 @@ export function OverallMeta({ byGeography }: { byGeography: Record<Geography, Me
                     <div><label htmlFor="matchup-opponent" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7a7f]">Opposing meta deck</label><select id="matchup-opponent" value={opponentSlug} onChange={(event) => { setOpponentSlug(event.target.value); if (event.target.value) setShowAllMatchups(true); }} className="w-full rounded-xl border border-[#bfc8c9] bg-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3485a4]"><option value="">Select a deck…</option>{filtered.map((matchup) => <option key={matchup.slug} value={matchup.slug}>{matchup.name} · {percent(matchup.winRate)}</option>)}</select></div>
                     <div className="min-h-12 rounded-xl border border-[#e0e3df] bg-white px-4 py-3 text-sm" aria-live="polite">{opponent ? <div className="flex flex-wrap items-center justify-between gap-2"><span className="inline-flex items-center gap-1 font-semibold">vs. <DeckSprites icons={opponent.icons} compact />{opponent.name}</span><span className={opponent.category === "favorable" ? "font-bold text-[#237444]" : opponent.category === "unfavorable" ? "font-bold text-[#bd4c45]" : "font-bold text-[#586d78]"}>{percent(opponent.winRate)} · {opponent.category}</span><span className="font-mono text-xs text-[#78858a]">{opponent.record.wins}–{opponent.record.losses}–{opponent.record.ties} ({opponent.matches} matches)</span></div> : <span className="text-[#78858a]">Choose an opposing deck to see its win rate and record.</span>}</div>
                   </div>
+                    <MobileSortControls id="matchup-sort" label="Sort matchups by" options={[{ key: "name", label: "Opposing deck" }, { key: "record", label: "W–L–T" }, { key: "winRate", label: "Win %" }, { key: "category", label: "Result" }]} sort={matchupSort} onSelect={(key) => setMatchupSort({ key, direction: key === "name" || key === "category" ? "asc" : "desc" })} onToggle={() => setMatchupSort((current) => ({ ...current, direction: current.direction === "asc" ? "desc" : "asc" }))} />
                     <div className="mt-5 rounded-xl border border-[#dfe2dc] bg-white md:overflow-x-auto">
                       <table className="block w-full text-left text-sm md:table md:min-w-[570px]" aria-label={`${deck.name} matchup records`}>
-                        <thead className="hidden bg-[#eeede7] text-xs uppercase tracking-wider text-[#6f7a7f] md:table-header-group"><tr><th className="px-4 py-3">Opposing deck</th><th className="px-3 py-3 text-right">W–L–T</th><th className="px-3 py-3 text-right">Win %</th><th className="px-4 py-3 text-right">Result</th></tr></thead>
+                        <thead className="hidden bg-[#eeede7] text-xs uppercase tracking-wider text-[#6f7a7f] md:table-header-group"><tr><th className="px-4 py-3"><button type="button" onClick={() => onMatchupSort("name")} className="inline-flex gap-1 font-inherit">Opposing deck {matchupSort.key === "name" ? matchupSort.direction === "asc" ? "↑" : "↓" : "↕"}</button></th><th className="px-3 py-3 text-right"><button type="button" onClick={() => onMatchupSort("record")} className="inline-flex gap-1 font-inherit">W–L–T {matchupSort.key === "record" ? matchupSort.direction === "asc" ? "↑" : "↓" : "↕"}</button></th><th className="px-3 py-3 text-right"><button type="button" onClick={() => onMatchupSort("winRate")} className="inline-flex gap-1 font-inherit">Win % {matchupSort.key === "winRate" ? matchupSort.direction === "asc" ? "↑" : "↓" : "↕"}</button></th><th className="px-4 py-3 text-right"><button type="button" onClick={() => onMatchupSort("category")} className="inline-flex gap-1 font-inherit">Result {matchupSort.key === "category" ? matchupSort.direction === "asc" ? "↑" : "↓" : "↕"}</button></th></tr></thead>
                         <tbody className="block divide-y divide-[#eeede8] md:table-row-group">{visibleMatchups.map((matchup) => <tr key={matchup.slug} className={`grid grid-cols-2 gap-2 p-4 md:table-row md:p-0 ${opponentSlug === matchup.slug ? "bg-[#e9f1ec]" : ""}`}><td className="col-span-2 font-semibold md:table-cell md:px-4 md:py-3"><span className="flex min-w-0 items-center gap-2"><DeckSprites icons={matchup.icons} compact /><span className="min-w-0 break-words">{matchup.name}</span></span></td><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">W–L–T</span>{matchup.record.wins}–{matchup.record.losses}–{matchup.record.ties}</td><td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-mono md:table-cell md:rounded-none md:bg-transparent md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win %</span>{percent(matchup.winRate)}</td><td className={`col-span-2 rounded-lg bg-[#f7f8f4] px-3 py-2 text-left font-semibold capitalize md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right ${matchup.category === "favorable" ? "text-[#237444]" : matchup.category === "unfavorable" ? "text-[#bd4c45]" : "text-[#586d78]"}`}><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Result</span>{matchup.category}</td></tr>)}</tbody>
                       </table>
                       {filtered.length === 0 ? <p className="px-4 py-5 text-sm text-[#78858a]">No matchups in this category.</p> : null}

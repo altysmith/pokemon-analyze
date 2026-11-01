@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { EventDeck, Geography, Matchup, MetaDeck, RegionalData } from "@/lib/limitless/season";
 import { CardShifts } from "./card-shifts";
 import { DeckSprites } from "./deck-sprites";
+import { MobileSortControls } from "./mobile-sort-controls";
 
 const GEO: Array<{ value: Geography; label: string }> = [
   { value: "all", label: "All regions" },
@@ -16,6 +17,12 @@ const GEO: Array<{ value: Geography; label: string }> = [
 
 type Trend = { slug: string; name: string; icons: string[]; from: number; to: number; delta: number; fromSample: number; toSample: number };
 type RangeDeck = Pick<EventDeck, "slug" | "name" | "icons" | "players" | "share" | "record" | "winRate">;
+type DeckSortKey = "name" | "share" | "players" | "record" | "winRate";
+type SortDirection = "asc" | "desc";
+
+function SortHeader({ label, sortKey, active, direction, onSort, className = "" }: { label: string; sortKey: DeckSortKey; active: boolean; direction: SortDirection; onSort: (key: DeckSortKey) => void; className?: string }) {
+  return <th scope="col" aria-sort={active ? direction === "asc" ? "ascending" : "descending" : "none"} className={`px-4 py-3 ${className}`}><button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 font-inherit hover:text-[#27566a] focus:outline-none focus:ring-2 focus:ring-[#3485a4]" aria-label={`Sort by ${label}`}>{label}<span aria-hidden="true">{active ? direction === "asc" ? "↑" : "↓" : "↕"}</span></button></th>;
+}
 
 const formatPercent = (value: number) => {
   const percentage = value * 100;
@@ -33,6 +40,15 @@ function eventDate(event: RegionalData) {
 }
 
 function EventSnapshot({ event }: { event: RegionalData }) {
+  const [sort, setSort] = useState<{ key: DeckSortKey; direction: SortDirection }>({ key: "players", direction: "desc" });
+  const onSort = (key: DeckSortKey) => setSort((current) => current.key === key ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : { key, direction: key === "name" ? "asc" : "desc" });
+  const topDecks = useMemo(() => [...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).slice(0, 25), [event.decks]);
+  const decks = useMemo(() => [...topDecks].sort((a, b) => {
+    const value = (deck: EventDeck) => sort.key === "name" ? deck.name : sort.key === "record" ? deck.record.wins + deck.record.losses + deck.record.ties : deck[sort.key];
+    const left = value(a); const right = value(b);
+    const result = typeof left === "string" ? left.localeCompare(right as string) : left - (right as number);
+    return sort.direction === "asc" ? result : -result;
+  }), [topDecks, sort]);
   const recordedMatches = event.decks.reduce((total, deck) => total + deck.record.wins + deck.record.losses + deck.record.ties, 0);
   const location = GEO.find((option) => option.value === event.geography)?.label ?? "Other locations";
   const fields = [
@@ -62,13 +78,15 @@ function EventSnapshot({ event }: { event: RegionalData }) {
           <h3 className="text-xl font-semibold tracking-tight text-[#1b2930]">Top 25 decks</h3>
           <p className="mt-1 text-sm text-[#68777f]">The 25 most-played decks in this event, without cross-event comparisons or minimum sample rules.</p>
         </div>
+        <MobileSortControls id="event-deck-sort" label="Sort decks by" options={[{ key: "name", label: "Deck" }, { key: "share", label: "Share" }, { key: "players", label: "Players" }, { key: "record", label: "Record" }, { key: "winRate", label: "Win rate" }]} sort={sort} onSelect={(key) => setSort({ key, direction: key === "name" ? "asc" : "desc" })} onToggle={() => setSort((current) => ({ ...current, direction: current.direction === "asc" ? "desc" : "asc" }))} />
         <div className="mt-5 overflow-hidden rounded-xl border border-[#e2e0d8] md:overflow-x-auto">
-          <table className="block w-full text-left text-sm md:table md:min-w-[42rem]">
+          <table className="block w-full text-left text-sm md:table md:min-w-[48rem] md:table-fixed">
+            <colgroup><col /><col className="w-28" /><col className="w-28" /><col className="w-32" /><col className="w-28" /></colgroup>
             <thead className="hidden bg-[#fbfaf6] text-xs font-bold uppercase tracking-wider text-[#64727a] md:table-header-group">
-              <tr><th className="px-4 py-3">Deck</th><th className="px-4 py-3 text-right">Share</th><th className="px-4 py-3 text-right">Players</th><th className="px-4 py-3 text-right">Record</th><th className="px-4 py-3 text-right">Win rate</th></tr>
+              <tr><SortHeader label="Deck" sortKey="name" active={sort.key === "name"} direction={sort.direction} onSort={onSort} /><SortHeader label="Share" sortKey="share" active={sort.key === "share"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="Players" sortKey="players" active={sort.key === "players"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="Record" sortKey="record" active={sort.key === "record"} direction={sort.direction} onSort={onSort} className="text-right" /><SortHeader label="Win rate" sortKey="winRate" active={sort.key === "winRate"} direction={sort.direction} onSort={onSort} className="text-right" /></tr>
             </thead>
             <tbody className="block divide-y divide-[#eeede8] md:table-row-group">
-              {[...event.decks].sort((a, b) => b.players - a.players || a.name.localeCompare(b.name)).slice(0, 25).map((deck) => (
+              {decks.map((deck) => (
                 <tr key={deck.slug} className="grid grid-cols-2 gap-2 p-4 text-[#26353b] md:table-row md:p-0">
                   <td className="col-span-2 pb-2 font-semibold md:table-cell md:px-4 md:py-3"><span className="flex items-center gap-2"><DeckSprites icons={deck.icons} compact /><span>{deck.name}</span></span></td>
                   <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono md:table-cell md:rounded-none md:bg-transparent md:px-4 md:py-3 md:text-right"><span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{formatPercent(deck.share)}</td>
@@ -121,6 +139,15 @@ function RangeMatchupCounts({ matchups, loading, opponents }: { matchups: Matchu
 
 function TopEventDecks({ decks, eventCount, eventIds }: { decks: RangeDeck[]; eventCount: number; eventIds: string[] }) {
   const topDecks = useMemo(() => decks.slice(0, 25), [decks]);
+  const rankBySlug = useMemo(() => new Map(topDecks.map((deck, index) => [deck.slug, index + 1])), [topDecks]);
+  const [sort, setSort] = useState<{ key: DeckSortKey; direction: SortDirection }>({ key: "players", direction: "desc" });
+  const onSort = (key: DeckSortKey) => setSort((current) => current.key === key ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : { key, direction: key === "name" ? "asc" : "desc" });
+  const sortedTopDecks = useMemo(() => [...topDecks].sort((a, b) => {
+    const value = (deck: RangeDeck) => sort.key === "name" ? deck.name : sort.key === "record" ? deck.record.wins + deck.record.losses + deck.record.ties : deck[sort.key];
+    const left = value(a); const right = value(b);
+    const result = typeof left === "string" ? left.localeCompare(right as string) : left - (right as number);
+    return sort.direction === "asc" ? result : -result;
+  }), [topDecks, sort]);
   const [opponentCount, setOpponentCount] = useState<10 | 15 | 20 | 25>(25);
   const [selectedSlug, setSelectedSlug] = useState("");
   const deckSlugs = topDecks.map((deck) => deck.slug).join(",");
@@ -164,19 +191,20 @@ function TopEventDecks({ decks, eventCount, eventIds }: { decks: RangeDeck[]; ev
           </select>
         </div>
       </div>
-      <ol className="mt-5 divide-y divide-[#eeede8] overflow-hidden rounded-xl border border-[#d7d5cc]">
-        <li aria-hidden="true" className="hidden bg-[#eeede7] text-xs font-bold uppercase tracking-wider text-[#6f7a7f] sm:grid sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4 sm:py-3"><span>#</span><span>Deck</span><span className="text-right">Share</span><span className="text-right">Record</span><span className="text-right">Win %</span><span className="text-right">F–N–U</span><span /></li>
-        {topDecks.map((deck, index) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 sm:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-center sm:gap-x-6 sm:px-4">
-          <span className="font-mono text-xs text-[#9aa2a5]">{index + 1}</span>
+      <MobileSortControls id="range-deck-sort" label="Sort decks by" options={[{ key: "name", label: "Deck" }, { key: "share", label: "Share" }, { key: "record", label: "Record" }, { key: "winRate", label: "Win rate" }]} sort={sort} onSelect={(key) => setSort({ key, direction: key === "name" ? "asc" : "desc" })} onToggle={() => setSort((current) => ({ ...current, direction: current.direction === "asc" ? "desc" : "asc" }))} />
+      <div className="mt-5 overflow-hidden rounded-xl border border-[#d7d5cc] md:overflow-x-auto"><ol className="divide-y divide-[#eeede8] overflow-hidden md:min-w-[850px]">
+        <li className="hidden bg-[#eeede7] text-xs font-bold uppercase tracking-wider text-[#6f7a7f] md:grid md:grid-cols-[1.75rem_minmax(0,1fr)_7rem_9rem_7rem_7rem_8rem] md:items-center md:gap-x-6 md:px-4 md:py-3"><span>#</span><button type="button" onClick={() => onSort("name")} className="text-left">Deck ↕</button><button type="button" onClick={() => onSort("share")} className="text-right">Share ↕</button><button type="button" onClick={() => onSort("record")} className="text-right">Record ↕</button><button type="button" onClick={() => onSort("winRate")} className="text-right">Win % ↕</button><span className="text-right">F–N–U</span><span /></li>
+        {sortedTopDecks.map((deck) => <li key={deck.slug} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 py-4 md:grid-cols-[1.75rem_minmax(0,1fr)_7rem_9rem_7rem_7rem_8rem] md:items-center md:gap-x-6 md:px-4">
+          <span className="font-mono text-xs text-[#9aa2a5]">{rankBySlug.get(deck.slug)}</span>
           <span className="flex min-w-0 items-center gap-2 font-semibold text-[#1b2930]"><DeckSprites icons={deck.icons} compact /><span className="break-words">{deck.name}</span></span>
-          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Share</span>{formatPercent(deck.share)}</span>
-          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Record</span>{deck.record.wins}-{deck.record.losses}-{deck.record.ties}</span>
-          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm font-semibold sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">Win rate</span>{formatPercent(deck.winRate)}</span>
-          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 text-sm sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] sm:hidden">F–N–U</span><RangeMatchupCounts matchups={matchupRows[deck.slug]} loading={loading} opponents={opponentSlugs} /></span>
-          <button type="button" onClick={() => setSelectedSlug((current) => current === deck.slug ? "" : deck.slug)} className="col-span-2 mt-3 w-full rounded-md border border-[#c6d0d0] bg-white px-2.5 py-2 text-xs font-semibold text-[#27566a] hover:border-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#3485a4] sm:col-span-1 sm:mt-0 sm:w-auto sm:py-1.5">{selectedSlug === deck.slug ? "Close ↑" : "Full matchup ↗"}</button>
-          {selectedSlug === deck.slug ? <div className="col-span-2 mt-4 border-t border-[#e2e0d8] pt-4 sm:col-span-7"><p className="text-xs font-semibold uppercase tracking-wider text-[#64727a]">Matchups versus the selected top {opponentCount} decks</p>{loading ? <p className="mt-3 text-sm text-[#78858a]">Loading matchup records…</p> : <div className="mt-3 divide-y divide-[#eeede8] rounded-lg border border-[#e2e0d8]">{selectedMatchups.length ? selectedMatchups.map((matchup) => <div key={matchup.slug} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-3 text-sm"><span className="flex min-w-0 items-center gap-2 font-semibold"><DeckSprites icons={matchup.icons} compact /><span className="break-words">{matchup.name}</span></span><span className="font-mono text-xs">{matchup.record.wins}-{matchup.record.losses}-{matchup.record.ties}</span><span className="font-mono font-semibold">{formatPercent(matchup.winRate)}</span></div>) : <p className="px-3 py-4 text-sm text-[#78858a]">No recorded matchups in this range.</p>}</div>}</div> : null}
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm md:mt-0 md:rounded-none md:bg-transparent md:p-0 md:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Share</span>{formatPercent(deck.share)}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm md:mt-0 md:rounded-none md:bg-transparent md:p-0 md:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Record</span>{deck.record.wins}-{deck.record.losses}-{deck.record.ties}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 font-mono text-sm font-semibold md:mt-0 md:rounded-none md:bg-transparent md:p-0 md:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Win rate</span>{formatPercent(deck.winRate)}</span>
+          <span className="mt-3 rounded-lg bg-[#f7f8f4] px-3 py-2 text-sm md:mt-0 md:rounded-none md:bg-transparent md:p-0 md:text-right"><span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">F–N–U</span><RangeMatchupCounts matchups={matchupRows[deck.slug]} loading={loading} opponents={opponentSlugs} /></span>
+          <button type="button" onClick={() => setSelectedSlug((current) => current === deck.slug ? "" : deck.slug)} className="col-span-2 mt-3 w-full rounded-md border border-[#c6d0d0] bg-white px-2.5 py-2 text-xs font-semibold text-[#27566a] hover:border-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#3485a4] md:col-span-1 md:mt-0 md:w-auto md:py-1.5">{selectedSlug === deck.slug ? "Close ↑" : "Full matchup ↗"}</button>
+          {selectedSlug === deck.slug ? <div className="col-span-2 mt-4 border-t border-[#e2e0d8] pt-4 md:col-span-7"><p className="text-xs font-semibold uppercase tracking-wider text-[#64727a]">Matchups versus the selected top {opponentCount} decks</p>{loading ? <p className="mt-3 text-sm text-[#78858a]">Loading matchup records…</p> : <div className="mt-3 divide-y divide-[#eeede8] rounded-lg border border-[#e2e0d8]">{selectedMatchups.length ? selectedMatchups.map((matchup) => <div key={matchup.slug} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-3 text-sm"><span className="flex min-w-0 items-center gap-2 font-semibold"><DeckSprites icons={matchup.icons} compact /><span className="break-words">{matchup.name}</span></span><span className="font-mono text-xs">{matchup.record.wins}-{matchup.record.losses}-{matchup.record.ties}</span><span className="font-mono font-semibold">{formatPercent(matchup.winRate)}</span></div>) : <p className="px-3 py-4 text-sm text-[#78858a]">No recorded matchups in this range.</p>}</div>}</div> : null}
         </li>)}
-      </ol>
+      </ol></div>
     </section>
   );
 }
