@@ -9,7 +9,7 @@ Japan City League results do **not** use the Play Limitless webhook system. They
 - `lometa`: the Next.js web application, bound to `127.0.0.1:3000` by default.
 - `japan-sync`: runs once when it starts and then daily at 11:00 AM Eastern.
 - `season-sync`: checks the Labs listing at startup and every six hours, then validates newly completed Regionals and Special Events before adding them to the shared season catalog.
-- `japan-data`: a named Docker volume containing the shared SQLite database and season event catalog.
+- `/home/ealtenho/LoMeta.altylab.com/data`: the shared host directory containing the SQLite database, season event catalog, and cache.
 
 The importer is idempotent, records source revisions, limits each scheduled run to 100 due events, and selectively revisits recent or incomplete events.
 
@@ -25,17 +25,19 @@ The importer is idempotent, records source revisions, limits each scheduled run 
 
    `uname -m` should normally report `aarch64` or `arm64`.
 
-2. Clone and enter the repository:
+2. Create the LoMeta folder and clone the repository into its `app` directory:
 
    ```bash
-   git clone https://github.com/altysmith/pokemon-analyze.git
-   cd pokemon-analyze
+   mkdir -p /home/ealtenho/LoMeta.altylab.com/{app,data,backups,state,archive}
+   git clone https://github.com/altysmith/pokemon-analyze.git /home/ealtenho/LoMeta.altylab.com/app
+   cd /home/ealtenho/LoMeta.altylab.com/app
    git checkout master
    ```
 
-3. Create the local environment file:
+3. Ensure the shared data directory is writable by the Pi account, then create the local environment file:
 
    ```bash
+   mkdir -p /home/ealtenho/LoMeta.altylab.com/data
    cp .env.example .env
    ```
 
@@ -93,17 +95,16 @@ The defaults are intentionally conservative. Do not increase the polling frequen
 
 ## Persistence and backups
 
-The database and `/data/season-events.json` catalog are stored in the `japan-data` Docker volume and survive container rebuilds. Before destructive Docker maintenance, identify and back up the exact volume rather than using broad prune commands:
+The database, `/data/season-events.json` catalog, and season cache are stored in `/home/ealtenho/LoMeta.altylab.com/data` and survive container rebuilds. Before data maintenance, stop the services and back up that directory:
 
 ```bash
-docker volume ls
 docker compose stop lometa japan-sync season-sync
-docker run --rm -v pokemon-analyze_japan-data:/data -v "$PWD":/backup alpine \
-  tar czf /backup/japan-data-backup.tgz -C /data .
+tar czf "/home/ealtenho/LoMeta.altylab.com/backups/data-$(date -u +%Y%m%dT%H%M%SZ).tgz" \
+  -C /home/ealtenho/LoMeta.altylab.com/data .
 docker compose start lometa japan-sync season-sync
 ```
 
-The actual Compose volume prefix may differ if the checkout directory or Compose project name differs. Confirm it with `docker volume ls` before running the backup command.
+The old `lometa_japan-data` Docker volume is retained as a rollback copy during the move. Routine deployments use the host data directory above.
 
 ## Updating
 
@@ -120,8 +121,8 @@ Do not delete the `japan-data` volume during routine updates.
 
 - `japan-sync` failures: inspect `docker compose logs japan-sync`. Confirm outbound HTTPS and DNS access to `www.limitlesstcg.com`.
 - `season-sync` failures: inspect `docker compose logs season-sync`. Confirm outbound HTTPS and DNS access to `labs.limitlesstcg.com` and `www.limitlesstcg.com`.
-- Empty Japan page: confirm both services mount the same `japan-data` volume and use `JP_DB_PATH=/data/japan.sqlite`.
-- Permission errors under `/data`: inspect the mounted volume and container user before changing ownership; do not replace or delete the volume.
+- Empty Japan page: confirm both services mount `/home/ealtenho/LoMeta.altylab.com/data` at `/data` and use `JP_DB_PATH=/data/japan.sqlite`.
+- Permission errors under `/data`: inspect the host directory and container user before changing ownership; do not replace or delete the data directory.
 - Build failures for `better-sqlite3`: confirm the Pi OS is 64-bit and Docker has enough memory and disk space. The build stage includes the compiler toolchain needed for a native build.
 - Reverse-proxy errors: first confirm `curl http://127.0.0.1:3000/japan` works locally on the Pi.
 

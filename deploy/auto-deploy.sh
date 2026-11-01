@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-repo=/home/ealtenho/lometa
-state=/home/ealtenho/.local/state/lometa-auto-deploy
+root=/home/ealtenho/LoMeta.altylab.com
+repo="$root/app"
+state="$root/state/auto-deploy"
 mkdir -p "$state"
 exec 9>"$state/lock"
 flock -n 9 || exit 0

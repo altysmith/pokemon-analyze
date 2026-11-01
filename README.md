@@ -7,7 +7,7 @@ LoMeta is a Pokémon TCG metagame comparison site focused on the 2027 season. It
 `master` is the GitHub default branch and the source used for the Raspberry Pi deployment. Use `git switch master` and `git pull --ff-only origin master` in existing checkouts; new clones select it automatically. The old `main` branch is retained for existing checkouts, but new work should go to `master`. The Pi checks GitHub `master` every two minutes with `deploy/lometa-auto-deploy.timer` and rebuilds the Compose services when it finds a new commit. It requires a clean Pi checkout, checks the local HTTP response, and restores the prior commit and containers if the release fails. The failed commit is skipped until `master` changes again. Logs are available with `journalctl -u lometa-auto-deploy.service`.
 
 ```bash
-cd /home/ealtenho/lometa
+cd /home/ealtenho/LoMeta.altylab.com/app
 git pull --ff-only origin master
 sudo docker compose up -d --build
 ```
@@ -18,7 +18,7 @@ The Japan City League pipeline is separate from all existing Regional and intern
 
 The live HTML adapter reads the public [City League listing](https://www.limitlesstcg.com/tournaments/jp) and its event pages with bounded pagination, pacing, and retries. The importer preserves source IDs, Japanese player/shop values, Pokémon icon identifiers, unknown archetypes, and decklist links. It tracks classification and decklist coverage separately, records source revisions, and refuses to overwrite an event with fewer placements unless the caller explicitly allows it. A decklist link is not counted as parsed card content.
 
-The local database defaults to `.data/japan.sqlite`; set `JP_DB_PATH` to another writable file path when needed. Migrations under `drizzle/` are applied when the importer opens the database. The database file is ignored by Git. The Docker deployment stores it in the shared `japan-data` volume so the web and scheduler containers use the same persistent database.
+The local database defaults to `.data/japan.sqlite`; set `JP_DB_PATH` to another writable file path when needed. Migrations under `drizzle/` are applied when the importer opens the database. The database file is ignored by Git. On the Pi, the app, shared SQLite database, season catalog, and cache live under `/home/ealtenho/LoMeta.altylab.com`; Compose mounts its `data/` directory at `/data` in each container.
 
 ```bash
 pnpm japan:test
@@ -51,7 +51,7 @@ Keep the defaults for normal operation. To run an immediate manual refresh on th
 
 ### Automated major-event updates
 
-The `season-sync` Pi container checks the Limitless Labs listing every six hours, including at startup. It looks only for 2027-season Regional Championships and Special Events. After an event's listed end date, it checks that the Labs deck and Day 2 conversion pages contain usable rows before adding the event to `/data/season-events.json`. Recent events are checked again for the first week; the web app reads current Labs figures with a 30-minute cache in memory and on the shared data volume. An incomplete event, failed fetch, or malformed listing does not replace the existing catalog. The catalog shares the persistent Docker volume with Japan data, while the original five events remain a fallback for a fresh installation and local preview.
+The `season-sync` Pi container checks the Limitless Labs listing every six hours, including at startup. It looks only for 2027-season Regional Championships and Special Events. After an event's listed end date, it checks that the Labs deck and Day 2 conversion pages contain usable rows before adding the event to `/data/season-events.json`. Recent events are checked again for the first week; the web app reads current Labs figures with a 30-minute cache in memory and under the shared Pi `data/` directory. An incomplete event, failed fetch, or malformed listing does not replace the existing catalog. Japan data, season catalog, and cache share this persistent directory, while the original five events remain a fallback for a fresh installation and local preview.
 
 ```bash
 docker compose logs --tail=100 season-sync

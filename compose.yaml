@@ -1,3 +1,5 @@
+name: lometa
+
 services:
   lometa:
     build: .
@@ -19,7 +21,7 @@ services:
       SEASON_CATALOG_PATH: /data/season-events.json
       SEASON_CACHE_DIR: /data/season-cache
     volumes:
-      - japan-data:/data
+      - /home/ealtenho/LoMeta.altylab.com/data:/data
 
   japan-sync:
     build:
@@ -41,7 +43,7 @@ services:
       JP_SYNC_PAGES: ${JP_SYNC_PAGES:-10}
       JP_SYNC_MAX_EVENTS: ${JP_SYNC_MAX_EVENTS:-100}
     volumes:
-      - japan-data:/data
+      - /home/ealtenho/LoMeta.altylab.com/data:/data
 
   season-sync:
     build:
@@ -60,7 +62,4 @@ services:
       SEASON_CACHE_DIR: /data/season-cache
       SEASON_SYNC_INTERVAL_HOURS: ${SEASON_SYNC_INTERVAL_HOURS:-6}
     volumes:
-      - japan-data:/data
-
-volumes:
-  japan-data:
+      - /home/ealtenho/LoMeta.altylab.com/data:/data
