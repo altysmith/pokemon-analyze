@@ -3,16 +3,21 @@ import { displayName } from "./import";
 
 type CountRow = { events: number; placements: number; top8: number; classified_top8: number; decklists: number; latest_date: string | null };
 type EventRow = { id: string; event_date: string; placement_count: number; classified_top8_count: number; decklist_count: number };
-type PlacementRow = {
+export type PlacementRow = {
   archetype_id: string;
   source_value: string;
   placing: number;
   decklist_url: string | null;
   event_date: string;
   event_id: string;
+  player_name_raw?: string | null;
+  prefecture_raw?: string | null;
+  shop_raw?: string | null;
 };
 
 export type JapanSourceData = { events: EventRow[]; placements: PlacementRow[] };
+
+export type JapanDecklistResult = PlacementRow & { decklist_url: string };
 
 export type JapanArchetypeSummary = {
   id: string;
@@ -41,12 +46,23 @@ export function japanDeckLabel(sourceValue: string) {
 
 export function japanSourceData(db: Database.Database): JapanSourceData {
   const events = db.prepare(`SELECT id, event_date, placement_count, classified_top8_count, decklist_count FROM jp_events`).all() as EventRow[];
-  const placements = db.prepare(`SELECT p.archetype_id, a.source_value, p.placing, p.decklist_url,
-    e.event_date, e.id AS event_id FROM jp_placements p
+  const placements = db.prepare(`SELECT p.archetype_id, a.source_value, p.placing, p.decklist_url, p.player_name_raw,
+    e.event_date, e.id AS event_id, e.prefecture_raw, e.shop_raw FROM jp_placements p
     JOIN jp_archetypes a ON a.id = p.archetype_id
     JOIN jp_events e ON e.id = p.event_id
     WHERE p.archetype_id IS NOT NULL`).all() as PlacementRow[];
   return { events, placements };
+}
+
+export function topJapanDecklists(data: JapanSourceData, archetypeId: string, range: { from: string | null; to: string | null }, limit = 10) {
+  const eventIds = new Set(data.events
+    .filter((event) => (!range.from || event.event_date >= range.from) && (!range.to || event.event_date <= range.to))
+    .map((event) => event.id));
+  return data.placements
+    .filter((row): row is JapanDecklistResult => row.archetype_id === archetypeId && eventIds.has(row.event_id) && Boolean(row.decklist_url))
+    .sort((a, b) => a.placing - b.placing || b.event_date.localeCompare(a.event_date)
+      || Number(b.event_id) - Number(a.event_id) || a.decklist_url.localeCompare(b.decklist_url))
+    .slice(0, Math.max(0, limit));
 }
 
 export function summarizeJapanData(data: JapanSourceData, range: { from: string | null; to: string | null } = { from: null, to: null }) {

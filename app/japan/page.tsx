@@ -30,6 +30,7 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
     rankingParams.set("from", range.from!);
     rankingParams.set("to", range.to!);
   }
+  const detailQuery = `?${rankingParams.toString()}`;
   if (!showAll) rankingParams.set("show", "all");
   const rankingToggleHref = `/japan?${rankingParams.toString()}#placement-ranking`;
   const span = range.key === "all" ? (counts.first_date && counts.latest_date ? `${shortDate(counts.first_date)} – ${shortDate(counts.latest_date)}` : "No imported dates") : `${shortDate(range.from!)} – ${shortDate(range.to!)}`;
@@ -72,7 +73,7 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
           <div><h2 className="text-xl font-semibold tracking-tight">Placement ranking</h2><p className="mt-1 text-xs leading-5 text-[#78858a]">{span}. Every figure and winning-list link is limited to this range.</p></div>
           <span className="rounded-full bg-[#f0efe9] px-3 py-1 text-xs font-semibold text-[#52616b]">Showing {showAll ? archetypes.length : Math.min(30, archetypes.length)} of {archetypes.length}</span>
         </div>
-        {archetypes.length ? <JapanRankingTable archetypes={archetypes} classifiedTop8={counts.classified_top8} showAll={showAll} /> : <p className="px-6 py-8 text-sm text-[#66747b]">No classified placements imported yet.</p>}
+        {archetypes.length ? <JapanRankingTable archetypes={archetypes} classifiedTop8={counts.classified_top8} showAll={showAll} detailQuery={detailQuery} /> : <p className="px-6 py-8 text-sm text-[#66747b]">No classified placements imported yet.</p>}
         {archetypes.length > 30 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8e6de] px-5 py-4 sm:px-6">
           <p className="text-xs text-[#66747b]">{showAll ? "All ranked archetypes are shown." : "Top 30 shown for this date range."}</p>
           <a className="inline-flex min-h-10 items-center rounded-lg border border-[#b7c8cf] px-4 text-sm font-semibold text-[#27566a] hover:bg-[#edf3f4] focus:outline-none focus:ring-2 focus:ring-[#9fd1e3]" href={rankingToggleHref}>{showAll ? "Show top 30" : `Show all ${archetypes.length}`}</a>

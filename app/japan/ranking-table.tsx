@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { DeckSprites } from "../components/deck-sprites";
 import { MobileSortControls } from "../components/mobile-sort-controls";
 import type { JapanArchetypeSummary } from "@/lib/japan/overview";
@@ -9,7 +10,7 @@ type SortKey = "name" | "placementPoints" | "wins" | "top8" | "share";
 type Direction = "asc" | "desc";
 const top8Share = (top8: number, classifiedTop8: number) => classifiedTop8 ? top8 / classifiedTop8 : 0;
 
-export function JapanRankingTable({ archetypes, classifiedTop8, showAll }: { archetypes: JapanArchetypeSummary[]; classifiedTop8: number; showAll: boolean }) {
+export function JapanRankingTable({ archetypes, classifiedTop8, showAll, detailQuery }: { archetypes: JapanArchetypeSummary[]; classifiedTop8: number; showAll: boolean; detailQuery: string }) {
   const [sort, setSort] = useState<{ key: SortKey; direction: Direction }>({ key: "placementPoints", direction: "desc" });
   const onSort = (key: SortKey) => setSort((current) => current.key === key ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : { key, direction: key === "name" ? "asc" : "desc" });
   const ranked = useMemo(() => archetypes.map((deck, index) => ({ deck, rank: index + 1 })).slice(0, showAll ? undefined : 30), [archetypes, showAll]);
@@ -32,7 +33,7 @@ export function JapanRankingTable({ archetypes, classifiedTop8, showAll }: { arc
           <th scope="col" className="px-5 py-3 text-right">Winning list</th>
         </tr></thead>
         <tbody className="block divide-y divide-[#eeece6] md:table-row-group md:divide-y-0">{visible.map(({ deck, rank }) => <tr key={deck.id} className="grid grid-cols-2 gap-2 py-4 hover:bg-[#faf9f6] md:table-row md:border-t md:border-[#eeece6] md:p-0">
-          <th scope="row" className="col-span-2 block pb-1 text-left font-medium md:table-cell md:px-5 md:py-4 md:pb-4 md:align-middle"><span className="flex min-w-0 items-center gap-2 text-[#1d343f]"><span className="w-6 shrink-0 tabular-nums text-[#9aa3a5]">{rank}</span><DeckSprites icons={deck.icons} /><span className="min-w-0 break-words">{deck.name}</span></span></th>
+          <th scope="row" className="col-span-2 block pb-1 text-left font-medium md:table-cell md:px-5 md:py-4 md:pb-4 md:align-middle"><span className="flex min-w-0 items-center gap-2 text-[#1d343f]"><span className="w-6 shrink-0 tabular-nums text-[#9aa3a5]">{rank}</span><DeckSprites icons={deck.icons} /><Link className="min-w-0 break-words font-semibold underline decoration-[#b7c8cf] underline-offset-4 hover:text-[#27566a] hover:decoration-[#3485a4] focus:outline-none focus:ring-2 focus:ring-[#9fd1e3]" href={`/japan/decks/${encodeURIComponent(deck.id)}${detailQuery}`}>{deck.name}</Link></span></th>
           <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-right font-bold tabular-nums text-[#1d343f] md:table-cell md:rounded-none md:bg-transparent md:py-4"><span className="mb-1 block text-left text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Points</span>{deck.placementPoints}</td>
           <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-right tabular-nums text-[#52616b] md:table-cell md:rounded-none md:bg-transparent md:py-4"><span className="mb-1 block text-left text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">1st</span>{deck.wins}</td>
           <td className="rounded-lg bg-[#f7f8f4] px-3 py-2 text-right tabular-nums text-[#52616b] md:table-cell md:rounded-none md:bg-transparent md:py-4"><span className="mb-1 block text-left text-[10px] font-bold uppercase tracking-wide text-[#718087] md:hidden">Top 8</span>{deck.top8}</td>

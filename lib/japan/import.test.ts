@@ -6,7 +6,7 @@ import { openJapanDb } from "../../db/japan";
 import { FixtureJapanSource } from "./fixture-source";
 import { resolveJapanDateRange } from "./date-range";
 import { displayName, importJapanEvent, setArchetypeAlias } from "./import";
-import { japanDeckLabel, japanOverview, japanSourceData, placementPoints, summarizeJapanData } from "./overview";
+import { japanDeckLabel, japanOverview, japanSourceData, placementPoints, summarizeJapanData, topJapanDecklists, type JapanSourceData } from "./overview";
 import { parseCityLeagueEvent, parseCityLeagueIndex } from "./parse";
 import { nextRefreshDays } from "./refresh-policy";
 import { eventNeedsRefresh, syncJapanSource } from "./sync";
@@ -187,4 +187,24 @@ test("date ranges default to one month and filter every ranking input", () => {
   } finally {
     db.close();
   }
+});
+
+test("top decklists prefer stronger finishes, use recency for ties, and respect the date range", () => {
+  const events = Array.from({ length: 12 }, (_, index) => ({
+    id: String(7000 + index), event_date: `2026-10-${String(index + 1).padStart(2, "0")}`,
+    placement_count: 16, classified_top8_count: 8, decklist_count: 1,
+  }));
+  const data: JapanSourceData = {
+    events,
+    placements: events.map((event, index) => ({
+      archetype_id: "dragapult", source_value: "dragapult", placing: index % 3 === 0 ? 1 : 2,
+      decklist_url: `https://www.limitlesstcg.com/decks/list/jp/${8000 + index}`,
+      event_date: event.event_date, event_id: event.id,
+    })),
+  };
+  data.placements.push({ archetype_id: "dragapult", source_value: "dragapult", placing: 1, decklist_url: null, event_date: "2026-10-12", event_id: "7011" });
+  const lists = topJapanDecklists(data, "dragapult", { from: "2026-10-02", to: "2026-10-12" });
+  assert.equal(lists.length, 10);
+  assert.deepEqual(lists.slice(0, 4).map((row) => [row.placing, row.event_date]), [[1, "2026-10-10"], [1, "2026-10-07"], [1, "2026-10-04"], [2, "2026-10-12"]]);
+  assert.ok(lists.every((row) => row.event_date >= "2026-10-02"));
 });
