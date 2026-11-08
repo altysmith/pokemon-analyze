@@ -6,6 +6,7 @@ import { openJapanDb } from "@/db/japan";
 import { resolveJapanDateRange } from "@/lib/japan/date-range";
 import { japanSourceData, summarizeJapanData, topJapanDecklists, type JapanSourceData } from "@/lib/japan/overview";
 import previewOverview from "@/lib/japan/preview-overview.json";
+import { JapanDecklistDisclosure } from "../../decklist-disclosure";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -65,7 +66,8 @@ export default async function JapanDeckPage({ params, searchParams }: {
           <h2 id="top-decklists-heading" className="text-xl font-semibold tracking-tight">Top {Math.min(10, decklists.length)} decklists</h2>
           <p className="mt-1 text-xs leading-5 text-[#78858a]">Only placements with a published Limitless decklist are included.</p>
         </div>
-        {decklists.length ? <ol className="divide-y divide-[#eeece6]">{decklists.map((deck, index) => <li key={`${deck.event_id}-${deck.decklist_url}`} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        {decklists.length ? <ol className="divide-y divide-[#eeece6]">{decklists.map((deck, index) => <li key={`${deck.event_id}-${deck.decklist_url}`} className="px-5 py-5 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-0 items-start gap-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f0efe9] text-sm font-bold tabular-nums text-[#52616b]">{index + 1}</span>
             <div className="min-w-0">
@@ -76,8 +78,9 @@ export default async function JapanDeckPage({ params, searchParams }: {
           </div>
           <div className="flex shrink-0 flex-wrap gap-2 pl-13 sm:pl-0">
             <a href={`https://www.limitlesstcg.com/tournaments/jp/${deck.event_id}`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-[#c6d0d0] px-3 text-sm font-semibold text-[#52616b] hover:border-[#3485a4]">Event ↗</a>
-            <a href={deck.decklist_url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg bg-[#27566a] px-4 text-sm font-semibold text-white hover:bg-[#18323d]">View decklist ↗</a>
           </div>
+          </div>
+          <div className="mt-4 pl-13"><JapanDecklistDisclosure decklistUrl={deck.decklist_url} /></div>
         </li>)}</ol> : <p className="px-6 py-10 text-sm text-[#66747b]">No published decklists are available for this archetype in the selected date range.</p>}
       </section>
 

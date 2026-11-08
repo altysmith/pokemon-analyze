@@ -4,6 +4,8 @@ import { openJapanDb } from "@/db/japan";
 import { resolveJapanDateRange } from "@/lib/japan/date-range";
 import { japanSourceData, summarizeJapanData, type JapanSourceData } from "@/lib/japan/overview";
 import previewOverview from "@/lib/japan/preview-overview.json";
+import { japanDecklistCoverage, searchJapanDecklists, type JapanCardSearchResult } from "@/lib/japan/decklist-content";
+import { JapanDecklistDisclosure } from "./decklist-disclosure";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,10 +17,18 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const single = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
   const range = resolveJapanDateRange({ range: single(params?.range), from: single(params?.from), to: single(params?.to) });
+  const cardQuery = (single(params?.card) ?? "").trim().slice(0, 80);
+  const searchPage = Math.min(100, Math.max(1, Math.floor(Number(single(params?.page)) || 1)));
+  let cardResults: JapanCardSearchResult[] = [];
+  let cardCoverage = { total: 0, indexed: 0 };
   let source: JapanSourceData;
   try {
     const db = openJapanDb();
-    try { source = japanSourceData(db); } finally { db.close(); }
+    try {
+      source = japanSourceData(db);
+      cardCoverage = japanDecklistCoverage(db, range);
+      if (cardQuery.length >= 2) cardResults = searchJapanDecklists(db, cardQuery, range, 51, (searchPage - 1) * 50);
+    } finally { db.close(); }
   } catch (error) {
     if (process.env.JP_DB_PATH) throw error;
     source = previewOverview as JapanSourceData;
@@ -31,6 +41,13 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
     rankingParams.set("to", range.to!);
   }
   const detailQuery = `?${rankingParams.toString()}`;
+  const cardSearchParams = new URLSearchParams({ range: range.key, card: cardQuery });
+  if (range.key === "custom") {
+    cardSearchParams.set("from", range.from!);
+    cardSearchParams.set("to", range.to!);
+  }
+  const cardHasMore = cardResults.length > 50;
+  const visibleCardResults = cardResults.slice(0, 50);
   if (!showAll) rankingParams.set("show", "all");
   const rankingToggleHref = `/japan?${rankingParams.toString()}#placement-ranking`;
   const span = range.key === "all" ? (counts.first_date && counts.latest_date ? `${shortDate(counts.first_date)} – ${shortDate(counts.latest_date)}` : "No imported dates") : `${shortDate(range.from!)} – ${shortDate(range.to!)}`;
@@ -63,6 +80,36 @@ export default async function JapanPage({ searchParams }: { searchParams: Promis
           <label className="text-xs font-semibold text-[#52616b]">To<input className="mt-1 block min-h-10 rounded-lg border border-[#d7d5cc] bg-white px-3 text-sm font-normal text-[#1d343f]" type="date" name="to" required defaultValue={range.to ?? counts.latest_date ?? ""} /></label>
           <button className="min-h-10 rounded-lg border border-[#b7c8cf] px-4 text-sm font-semibold text-[#27566a] hover:bg-[#edf3f4]" type="submit">Apply dates</button>
         </form>
+      </section>
+
+      <section id="card-search" className="mt-8 rounded-2xl border border-[#d7d5cc] bg-white p-5 sm:p-6" aria-labelledby="card-search-heading">
+        <h2 id="card-search-heading" className="text-xl font-semibold tracking-tight">Find decks by card</h2>
+        <p className="mt-1 text-sm leading-6 text-[#66747b]">Search cards inside published Japanese City League decklists for the selected date range.</p>
+        <form action="/japan" method="get" className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <input type="hidden" name="range" value={range.key} />
+          {range.key === "custom" && <><input type="hidden" name="from" value={range.from!} /><input type="hidden" name="to" value={range.to!} /></>}
+          <label className="sr-only" htmlFor="japan-card-search">Card name</label>
+          <input id="japan-card-search" name="card" type="search" minLength={2} maxLength={80} required defaultValue={cardQuery} placeholder="Try Charizard" className="min-h-11 w-full rounded-lg border border-[#c6d0d0] px-4 text-sm text-[#1d343f] focus:outline-none focus:ring-2 focus:ring-[#9fd1e3]" />
+          <button type="submit" className="min-h-11 rounded-lg bg-[#27566a] px-5 text-sm font-semibold text-white hover:bg-[#18323d]">Search decks</button>
+        </form>
+        <p className="mt-3 text-xs text-[#78858a]">{cardCoverage.indexed.toLocaleString()} of {cardCoverage.total.toLocaleString()} published lists indexed in this date range.{cardCoverage.indexed < cardCoverage.total ? " Search coverage is still growing." : ""}</p>
+        {cardQuery.length >= 2 && <div className="mt-5 border-t border-[#eeece6] pt-5">
+          <h3 className="text-sm font-semibold text-[#1d343f]">{visibleCardResults.length ? `Decks containing “${cardQuery}”` : `No indexed decks containing “${cardQuery}”`}</h3>
+          {!visibleCardResults.length && <p className="mt-2 text-sm text-[#66747b]">Try another card name or a wider date range.</p>}
+          {!!visibleCardResults.length && <ol className="mt-4 divide-y divide-[#eeece6]">{visibleCardResults.map((result) => <li key={`${result.eventId}-${result.sourceRow}`} className="py-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div><a href={`/japan/decks/${encodeURIComponent(result.archetypeId)}${detailQuery}`} className="font-semibold text-[#27566a] underline underline-offset-4">{result.deckName}</a>
+                <p className="mt-1 text-xs text-[#66747b]">#{result.placing} · {shortDate(result.eventDate)}{result.playerName ? ` · ${result.playerName}` : ""}</p>
+                <p className="mt-1 text-xs text-[#52616b]">Matched: {result.matchedCards.split(",").join(", ")}</p>
+              </div>
+            </div>
+            <div className="mt-3"><JapanDecklistDisclosure decklistUrl={result.sourceUrl} /></div>
+          </li>)}</ol>}
+          {(searchPage > 1 || cardHasMore) && <nav aria-label="Card search pages" className="mt-4 flex gap-3 text-sm font-semibold text-[#27566a]">
+            {searchPage > 1 && <a className="underline" href={`/japan?${cardSearchParams.toString()}&page=${searchPage - 1}#card-search`}>Previous</a>}
+            {cardHasMore && <a className="underline" href={`/japan?${cardSearchParams.toString()}&page=${searchPage + 1}#card-search`}>Next</a>}
+          </nav>}
+        </div>}
       </section>
 
       {!source.events.length && <p className="mt-7 rounded-xl border border-[#d7d5cc] bg-white p-4 text-sm text-[#52616b]">No local City League data yet. Run <code>pnpm japan:sync</code> to import a first sample.</p>}

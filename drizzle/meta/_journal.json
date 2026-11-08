@@ -8,6 +8,13 @@
       "when": 1791980207987,
       "tag": "0000_busy_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794113296861,
+      "tag": "0001_fuzzy_doomsday",
+      "breakpoints": true
     }
   ]
 }

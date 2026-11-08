@@ -86,6 +86,25 @@ export const jpIngestionRuns = sqliteTable("jp_ingestion_runs", {
   error: text("error"),
 });
 
+export const jpDecklistContent = sqliteTable("jp_decklist_content", {
+  sourceUrl: text("source_url").primaryKey(),
+  status: text("status").notNull(),
+  lastCheckedAt: text("last_checked_at").notNull(),
+});
+
+export const jpDecklistCards = sqliteTable("jp_decklist_cards", {
+  sourceUrl: text("source_url").notNull().references(() => jpDecklistContent.sourceUrl),
+  position: integer("position").notNull(),
+  section: text("section").notNull(),
+  quantity: integer("quantity").notNull(),
+  name: text("name").notNull(),
+  setCode: text("set_code").notNull(),
+  cardNumber: text("card_number").notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.sourceUrl, table.position] }),
+  index("jp_decklist_cards_name_idx").on(table.name),
+]);
+
 export const jpEventRevisions = sqliteTable("jp_event_revisions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   eventId: text("event_id").notNull().references(() => jpEvents.id),

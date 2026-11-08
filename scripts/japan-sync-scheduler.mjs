@@ -33,24 +33,21 @@ function stop(signal) {
 process.on("SIGINT", () => stop("SIGINT"));
 process.on("SIGTERM", () => stop("SIGTERM"));
 
-function sync() {
+function sync(script, args = []) {
   return new Promise((resolve) => {
     const startedAt = new Date().toISOString();
-    console.log(`[japan-sync] starting at ${startedAt}`);
+    console.log(`[japan-sync] starting ${script} at ${startedAt}`);
     activeChild = spawn(process.execPath, [
       "node_modules/tsx/dist/cli.mjs",
-      "scripts/japan-sync.ts",
-      "--pages",
-      String(pages),
-      "--max-events",
-      String(maxEvents),
+      script,
+      ...args,
     ], { stdio: "inherit" });
     activeChild.once("exit", (code, signal) => {
       activeChild = undefined;
       if (code === 0) {
-        console.log(`[japan-sync] completed at ${new Date().toISOString()}`);
+        console.log(`[japan-sync] completed ${script} at ${new Date().toISOString()}`);
       } else {
-        console.error(`[japan-sync] failed at ${new Date().toISOString()} (${signal ?? `exit ${code}`})`);
+        console.error(`[japan-sync] failed ${script} at ${new Date().toISOString()} (${signal ?? `exit ${code}`})`);
       }
       resolve(code === 0);
     });
@@ -70,7 +67,9 @@ function sleep(milliseconds) {
 }
 
 do {
-  const succeeded = await sync();
+  const eventsSucceeded = await sync("scripts/japan-sync.ts", ["--pages", String(pages), "--max-events", String(maxEvents)]);
+  const decklistsSucceeded = stopping ? false : await sync("scripts/japan-decklists-sync.ts");
+  const succeeded = eventsSucceeded && decklistsSucceeded;
   if (runOnce || stopping) {
     if (!succeeded && !stopping) process.exitCode = 1;
     break;
